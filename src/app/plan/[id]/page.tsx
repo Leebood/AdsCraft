@@ -73,14 +73,11 @@ export default function PlanPage() {
 
   const config = getPlanConfig(route, budget, path, goal);
 
-  // 免费预览：只显示前3项配置
-  const freePreviewItems = [
+  // 基础通用方案：完整的8个决策点配置（免费）
+  const basicPlanItems = [
     { key: 'campaign', label: t('plan.campaign'), value: config.objective },
     { key: 'budget', label: t('plan.budget'), value: config.budgetStrategy },
-    { key: 'audience', label: t('plan.audience'), value: config.audience }
-  ];
-
-  const premiumItems = [
+    { key: 'audience', label: t('plan.audience'), value: config.audience },
     { key: 'placement', label: t('plan.placement'), value: config.placement },
     { key: 'bidding', label: t('plan.bidding'), value: config.bid },
     { key: 'format', label: t('plan.format'), value: config.format },
@@ -116,14 +113,9 @@ export default function PlanPage() {
           <Card className="bg-white/5 border-white/20 backdrop-blur-sm shadow-xl">
             <CardHeader>
               <CardTitle className="text-white">{t('plan.quickRef')}</CardTitle>
-              {!isPremium && (
-                <p className="text-sm text-blue-300">
-                  Free preview: First 3 recommendations shown. Upgrade to see full plan.
-                </p>
-              )}
             </CardHeader>
             <CardContent>
-              {/* 免费预览部分 */}
+              {/* 基础通用方案：完整的8个决策点配置 */}
               <Table>
                 <TableHeader>
                   <TableRow className="border-white/20">
@@ -132,7 +124,7 @@ export default function PlanPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {freePreviewItems.map((item) => (
+                  {basicPlanItems.map((item) => (
                     <TableRow key={item.key} className="border-white/10 hover:bg-white/5">
                       <TableCell className="font-medium text-white">{item.label}</TableCell>
                       <TableCell className="text-blue-100">{item.value}</TableCell>
@@ -141,20 +133,9 @@ export default function PlanPage() {
                 </TableBody>
               </Table>
 
-              {/* 付费内容 */}
-              {isPremium ? (
-                <Table className="mt-4">
-                  <TableBody>
-                    {premiumItems.map((item) => (
-                      <TableRow key={item.key} className="border-white/10 hover:bg-white/5">
-                        <TableCell className="font-medium text-white">{item.label}</TableCell>
-                        <TableCell className="text-blue-100">{item.value}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <div className="mt-6">
+              {/* 付费解锁内容 */}
+              {!isPremium && (
+                <div className="mt-8">
                   <Paywall />
                 </div>
               )}
