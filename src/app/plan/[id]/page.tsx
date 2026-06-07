@@ -168,15 +168,6 @@ export default function PlanPage() {
             </CardContent>
           </Card>
 
-          {/* Back Button - 右侧 */}
-          <div className="mt-8 flex justify-end">
-            <Link href="/">
-              <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/30">
-                {t('common.back')}
-              </Button>
-            </Link>
-          </div>
-
           {/* 5阶段递进指南 */}
           <div className="mt-12">
             <StageGuide route={route} isPremium={canAccessFullContent ?? false} />
@@ -188,6 +179,15 @@ export default function PlanPage() {
               <ComparisonTable />
             </div>
           )}
+
+          {/* Back Button - 页面最底部右侧 */}
+          <div className="mt-8 flex justify-end">
+            <Link href="/">
+              <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/30">
+                {t('common.back')}
+              </Button>
+            </Link>
+          </div>
         </div>
       </main>
     </div>
