@@ -142,6 +142,25 @@ const translations = {
     'signup.loading': 'Creating account...',
     'signup.fullName': 'Full Name',
     
+    // 订阅页
+    'pricing.title': 'Choose Your Plan',
+    'pricing.subtitle': 'Unlock the power of Facebook Ads decision engine',
+    'pricing.free.title': 'Free Plan',
+    'pricing.free.price': '$0',
+    'pricing.free.feature1': 'Basic 3-question plan generator',
+    'pricing.free.feature2': 'First 3 recommendations preview',
+    'pricing.free.feature3': 'Route-specific configuration',
+    'pricing.free.cta': 'Start Free',
+    'pricing.premium.title': 'Premium Plan',
+    'pricing.premium.price': '$29',
+    'pricing.premium.period': 'per month',
+    'pricing.premium.feature1': 'Full 8-point plan configuration',
+    'pricing.premium.feature2': 'Advanced budget & audience strategies',
+    'pricing.premium.feature3': 'Placement & bidding optimization',
+    'pricing.premium.feature4': 'Format & event optimization',
+    'pricing.premium.feature5': 'Remarketing strategies',
+    'pricing.premium.cta': 'Upgrade Now',
+    
     // 隐私政策
     'privacy.title': 'Privacy Policy',
     'privacy.lastUpdate': 'Last updated: June 2026',
@@ -295,6 +314,25 @@ const translations = {
     'signup.error': '注册失败，请重试。',
     'signup.loading': '正在创建账户...',
     'signup.fullName': '姓名',
+    
+    // 订阅页
+    'pricing.title': '选择你的方案',
+    'pricing.subtitle': '解锁Facebook广告决策引擎的强大功能',
+    'pricing.free.title': '免费方案',
+    'pricing.free.price': '$0',
+    'pricing.free.feature1': '基础3问方案生成器',
+    'pricing.free.feature2': '前3项推荐预览',
+    'pricing.free.feature3': '路线专属配置',
+    'pricing.free.cta': '免费开始',
+    'pricing.premium.title': '高级方案',
+    'pricing.premium.price': '$29',
+    'pricing.premium.period': '每月',
+    'pricing.premium.feature1': '完整8点方案配置',
+    'pricing.premium.feature2': '高级预算和受众策略',
+    'pricing.premium.feature3': '版位和竞价优化',
+    'pricing.premium.feature4': '格式和事件优化',
+    'pricing.premium.feature5': '再营销策略',
+    'pricing.premium.cta': '立即升级',
     
     // 隐私政策
     'privacy.title': '隐私政策',

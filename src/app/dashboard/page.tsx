@@ -81,12 +81,13 @@ export default function DashboardPage() {
             <Card className="bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border-cyan-400/30 backdrop-blur-sm shadow-xl mb-6">
               <CardContent className="text-center py-8">
                 <p className="text-white mb-4">Unlock full plan details with Premium</p>
-                <Button 
-                  onClick={handleUpgrade}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 to-blue-500 text-white shadow-lg shadow-cyan-500/30"
-                >
-                  Upgrade to Premium
-                </Button>
+                <Link href="/pricing">
+                  <Button 
+                    className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 to-blue-500 text-white shadow-lg shadow-cyan-500/30"
+                  >
+                    Upgrade to Premium
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           )}
