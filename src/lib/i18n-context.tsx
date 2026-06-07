@@ -71,7 +71,7 @@ const translations = {
     'setup_checklist.next': 'Next',
     'setup_checklist.next_disabled': 'Complete the 3 required items to continue',
     
-    // 问答页
+    // 问答页 - Updated translations
     'questions.title': 'Answer 3 Questions',
     'questions.subtitle': 'Get your customized Facebook ads plan in seconds',
     'questions.step': 'Step',
