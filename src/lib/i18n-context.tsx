@@ -16,7 +16,7 @@ const translations = {
     // 导航
     'nav.home': 'Home',
     'nav.setup': 'Pre-Setup',
-    'nav.questions': 'Get Plan',
+    'nav.questions': 'Basic Universal Plan',
     'nav.login': 'Login',
     'nav.privacy': 'Privacy Policy',
     
@@ -209,7 +209,7 @@ const translations = {
   zh: {
     // 导航
     'nav.home': '首页',
-    'nav.questions': '获取方案',
+    'nav.questions': '基础通用方案',
     'nav.login': '登录',
     'nav.setup': '前期设置',
     'nav.privacy': '隐私政策',
