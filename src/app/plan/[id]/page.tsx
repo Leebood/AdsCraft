@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useI18n } from '@/lib/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 import { Paywall } from '@/components/paywall';
+import { ComparisonTable } from '@/components/comparison-table';
 
 // 根据路线、预算、路径、目标生成精确配置
 const getPlanConfig = (route: string, budget: string, path: string, goal: string) => {
@@ -103,6 +104,13 @@ export default function PlanPage() {
               Route: {route} | Budget: {budget} | Path: {path} | Goal: {goal}
             </p>
           </div>
+
+          {/* Free vs Premium Comparison */}
+          {!isPremium && (
+            <div className="mb-8">
+              <ComparisonTable />
+            </div>
+          )}
 
           {/* Quick Reference Table */}
           <Card className="bg-white/5 border-white/20 backdrop-blur-sm shadow-xl">
