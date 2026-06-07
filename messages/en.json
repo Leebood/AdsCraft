@@ -1,0 +1,147 @@
+{
+  "common": {
+    "appName": "AdsCraft",
+    "appDescription": "Facebook Ads Decision Engine",
+    "tagline": "Tell us your situation, get the right configuration",
+    "cta": "Start Now"
+  },
+  "home": {
+    "heroTitle": "Stop Guessing. Start Deciding.",
+    "heroSubtitle": "Facebook Ads Manager has fixed options. We tell you which one to choose, why, and what to adjust when it drifts.",
+    "routeSelector": {
+      "title": "What do you sell or do?",
+      "retailer": {
+        "label": "I sell products, need more orders",
+        "description": "E-commerce, Shopify, direct sales"
+      },
+      "manufacturer": {
+        "label": "I'm a factory/manufacturer, seeking wholesale clients",
+        "description": "B2B export, need inquiries"
+      },
+      "localService": {
+        "label": "I provide local services, need bookings",
+        "description": "Business within a few kilometers"
+      },
+      "brand": {
+        "label": "I'm building a brand, need awareness",
+        "description": "Plant seeds first, convert later"
+      }
+    }
+  },
+  "questions": {
+    "free": {
+      "title": "3 Questions to Your Universal Plan",
+      "subtitle": "Answer 3 questions, get a working configuration in seconds",
+      "budget": {
+        "question": "What's your daily budget range?",
+        "low": "Less than $20",
+        "mid": "$20-50",
+        "high": "More than $50"
+      },
+      "conversionPath": {
+        "question": "How do customers order or contact you?",
+        "shopify": "Website/Shopify checkout",
+        "whatsapp": "WhatsApp/Line contact",
+        "store": "In-store visit or phone call",
+        "lead": "Fill a form for information"
+      }
+    },
+    "paid": {
+      "title": "5 Deep Questions for Your Custom Plan",
+      "subtitle": "Paid users get tailored recommendations with analysis",
+      "market": {
+        "question": "Where's your target market?",
+        "sea": "Southeast Asia",
+        "us": "US/Europe",
+        "middleEast": "Middle East",
+        "latam": "Latin America",
+        "mixed": "Multiple markets"
+      },
+      "pixel": {
+        "question": "Do you have Pixel/historical data?",
+        "running": "Running ads with data",
+        "hasPixel": "Pixel installed, no data",
+        "noPixel": "Nothing yet"
+      },
+      "price": {
+        "question": "What's your product price point?",
+        "low": "Less than $20",
+        "mid": "$20-100",
+        "high": "More than $100"
+      },
+      "material": {
+        "question": "What's your content creation capability?",
+        "phone": "Phone camera only",
+        "designer": "Have designers",
+        "kol": "Have KOL resources"
+      },
+      "competitor": {
+        "question": "Who are your main competitors? (Optional)",
+        "placeholder": "Enter competitor names or brands"
+      }
+    },
+    "next": "Next Step",
+    "generatePlan": "Generate My Plan"
+  },
+  "plan": {
+    "title": "Your Ad Configuration",
+    "quickRef": "Quick Reference Table",
+    "decisionPoints": {
+      "objective": "Campaign Objective",
+      "budgetStrategy": "Budget Strategy",
+      "audience": "Audience Type",
+      "placement": "Placement",
+      "bid": "Bidding Strategy",
+      "format": "Ad Format",
+      "optimization": "Optimization Event",
+      "remarketing": "Remarketing Window"
+    },
+    "routes": {
+      "retailer": "Retailer",
+      "manufacturer": "Manufacturer",
+      "localService": "Local Service Provider",
+      "brand": "Brand Builder"
+    },
+    "upgradePrompt": "Upgrade to unlock full analysis and custom recommendations"
+  },
+  "auth": {
+    "login": {
+      "title": "Sign In",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign In",
+      "google": "Continue with Google",
+      "github": "Continue with GitHub",
+      "noAccount": "Don't have an account?",
+      "signup": "Sign Up"
+    },
+    "signup": {
+      "title": "Create Account",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "submit": "Create Account",
+      "agreeTerms": "I agree to the",
+      "privacyPolicy": "Privacy Policy",
+      "haveAccount": "Already have an account?",
+      "login": "Sign In"
+    },
+    "verify": {
+      "title": "Verify Your Email",
+      "codeSent": "We sent a 6-digit code to",
+      "enterCode": "Enter the verification code",
+      "resend": "Resend Code",
+      "resendIn": "Resend in",
+      "seconds": "seconds"
+    }
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "lastUpdated": "Last Updated: June 2026"
+  },
+  "footer": {
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "pricing": "Pricing"
+  }
+}
