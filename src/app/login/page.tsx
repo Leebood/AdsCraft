@@ -1,21 +1,17 @@
 'use client';
 
-import {useTranslations} from 'next-intl';
 import {useState} from 'react';
 import {Button} from '@/components/ui/button';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
-import {Link} from '@/i18n/routing';
 
 export default function LoginPage() {
-  const t = useTranslations();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement login logic
     console.log('Login:', {email, password});
   };
 
@@ -23,12 +19,12 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl">{t('auth.login.title')}</CardTitle>
+          <CardTitle className="text-2xl">登录</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="email">{t('auth.login.email')}</Label>
+              <Label htmlFor="email">邮箱</Label>
               <Input
                 id="email"
                 type="email"
@@ -39,7 +35,7 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <Label htmlFor="password">{t('auth.login.password')}</Label>
+              <Label htmlFor="password">密码</Label>
               <Input
                 id="password"
                 type="password"
@@ -48,25 +44,17 @@ export default function LoginPage() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full">
-              {t('auth.login.submit')}
-            </Button>
+            <Button type="submit" className="w-full">登录</Button>
           </form>
 
           <div className="mt-4 space-y-2">
-            <Button variant="outline" className="w-full">
-              {t('auth.login.google')}
-            </Button>
-            <Button variant="outline" className="w-full">
-              {t('auth.login.github')}
-            </Button>
+            <Button variant="outline" className="w-full">使用Google登录</Button>
+            <Button variant="outline" className="w-full">使用GitHub登录</Button>
           </div>
 
           <div className="mt-6 text-center text-sm">
-            <span className="text-gray-600">{t('auth.login.noAccount')}</span>
-            <Link href="/auth/signup" className="ml-2 text-blue-600 hover:underline">
-              {t('auth.login.signup')}
-            </Link>
+            <span className="text-gray-600">没有账号?</span>
+            <a href="/signup" className="ml-2 text-blue-600 hover:underline">注册</a>
           </div>
         </CardContent>
       </Card>
