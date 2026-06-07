@@ -129,7 +129,7 @@ export default function HomePage() {
         {selectedRoute && (
           <div className="text-center mt-12 mb-16">
             <Link
-              href="/questions"
+              href="/setup-checklist"
               className="inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-semibold text-lg hover:from-cyan-400 hover:to-blue-500 transition-all duration-300 shadow-lg shadow-cyan-500/30 hover:shadow-xl hover:shadow-cyan-500/40 hover:scale-105"
             >
               {t('questions.generate')}

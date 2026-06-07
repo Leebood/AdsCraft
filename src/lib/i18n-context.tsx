@@ -15,6 +15,7 @@ const translations = {
   en: {
     // 导航
     'nav.home': 'Home',
+    'nav.setup': 'Pre-Setup',
     'nav.questions': 'Get Plan',
     'nav.login': 'Login',
     'nav.privacy': 'Privacy Policy',
@@ -45,6 +46,30 @@ const translations = {
     'home.value2.desc': 'Explain why to choose this over others',
     'home.value3.title': 'Diagnosis & Optimization',
     'home.value3.desc': 'Judge what went wrong and how to adjust',
+    
+    // 前期设置
+    'setup_checklist.title': 'Confirm Your Facebook Ads Setup',
+    'setup_checklist.step': 'Step 2 of 4',
+    'setup_checklist.required': 'Required — you need this to run ads',
+    'setup_checklist.recommended': 'Recommended — complete before launching',
+    'setup_checklist.optional': 'Optional — needed for specific routes',
+    'setup_checklist.items.page': 'Facebook Page + Instagram Account',
+    'setup_checklist.items.page_desc': 'You can\'t run ads without a Page',
+    'setup_checklist.items.ad_account': 'Ad Account',
+    'setup_checklist.items.ad_account_desc': 'Set timezone & currency (can\'t change later)',
+    'setup_checklist.items.pixel': 'Meta Pixel + CAPI',
+    'setup_checklist.items.pixel_desc': 'Browser + server tracking, both required (iOS 14.5+ loses 40%+ data without CAPI)',
+    'setup_checklist.items.domain': 'Domain Verification',
+    'setup_checklist.items.domain_desc': 'Business Settings → Brand Safety → Domains',
+    'setup_checklist.items.events': 'Web Event Configuration',
+    'setup_checklist.items.events_desc': 'Set up conversion events (Purchase/Lead/Contact)',
+    'setup_checklist.items.bm': 'Meta Business Suite',
+    'setup_checklist.items.bm_desc': 'Only needed for multiple Pages or ad accounts',
+    'setup_checklist.items.whatsapp': 'WhatsApp Business API',
+    'setup_checklist.items.whatsapp_desc': 'Required for WhatsApp order route; via BSP, not just the app',
+    'setup_checklist.view_steps': 'View detailed steps',
+    'setup_checklist.next': 'Next',
+    'setup_checklist.next_disabled': 'Complete the 3 required items to continue',
     
     // 问答页
     'questions.title': 'Answer 3 Questions',
@@ -124,6 +149,7 @@ const translations = {
     'nav.home': '首页',
     'nav.questions': '获取方案',
     'nav.login': '登录',
+    'nav.setup': '前期设置',
     'nav.privacy': '隐私政策',
     
     // Footer
@@ -152,6 +178,30 @@ const translations = {
     'home.value2.desc': '解释为什么选择这个而不是其他选项',
     'home.value3.title': '诊断优化',
     'home.value3.desc': '判断哪里出了问题以及如何调整',
+    
+    // 前期设置
+    'setup_checklist.title': '确认你的Facebook广告基础设置',
+    'setup_checklist.step': '第2步 / 共4步',
+    'setup_checklist.required': '必须完成 — 没有这些跑不了广告',
+    'setup_checklist.recommended': '建议完成 — 投放前完成更好',
+    'setup_checklist.optional': '可选 — 特定路线或规模才需要',
+    'setup_checklist.items.page': 'Facebook Page + Instagram账号',
+    'setup_checklist.items.page_desc': '没有Page跑不了广告，这是最基础的前提',
+    'setup_checklist.items.ad_account': '创建广告账户',
+    'setup_checklist.items.ad_account_desc': '设好时区+币种（改不了），在Page后台或Business Settings里创建',
+    'setup_checklist.items.pixel': '安装Meta Pixel + CAPI',
+    'setup_checklist.items.pixel_desc': 'Pixel浏览器端追踪，CAPI服务器端追踪，缺一不可（iOS 14.5后单靠Pixel数据丢40%+）',
+    'setup_checklist.items.domain': '验证域名',
+    'setup_checklist.items.domain_desc': 'Business Settings → Brand Safety → Domains',
+    'setup_checklist.items.events': '配置Web事件',
+    'setup_checklist.items.events_desc': '设置转化事件（Purchase/Lead/Contact等）',
+    'setup_checklist.items.bm': '创建Meta Business Suite',
+    'setup_checklist.items.bm_desc': '单个Page可以直接投，BM是管理多主页/多广告账户时才需要',
+    'setup_checklist.items.whatsapp': '注册WhatsApp Business API',
+    'setup_checklist.items.whatsapp_desc': '通过BSP接入，不是下个App就完了；WhatsApp接单路线必须',
+    'setup_checklist.view_steps': '查看详细步骤',
+    'setup_checklist.next': '下一步',
+    'setup_checklist.next_disabled': '完成3项必选项才能继续',
     
     // 问答页
     'questions.title': '回答3个问题',
