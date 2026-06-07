@@ -193,13 +193,15 @@ export default function QuestionsPage() {
             </CardContent>
           </Card>
 
-          {/* 返回首页 */}
+          {/* 返回上一页 */}
           <div className="text-center mt-8">
-            <Link href="/">
-              <Button variant="ghost" className="text-blue-200 hover:text-cyan-400 hover:bg-white/10">
-                {t('common.backHome')}
-              </Button>
-            </Link>
+            <Button 
+              variant="ghost" 
+              onClick={() => window.history.back()}
+              className="text-blue-200 hover:text-cyan-400 hover:bg-white/10"
+            >
+              {t('common.backPrevious')}
+            </Button>
           </div>
         </div>
       </main>

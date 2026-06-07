@@ -162,8 +162,9 @@ const translations = {
     
     // 通用
     'common.loading': 'Loading...',
-    'common.back': 'Back to Home',
+    'common.back': 'Back',
     'common.backHome': 'Back to Home',
+    'common.backPrevious': 'Back to Previous',
   },
   zh: {
     // 导航
@@ -315,8 +316,9 @@ const translations = {
     
     // 通用
     'common.loading': '加载中...',
-    'common.back': '返回首页',
+    'common.back': '返回',
     'common.backHome': '返回首页',
+    'common.backPrevious': '返回上一页',
   },
 };
 
