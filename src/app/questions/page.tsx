@@ -1,15 +1,18 @@
 'use client';
 
-import {useSearchParams} from 'next/navigation';
-import {useState} from 'react';
-import {Button} from '@/components/ui/button';
-import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
-import {RadioGroup, RadioGroupItem} from '@/components/ui/radio-group';
-import {Label} from '@/components/ui/label';
+import { useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { useI18n } from '@/lib/i18n-context';
 
 export default function QuestionsPage() {
   const searchParams = useSearchParams();
   const route = searchParams.get('route') || 'retailer';
+  const { t } = useI18n();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [answers, setAnswers] = useState({
@@ -19,16 +22,16 @@ export default function QuestionsPage() {
   });
 
   const budgetOptions = [
-    {key: 'low', value: 'low', label: '不到$20'},
-    {key: 'mid', value: 'mid', label: '$20-50'},
-    {key: 'high', value: 'high', label: '$50以上'}
+    { key: 'low', value: 'low', label: t('questions.budget.low') },
+    { key: 'mid', value: 'mid', label: t('questions.budget.mid') },
+    { key: 'high', value: 'high', label: t('questions.budget.high') }
   ];
 
   const pathOptions = [
-    {key: 'shopify', value: 'shopify', label: '网站/Shopify在线下单'},
-    {key: 'whatsapp', value: 'whatsapp', label: 'WhatsApp/Line联系下单'},
-    {key: 'store', value: 'store', label: '到店/电话'},
-    {key: 'lead', value: 'lead', label: '填表留下信息'}
+    { key: 'shopify', value: 'shopify', label: t('questions.path.shopify') },
+    { key: 'whatsapp', value: 'whatsapp', label: t('questions.path.whatsapp') },
+    { key: 'store', value: 'store', label: t('questions.path.store') },
+    { key: 'lead', value: 'lead', label: t('questions.path.lead') }
   ];
 
   const handleNext = () => {
@@ -49,53 +52,107 @@ export default function QuestionsPage() {
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-2">回答3个问题获得通用方案</h1>
-            <p className="text-gray-600">回答3个问题,几秒钟获得可用的配置</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              {t('questions.title')}
+            </h1>
+            <p className="text-gray-600">
+              {t('questions.subtitle')}
+            </p>
           </div>
 
-          {/* Progress Indicator */}
-          <div className="flex justify-center mb-8">
-            <div className="flex gap-2">
-              <div className={`w-12 h-2 rounded-full ${currentStep >= 1 ? 'bg-blue-600' : 'bg-gray-300'}`} />
-              <div className={`w-12 h-2 rounded-full ${currentStep >= 2 ? 'bg-blue-600' : 'bg-gray-300'}`} />
+          {/* Progress */}
+          <div className="mb-6 flex justify-center">
+            <div className="flex items-center gap-4">
+              <div className={`flex items-center gap-2 ${currentStep >= 1 ? 'text-blue-600' : 'text-gray-400'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>
+                  1
+                </div>
+                <span className="text-sm">{t('questions.step')} 1 {t('questions.of')} 2</span>
+              </div>
+              <div className={`flex items-center gap-2 ${currentStep >= 2 ? 'text-blue-600' : 'text-gray-400'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>
+                  2
+                </div>
+                <span className="text-sm">{t('questions.step')} 2 {t('questions.of')} 2</span>
+              </div>
             </div>
           </div>
 
-          {/* Question Cards */}
+          {/* Step 1: Budget */}
           {currentStep === 1 && (
             <Card>
               <CardHeader>
-                <CardTitle>你的日预算范围是多少?</CardTitle>
+                <CardTitle>{t('questions.q1')}</CardTitle>
               </CardHeader>
               <CardContent>
-                <RadioGroup value={answers.budget} onValueChange={(value) => setAnswers({...answers, budget: value})}>
-                  {budgetOptions.map(({key, value, label}) => (
-                    <div key={value} className="flex items-center space-x-2 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                      <RadioGroupItem value={value} id={value} />
-                      <Label htmlFor={value} className="cursor-pointer flex-1">{label}</Label>
+                <RadioGroup
+                  value={answers.budget}
+                  onValueChange={(value) => setAnswers({ ...answers, budget: value })}
+                  className="space-y-3"
+                >
+                  {budgetOptions.map((option) => (
+                    <div key={option.key} className="flex items-center space-x-2">
+                      <RadioGroupItem value={option.value} id={option.key} />
+                      <Label htmlFor={option.key} className="cursor-pointer">
+                        {option.label}
+                      </Label>
                     </div>
                   ))}
                 </RadioGroup>
-                <Button className="w-full mt-6" disabled={!isStep1Complete} onClick={handleNext}>下一步</Button>
+
+                <div className="mt-6 flex justify-between">
+                  <Link href="/">
+                    <Button variant="outline">
+                      {t('common.back')}
+                    </Button>
+                  </Link>
+                  <Button
+                    onClick={handleNext}
+                    disabled={!isStep1Complete}
+                  >
+                    {t('questions.next')}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           )}
 
+          {/* Step 2: Conversion Path */}
           {currentStep === 2 && (
             <Card>
               <CardHeader>
-                <CardTitle>客户怎么下单或联系你?</CardTitle>
+                <CardTitle>{t('questions.q2')}</CardTitle>
               </CardHeader>
               <CardContent>
-                <RadioGroup value={answers.conversionPath} onValueChange={(value) => setAnswers({...answers, conversionPath: value})}>
-                  {pathOptions.map(({key, value, label}) => (
-                    <div key={value} className="flex items-center space-x-2 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                      <RadioGroupItem value={value} id={value} />
-                      <Label htmlFor={value} className="cursor-pointer flex-1">{label}</Label>
+                <RadioGroup
+                  value={answers.conversionPath}
+                  onValueChange={(value) => setAnswers({ ...answers, conversionPath: value })}
+                  className="space-y-3"
+                >
+                  {pathOptions.map((option) => (
+                    <div key={option.key} className="flex items-center space-x-2">
+                      <RadioGroupItem value={option.value} id={option.key} />
+                      <Label htmlFor={option.key} className="cursor-pointer">
+                        {option.label}
+                      </Label>
                     </div>
                   ))}
                 </RadioGroup>
-                <Button className="w-full mt-6" disabled={!isStep2Complete} onClick={handleNext}>生成我的方案</Button>
+
+                <div className="mt-6 flex justify-between">
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentStep(1)}
+                  >
+                    {t('common.back')}
+                  </Button>
+                  <Button
+                    onClick={handleNext}
+                    disabled={!isStep2Complete}
+                  >
+                    {t('questions.generate')}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           )}
