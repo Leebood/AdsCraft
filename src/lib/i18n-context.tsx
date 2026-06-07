@@ -112,11 +112,21 @@ const translations = {
     
     // 付费墙
     'paywall.title': 'Premium Feature',
+    'paywall.loginTitle': 'Login Required',
     'paywall.description': 'Unlock personalized recommendations, detailed analysis, and AI-powered diagnostics.',
+    'paywall.loginDescription': 'Login to access your personalized ads plans and track your progress.',
     'paywall.feature1': 'Customized ad strategy based on your specific situation',
     'paywall.feature2': '5-stage progression guide with actionable steps',
     'paywall.feature3': 'AI data diagnostics to optimize your campaigns',
     'paywall.cta': 'Upgrade to Premium',
+
+    // 5阶段递进指南
+    'stageGuide.title': '5-Stage Progression Guide',
+    'stageGuide.locked': 'Locked',
+    'stageGuide.action': 'Action',
+    'stageGuide.metrics': 'Metrics Threshold',
+    'stageGuide.duration': 'Duration',
+    'stageGuide.unlockHint': 'Unlock full guide with metrics thresholds by upgrading to premium',
     
     // 登录页
     'login.title': 'Login',
@@ -307,12 +317,22 @@ const translations = {
     
     // 付费墙
     'paywall.title': '付费功能',
+    'paywall.loginTitle': '需要登录',
     'paywall.description': '解锁个性化推荐、详细分析和AI诊断功能。',
+    'paywall.loginDescription': '登录后可访问个性化广告方案并追踪进度。',
     'paywall.feature1': '根据你的具体情况定制的广告策略',
     'paywall.feature2': '5阶段递进指南，每阶段可执行步骤',
     'paywall.feature3': 'AI数据诊断，优化你的广告效果',
     'paywall.cta': '升级到付费版',
-    
+
+    // 5阶段递进指南
+    'stageGuide.title': '5阶段递进指南',
+    'stageGuide.locked': '付费解锁',
+    'stageGuide.action': '操作内容',
+    'stageGuide.metrics': '指标阈值',
+    'stageGuide.duration': '持续时间',
+    'stageGuide.unlockHint': '升级付费版解锁完整指南和指标阈值',
+
     // 登录页
     'login.title': '登录',
     'login.subtitle': '访问你的个性化广告方案',

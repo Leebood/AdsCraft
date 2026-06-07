@@ -13,14 +13,24 @@ interface User {
   };
 }
 
+// 订阅状态
+interface Subscription {
+  route: string; // 零售商、制造商、品牌方、本地服务商
+  status: 'active' | 'expired' | 'none';
+  expiresAt?: string;
+}
+
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  isPremium: boolean; // 简化：使用localStorage模拟付费状态
+  isPremium: boolean;
+  subscription: Subscription;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, fullName?: string) => Promise<void>;
   signOut: () => Promise<void>;
   setPremium: (value: boolean) => void;
+  setSubscription: (route: string) => void;
+  checkRouteAccess: (route: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -36,13 +46,23 @@ export function useAuth() {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isPremium, setIsPremium] = useState(false);
+  const [subscription, setSubscriptionState] = useState<Subscription>({ route: '', status: 'none' });
   const { isLoading: configLoading } = useSupabaseConfig();
 
+  // isPremium 基于订阅状态计算
+  const isPremium = subscription.status === 'active';
+
   useEffect(() => {
-    // 从localStorage读取付费状态（简化方案）
-    const premiumStatus = localStorage.getItem('adscraft_premium');
-    setIsPremium(premiumStatus === 'true');
+    // 从localStorage读取订阅状态（简化方案，实际应从数据库/API获取）
+    const savedSubscription = localStorage.getItem('adscraft_subscription');
+    if (savedSubscription) {
+      try {
+        const sub = JSON.parse(savedSubscription);
+        setSubscriptionState(sub);
+      } catch {
+        // ignore
+      }
+    }
 
     // 等待配置加载完成
     if (configLoading) return;
@@ -89,13 +109,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await client.auth.signOut();
     if (error) throw error;
     setUser(null);
-    localStorage.removeItem('adscraft_premium');
-    setIsPremium(false);
+    localStorage.removeItem('adscraft_subscription');
+    setSubscriptionState({ route: '', status: 'none' });
   };
 
+  // 设置订阅（简化方案，实际应调用支付API）
+  const setSubscription = (route: string) => {
+    const newSub: Subscription = {
+      route,
+      status: 'active',
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30天后过期
+    };
+    localStorage.setItem('adscraft_subscription', JSON.stringify(newSub));
+    setSubscriptionState(newSub);
+  };
+
+  // 保留旧的setPremium方法兼容性
   const setPremium = (value: boolean) => {
-    localStorage.setItem('adscraft_premium', value.toString());
-    setIsPremium(value);
+    if (value) {
+      setSubscription('retailer'); // 默认设置为零售商
+    } else {
+      localStorage.removeItem('adscraft_subscription');
+      setSubscriptionState({ route: '', status: 'none' });
+    }
+  };
+
+  // 检查用户是否有权限访问特定路线的内容
+  const checkRouteAccess = (route: string): boolean => {
+    if (!user) return false; // 未登录无权限
+    if (subscription.status !== 'active') return false; // 未订阅无权限
+    return subscription.route === route; // 只能访问已订阅路线的内容
   };
 
   return (
@@ -103,10 +146,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       loading,
       isPremium,
+      subscription,
       signIn,
       signUp,
       signOut,
-      setPremium
+      setPremium,
+      setSubscription,
+      checkRouteAccess
     }}>
       {children}
     </AuthContext.Provider>

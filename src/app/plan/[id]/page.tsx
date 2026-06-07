@@ -9,6 +9,7 @@ import { useI18n } from '@/lib/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 import { Paywall } from '@/components/paywall';
 import { ComparisonTable } from '@/components/comparison-table';
+import { StageGuide } from '@/components/stage-guide';
 
 // 根据路线、预算、路径、目标生成精确配置
 const getPlanConfig = (route: string, budget: string, path: string, goal: string) => {
@@ -58,11 +59,33 @@ const getPlanConfig = (route: string, budget: string, path: string, goal: string
   return configs[route as keyof typeof configs] || configs.retailer;
 };
 
+// 获取路线定价信息
+const getRoutePricing = (route: string) => {
+  const pricing: Record<string, { price: string; roi: string }> = {
+    retailer: { price: '$19.9/月', roi: '优化1天预算即可覆盖' },
+    manufacturer: { price: '$29.9/月', roi: '1个精准询盘即可覆盖' },
+    brand: { price: '$29.9/月', roi: '1次有效品牌曝光即可覆盖' },
+    local_service: { price: '$9.9/月', roi: '1个到店客户即可覆盖' }
+  };
+  return pricing[route] || pricing.retailer;
+};
+
+// 获取路线对应的订阅链接
+const getSubscriptionRoute = (route: string): string => {
+  const routeMap: Record<string, string> = {
+    retailer: 'retailer',
+    manufacturer: 'manufacturer',
+    brand: 'brand',
+    local_service: 'localService'
+  };
+  return routeMap[route] || 'retailer';
+};
+
 export default function PlanPage() {
   const params = useParams();
   const planId = params.id as string;
   const { t } = useI18n();
-  const { isPremium } = useAuth();
+  const { user, isPremium, checkRouteAccess } = useAuth();
 
   // Parse plan ID: route-budget-path-goal
   const parts = planId.split('-');
@@ -72,6 +95,11 @@ export default function PlanPage() {
   const goal = parts[3] || 'sales';
 
   const config = getPlanConfig(route, budget, path, goal);
+  const pricing = getRoutePricing(route);
+  const subscriptionRoute = getSubscriptionRoute(route);
+
+  // 判断用户是否可以访问完整内容
+  const canAccessFullContent = user && isPremium && checkRouteAccess(subscriptionRoute);
 
   // 基础通用方案：完整的8个决策点配置（免费）
   const basicPlanItems = [
@@ -108,7 +136,7 @@ export default function PlanPage() {
               <CardTitle className="text-white">{t('plan.quickRef')}</CardTitle>
             </CardHeader>
             <CardContent>
-              {/* 基础通用方案：完整的8个决策点配置 */}
+              {/* 基础通用方案：完整的8个决策点配置（免费） */}
               <Table>
                 <TableHeader>
                   <TableRow className="border-white/20">
@@ -127,9 +155,14 @@ export default function PlanPage() {
               </Table>
 
               {/* 付费解锁内容 */}
-              {!isPremium && (
+              {!canAccessFullContent && (
                 <div className="mt-8">
-                  <Paywall />
+                  <Paywall 
+                    route={subscriptionRoute} 
+                    price={pricing.price} 
+                    roi={pricing.roi}
+                    isLoggedIn={!!user}
+                  />
                 </div>
               )}
             </CardContent>
@@ -138,14 +171,19 @@ export default function PlanPage() {
           {/* Back Button - 右侧 */}
           <div className="mt-8 flex justify-end">
             <Link href="/">
-              <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 to-blue-500 text-white shadow-lg shadow-cyan-500/30">
+              <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/30">
                 {t('common.back')}
               </Button>
             </Link>
           </div>
 
+          {/* 5阶段递进指南 */}
+          <div className="mt-12">
+            <StageGuide route={route} isPremium={canAccessFullContent ?? false} />
+          </div>
+
           {/* Free vs Premium Comparison - 放在页面最下面 */}
-          {!isPremium && (
+          {!canAccessFullContent && (
             <div className="mt-12">
               <ComparisonTable />
             </div>
