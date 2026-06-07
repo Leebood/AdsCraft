@@ -104,6 +104,14 @@ const translations = {
     'plan.event': 'Optimization Event',
     'plan.remarketing': 'Remarketing Window',
     
+    // 付费墙
+    'paywall.title': 'Premium Feature',
+    'paywall.description': 'Unlock personalized recommendations, detailed analysis, and AI-powered diagnostics.',
+    'paywall.feature1': 'Customized ad strategy based on your specific situation',
+    'paywall.feature2': '5-stage progression guide with actionable steps',
+    'paywall.feature3': 'AI data diagnostics to optimize your campaigns',
+    'paywall.cta': 'Upgrade to Premium',
+    
     // 登录页
     'login.title': 'Login',
     'login.subtitle': 'Access your personalized ads plans',
@@ -235,6 +243,14 @@ const translations = {
     'plan.format': '广告格式',
     'plan.event': '优化事件',
     'plan.remarketing': '再营销窗口',
+    
+    // 付费墙
+    'paywall.title': '付费功能',
+    'paywall.description': '解锁个性化推荐、详细分析和AI诊断功能。',
+    'paywall.feature1': '根据你的具体情况定制的广告策略',
+    'paywall.feature2': '5阶段递进指南，每阶段可执行步骤',
+    'paywall.feature3': 'AI数据诊断，优化你的广告效果',
+    'paywall.cta': '升级到付费版',
     
     // 登录页
     'login.title': '登录',

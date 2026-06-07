@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { I18nProvider } from '@/lib/i18n-context';
+import { AuthProvider } from '@/lib/auth-context';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { Navigation } from '@/components/navigation';
 import { Footer } from '@/components/footer';
@@ -19,16 +20,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        <I18nProvider>
-          {/* Header */}
-          <header className="border-b border-gray-200 bg-white sticky top-0 z-50">
-            <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-              <Link href="/" className="text-xl font-bold text-gray-900">
-                AdsCraft
-              </Link>
-              <div className="flex items-center gap-6">
-                <Navigation />
-                <LanguageSwitcher />
+        <AuthProvider>
+          <I18nProvider>
+            {/* Header */}
+            <header className="border-b border-white/10 bg-slate-900/80 sticky top-0 z-50 backdrop-blur-sm">
+              <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+                <Link href="/" className="text-xl font-bold text-white hover:text-cyan-400 transition-colors">
+                  AdsCraft
+                </Link>
+                <div className="flex items-center gap-6">
+                  <Navigation />
+                  <LanguageSwitcher />
               </div>
             </div>
           </header>
@@ -40,7 +42,8 @@ export default function RootLayout({
 
           {/* Footer */}
           <Footer />
-        </I18nProvider>
+          </I18nProvider>
+        </AuthProvider>
       </body>
     </html>
   );
