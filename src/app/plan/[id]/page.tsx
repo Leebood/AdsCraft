@@ -11,6 +11,8 @@ import { useAuth } from '@/lib/auth-context';
 import { Paywall } from '@/components/paywall';
 import { ComparisonTable } from '@/components/comparison-table';
 import { StageGuide } from '@/components/stage-guide';
+import { ColdStartStrategy } from '@/components/cold-start-strategy';
+import { AIDiagnosis } from '@/components/ai-diagnosis';
 
 // 根据路线、预算、路径、目标生成精确配置
 const getPlanConfig = (route: string, budget: string, path: string, goal: string) => {
@@ -201,6 +203,16 @@ export default function PlanPage() {
           {/* 5阶段递进指南 */}
           <div className="mt-12">
             <StageGuide route={route} isPremium={canAccessFullContent ?? false} />
+          </div>
+
+          {/* 冷启动策略 */}
+          <div className="mt-12">
+            <ColdStartStrategy route={route} isPremium={canAccessFullContent ?? false} />
+          </div>
+
+          {/* AI诊断 */}
+          <div className="mt-12">
+            <AIDiagnosis route={route} isPremium={canAccessFullContent ?? false} />
           </div>
 
           {/* Free vs Premium Comparison - 放在页面最下面 */}
