@@ -19,6 +19,9 @@ const translations = {
     'nav.login': 'Login',
     'nav.privacy': 'Privacy Policy',
     
+    // Footer
+    'footer.rights': 'Facebook Ads Decision Engine.',
+    
     // 首页
     'home.title': 'AdsCraft',
     'home.subtitle': 'Facebook Ads Decision Engine',
@@ -118,6 +121,9 @@ const translations = {
     'nav.questions': '获取方案',
     'nav.login': '登录',
     'nav.privacy': '隐私政策',
+    
+    // Footer
+    'footer.rights': 'Facebook广告决策引擎',
     
     // 首页
     'home.title': 'AdsCraft',
