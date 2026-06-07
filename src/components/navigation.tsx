@@ -17,8 +17,11 @@ export function Navigation() {
       <Link href="/questions" className="text-blue-200/80 hover:text-cyan-300 transition-colors font-medium">
         {t('nav.questions')}
       </Link>
-      <Link href="/privacy" className="text-blue-200/80 hover:text-cyan-300 transition-colors font-medium">
-        {t('nav.privacy')}
+      <Link href="/dashboard" className="text-blue-200/80 hover:text-cyan-300 transition-colors font-medium">
+        Dashboard
+      </Link>
+      <Link href="/login" className="text-blue-200/80 hover:text-cyan-300 transition-colors font-medium">
+        {t('nav.login')}
       </Link>
     </nav>
   );

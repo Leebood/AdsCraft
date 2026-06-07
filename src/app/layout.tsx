@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { I18nProvider } from '@/lib/i18n-context';
+import { SupabaseConfigProvider } from '@/lib/supabase-config-inject';
 import { AuthProvider } from '@/lib/auth-context';
+import { I18nProvider } from '@/lib/i18n-context';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { Navigation } from '@/components/navigation';
 import { Footer } from '@/components/footer';
@@ -20,8 +21,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        <AuthProvider>
-          <I18nProvider>
+        <SupabaseConfigProvider>
+          <AuthProvider>
+            <I18nProvider>
             {/* Header */}
             <header className="border-b border-white/10 bg-slate-900/80 sticky top-0 z-50 backdrop-blur-sm">
               <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
@@ -42,8 +44,9 @@ export default function RootLayout({
 
           {/* Footer */}
           <Footer />
-          </I18nProvider>
-        </AuthProvider>
+            </I18nProvider>
+          </AuthProvider>
+        </SupabaseConfigProvider>
       </body>
     </html>
   );

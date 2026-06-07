@@ -1,7 +1,8 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { getSupabaseClient } from '@/storage/database/supabase-client';
+import { getSupabaseBrowserClientWithRetry } from '@/lib/supabase-browser';
+import { useSupabaseConfig } from '@/lib/supabase-config-inject';
 
 interface User {
   id: string;
@@ -24,42 +25,55 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
+  const { isLoading: configLoading } = useSupabaseConfig();
 
   useEffect(() => {
     // 从localStorage读取付费状态（简化方案）
     const premiumStatus = localStorage.getItem('adscraft_premium');
     setIsPremium(premiumStatus === 'true');
 
+    // 等待配置加载完成
+    if (configLoading) return;
+
     // 检查当前登录状态
-    const client = getSupabaseClient();
-    client.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setUser(session.user as User);
-      }
-      setLoading(false);
-    });
+    getSupabaseBrowserClientWithRetry().then((client) => {
+      client.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) {
+          setUser(session.user as User);
+        }
+        setLoading(false);
+      });
 
-    // 监听登录状态变化
-    const { data: { subscription } } = client.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user as User || null);
-      setLoading(false);
-    });
+      // 监听登录状态变化
+      const { data: { subscription } } = client.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user as User || null);
+        setLoading(false);
+      });
 
-    return () => subscription.unsubscribe();
-  }, []);
+      return () => subscription.unsubscribe();
+    });
+  }, [configLoading]);
 
   const signIn = async (email: string, password: string) => {
-    const client = getSupabaseClient();
+    const client = await getSupabaseBrowserClientWithRetry();
     const { error } = await client.auth.signInWithPassword({ email, password });
     if (error) throw error;
   };
 
   const signUp = async (email: string, password: string, fullName?: string) => {
-    const client = getSupabaseClient();
+    const client = await getSupabaseBrowserClientWithRetry();
     const { error } = await client.auth.signUp({
       email,
       password,
@@ -71,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    const client = getSupabaseClient();
+    const client = await getSupabaseBrowserClientWithRetry();
     const { error } = await client.auth.signOut();
     if (error) throw error;
     setUser(null);
@@ -97,12 +111,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
 }

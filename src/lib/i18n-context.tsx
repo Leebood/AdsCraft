@@ -120,14 +120,22 @@ const translations = {
     'login.submit': 'Login',
     'login.noAccount': 'Don\'t have an account?',
     'login.signup': 'Sign up',
+    'login.success': 'Login successful!',
+    'login.error': 'Login failed. Please check your credentials.',
+    'login.loading': 'Logging in...',
     
     // 注册页
     'signup.title': 'Sign Up',
+    'signup.subtitle': 'Start your AdsCraft journey',
     'signup.email': 'Email',
     'signup.password': 'Password',
     'signup.submit': 'Sign Up',
     'signup.hasAccount': 'Already have an account?',
     'signup.login': 'Login',
+    'signup.success': 'Account created! Please login.',
+    'signup.error': 'Signup failed. Please try again.',
+    'signup.loading': 'Creating account...',
+    'signup.fullName': 'Full Name',
     
     // 隐私政策
     'privacy.title': 'Privacy Policy',
@@ -260,14 +268,22 @@ const translations = {
     'login.submit': '登录',
     'login.noAccount': '没有账号？',
     'login.signup': '注册',
+    'login.success': '登录成功！',
+    'login.error': '登录失败，请检查你的登录信息。',
+    'login.loading': '正在登录...',
     
     // 注册页
     'signup.title': '注册',
+    'signup.subtitle': '开始你的AdsCraft之旅',
     'signup.email': '邮箱',
     'signup.password': '密码',
     'signup.submit': '注册',
     'signup.hasAccount': '已有账号？',
     'signup.login': '登录',
+    'signup.success': '账户创建成功！请登录。',
+    'signup.error': '注册失败，请重试。',
+    'signup.loading': '正在创建账户...',
+    'signup.fullName': '姓名',
     
     // 隐私政策
     'privacy.title': '隐私政策',

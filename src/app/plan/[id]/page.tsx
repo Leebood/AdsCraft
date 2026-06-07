@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useI18n } from '@/lib/i18n-context';
+import { useAuth } from '@/lib/auth-context';
+import { Paywall } from '@/components/paywall';
 
 const routeConfigs = {
   retailer: {
@@ -54,6 +56,7 @@ export default function PlanPage() {
   const params = useParams();
   const planId = params.id as string;
   const { t } = useI18n();
+  const { user, isPremium } = useAuth();
 
   // Parse plan ID: route-budget-path
   const [route, budget, path] = planId.split('-');
@@ -82,48 +85,52 @@ export default function PlanPage() {
               <CardTitle className="text-white">{t('plan.quickRef')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-white/20">
-                    <TableHead className="w-1/3 text-blue-200">{t('plan.decision')}</TableHead>
-                    <TableHead className="text-blue-200">{t('plan.recommendation')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow className="border-white/10 hover:bg-white/5">
-                    <TableCell className="font-medium text-white">{t('plan.campaign')}</TableCell>
-                    <TableCell className="text-blue-100">{config.objective}</TableCell>
-                  </TableRow>
-                  <TableRow className="border-white/10 hover:bg-white/5">
-                    <TableCell className="font-medium text-white">{t('plan.budget')}</TableCell>
-                    <TableCell className="text-blue-100">{config.budgetStrategy}</TableCell>
-                  </TableRow>
-                  <TableRow className="border-white/10 hover:bg-white/5">
-                    <TableCell className="font-medium text-white">{t('plan.audience')}</TableCell>
-                    <TableCell className="text-blue-100">{config.audience}</TableCell>
-                  </TableRow>
-                  <TableRow className="border-white/10 hover:bg-white/5">
-                    <TableCell className="font-medium text-white">{t('plan.placement')}</TableCell>
-                    <TableCell className="text-blue-100">{config.placement}</TableCell>
-                  </TableRow>
-                  <TableRow className="border-white/10 hover:bg-white/5">
-                    <TableCell className="font-medium text-white">{t('plan.bidding')}</TableCell>
-                    <TableCell className="text-blue-100">{config.bid}</TableCell>
-                  </TableRow>
-                  <TableRow className="border-white/10 hover:bg-white/5">
-                    <TableCell className="font-medium text-white">{t('plan.format')}</TableCell>
-                    <TableCell className="text-blue-100">{config.format}</TableCell>
-                  </TableRow>
-                  <TableRow className="border-white/10 hover:bg-white/5">
-                    <TableCell className="font-medium text-white">{t('plan.event')}</TableCell>
-                    <TableCell className="text-blue-100">{config.optimization}</TableCell>
-                  </TableRow>
-                  <TableRow className="border-white/10 hover:bg-white/5">
-                    <TableCell className="font-medium text-white">{t('plan.remarketing')}</TableCell>
-                    <TableCell className="text-blue-100">{config.remarketing}</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
+              {isPremium ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-white/20">
+                      <TableHead className="w-1/3 text-blue-200">{t('plan.decision')}</TableHead>
+                      <TableHead className="text-blue-200">{t('plan.recommendation')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow className="border-white/10 hover:bg-white/5">
+                      <TableCell className="font-medium text-white">{t('plan.campaign')}</TableCell>
+                      <TableCell className="text-blue-100">{config.objective}</TableCell>
+                    </TableRow>
+                    <TableRow className="border-white/10 hover:bg-white/5">
+                      <TableCell className="font-medium text-white">{t('plan.budget')}</TableCell>
+                      <TableCell className="text-blue-100">{config.budgetStrategy}</TableCell>
+                    </TableRow>
+                    <TableRow className="border-white/10 hover:bg-white/5">
+                      <TableCell className="font-medium text-white">{t('plan.audience')}</TableCell>
+                      <TableCell className="text-blue-100">{config.audience}</TableCell>
+                    </TableRow>
+                    <TableRow className="border-white/10 hover:bg-white/5">
+                      <TableCell className="font-medium text-white">{t('plan.placement')}</TableCell>
+                      <TableCell className="text-blue-100">{config.placement}</TableCell>
+                    </TableRow>
+                    <TableRow className="border-white/10 hover:bg-white/5">
+                      <TableCell className="font-medium text-white">{t('plan.bidding')}</TableCell>
+                      <TableCell className="text-blue-100">{config.bid}</TableCell>
+                    </TableRow>
+                    <TableRow className="border-white/10 hover:bg-white/5">
+                      <TableCell className="font-medium text-white">{t('plan.format')}</TableCell>
+                      <TableCell className="text-blue-100">{config.format}</TableCell>
+                    </TableRow>
+                    <TableRow className="border-white/10 hover:bg-white/5">
+                      <TableCell className="font-medium text-white">{t('plan.event')}</TableCell>
+                      <TableCell className="text-blue-100">{config.optimization}</TableCell>
+                    </TableRow>
+                    <TableRow className="border-white/10 hover:bg-white/5">
+                      <TableCell className="font-medium text-white">{t('plan.remarketing')}</TableCell>
+                      <TableCell className="text-blue-100">{config.remarketing}</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              ) : (
+                <Paywall />
+              )}
             </CardContent>
           </Card>
 
