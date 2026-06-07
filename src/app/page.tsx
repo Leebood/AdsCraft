@@ -14,7 +14,7 @@ export default function HomePage() {
       title: t('route.retailer.title'),
       desc: t('route.retailer.desc'),
       icon: (
-        <svg className="w-12 h-12 text-cyan-400" viewBox="0 0 24 24" fill="currentColor">
+        <svg className="w-12 h-12 text-yellow-400" viewBox="0 0 24 24" fill="currentColor">
           <path d="M18 6h-2c0-2.21-1.79-4-4-4S8 3.79 8 6H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6-2c1.1 0 2 .9 2 2h-4c0-1.1.9-2 2-2zm6 16H6V8h2v2c0 .55.45 1 1 1s1-.45 1-1V8h4v2c0 .55.45 1 1 1s1-.45 1-1V8h2v12z"/>
         </svg>
       )
@@ -24,7 +24,7 @@ export default function HomePage() {
       title: t('route.manufacturer.title'),
       desc: t('route.manufacturer.desc'),
       icon: (
-        <svg className="w-12 h-12 text-purple-400" viewBox="0 0 24 24" fill="currentColor">
+        <svg className="w-12 h-12 text-violet-400" viewBox="0 0 24 24" fill="currentColor">
           <path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
         </svg>
       )
@@ -34,7 +34,7 @@ export default function HomePage() {
       title: t('route.localService.title'),
       desc: t('route.localService.desc'),
       icon: (
-        <svg className="w-12 h-12 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
+        <svg className="w-12 h-12 text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
         </svg>
       )
@@ -44,7 +44,7 @@ export default function HomePage() {
       title: t('route.brand.title'),
       desc: t('route.brand.desc'),
       icon: (
-        <svg className="w-12 h-12 text-orange-400" viewBox="0 0 24 24" fill="currentColor">
+        <svg className="w-12 h-12 text-rose-400" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
         </svg>
       )

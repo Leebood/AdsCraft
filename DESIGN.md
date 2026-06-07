@@ -40,10 +40,10 @@ AdsCraft - Facebook广告决策引擎。不是教程,是决策工具。
   - 圆角矩形(rounded-2xl)
   - 光晕效果(bg-cyan/purple/orange-400/10 blur-xl)
 - **路线图标**: 简洁抽象几何SVG图标
-  - 零售商: 购物袋图标(text-cyan-400)
-  - 制造商: 齿轮设置图标(text-purple-400)
-  - 本地服务商: 地点定位图标(text-blue-400)
-  - 品牌方: 星星图标(text-orange-400)
+  - 零售商: 购物袋图标(text-yellow-400，鲜亮黄色，电商活力)
+  - 制造商: 齿轮设置图标(text-violet-400，紫罗兰色，工业科技)
+  - 本地服务商: 地点定位图标(text-emerald-400，翠绿色，本地服务)
+  - 品牌方: 星星图标(text-rose-400，玫瑰色，品牌吸引力)
 
 ### 字体排版
 - **字体**: 系统默认字体(antialiased)
