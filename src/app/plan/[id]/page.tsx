@@ -102,13 +102,6 @@ export default function PlanPage() {
             </p>
           </div>
 
-          {/* Free vs Premium Comparison */}
-          {!isPremium && (
-            <div className="mb-8">
-              <ComparisonTable />
-            </div>
-          )}
-
           {/* Quick Reference Table */}
           <Card className="bg-white/5 border-white/20 backdrop-blur-sm shadow-xl">
             <CardHeader>
@@ -150,6 +143,13 @@ export default function PlanPage() {
               </Button>
             </Link>
           </div>
+
+          {/* Free vs Premium Comparison - 放在页面最下面 */}
+          {!isPremium && (
+            <div className="mt-12">
+              <ComparisonTable />
+            </div>
+          )}
         </div>
       </main>
     </div>
