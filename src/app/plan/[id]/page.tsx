@@ -60,64 +60,67 @@ export default function PlanPage() {
   const config = routeConfigs[route as keyof typeof routeConfigs] || routeConfigs.retailer;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <main className="container mx-auto px-4 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
+      {/* 网格纹理背景 */}
+      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
+      
+      <main className="container mx-auto px-4 py-12 relative z-10">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            <h1 className="text-4xl font-bold text-white mb-2">
               {t('plan.title')}
             </h1>
-            <p className="text-gray-600">
+            <p className="text-blue-200">
               Route: {route} | Budget: {budget} | Path: {path}
             </p>
           </div>
 
           {/* Quick Reference Table */}
-          <Card>
+          <Card className="bg-white/5 border-white/20 backdrop-blur-sm shadow-xl">
             <CardHeader>
-              <CardTitle>{t('plan.quickRef')}</CardTitle>
+              <CardTitle className="text-white">{t('plan.quickRef')}</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-1/3">{t('plan.decision')}</TableHead>
-                    <TableHead>{t('plan.recommendation')}</TableHead>
+                  <TableRow className="border-white/20">
+                    <TableHead className="w-1/3 text-blue-200">{t('plan.decision')}</TableHead>
+                    <TableHead className="text-blue-200">{t('plan.recommendation')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <TableRow>
-                    <TableCell className="font-medium">{t('plan.campaign')}</TableCell>
-                    <TableCell>{config.objective}</TableCell>
+                  <TableRow className="border-white/10 hover:bg-white/5">
+                    <TableCell className="font-medium text-white">{t('plan.campaign')}</TableCell>
+                    <TableCell className="text-blue-100">{config.objective}</TableCell>
                   </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">{t('plan.budget')}</TableCell>
-                    <TableCell>{config.budgetStrategy}</TableCell>
+                  <TableRow className="border-white/10 hover:bg-white/5">
+                    <TableCell className="font-medium text-white">{t('plan.budget')}</TableCell>
+                    <TableCell className="text-blue-100">{config.budgetStrategy}</TableCell>
                   </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">{t('plan.audience')}</TableCell>
-                    <TableCell>{config.audience}</TableCell>
+                  <TableRow className="border-white/10 hover:bg-white/5">
+                    <TableCell className="font-medium text-white">{t('plan.audience')}</TableCell>
+                    <TableCell className="text-blue-100">{config.audience}</TableCell>
                   </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">{t('plan.placement')}</TableCell>
-                    <TableCell>{config.placement}</TableCell>
+                  <TableRow className="border-white/10 hover:bg-white/5">
+                    <TableCell className="font-medium text-white">{t('plan.placement')}</TableCell>
+                    <TableCell className="text-blue-100">{config.placement}</TableCell>
                   </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">{t('plan.bidding')}</TableCell>
-                    <TableCell>{config.bid}</TableCell>
+                  <TableRow className="border-white/10 hover:bg-white/5">
+                    <TableCell className="font-medium text-white">{t('plan.bidding')}</TableCell>
+                    <TableCell className="text-blue-100">{config.bid}</TableCell>
                   </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">{t('plan.format')}</TableCell>
-                    <TableCell>{config.format}</TableCell>
+                  <TableRow className="border-white/10 hover:bg-white/5">
+                    <TableCell className="font-medium text-white">{t('plan.format')}</TableCell>
+                    <TableCell className="text-blue-100">{config.format}</TableCell>
                   </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">{t('plan.event')}</TableCell>
-                    <TableCell>{config.optimization}</TableCell>
+                  <TableRow className="border-white/10 hover:bg-white/5">
+                    <TableCell className="font-medium text-white">{t('plan.event')}</TableCell>
+                    <TableCell className="text-blue-100">{config.optimization}</TableCell>
                   </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">{t('plan.remarketing')}</TableCell>
-                    <TableCell>{config.remarketing}</TableCell>
+                  <TableRow className="border-white/10 hover:bg-white/5">
+                    <TableCell className="font-medium text-white">{t('plan.remarketing')}</TableCell>
+                    <TableCell className="text-blue-100">{config.remarketing}</TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
@@ -127,7 +130,7 @@ export default function PlanPage() {
           {/* Back Button */}
           <div className="mt-8 text-center">
             <Link href="/">
-              <Button variant="outline">
+              <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 to-blue-500 text-white shadow-lg shadow-cyan-500/30">
                 {t('common.back')}
               </Button>
             </Link>

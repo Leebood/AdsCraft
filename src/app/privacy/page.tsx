@@ -9,54 +9,52 @@ export default function PrivacyPage() {
   const { t } = useI18n();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <main className="container mx-auto px-4 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
+      {/* 网格纹理背景 */}
+      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
+      
+      <main className="container mx-auto px-4 py-12 relative z-10">
         <div className="max-w-4xl mx-auto">
-          <Card>
+          <Card className="bg-white/5 border-white/20 backdrop-blur-sm shadow-xl">
             <CardHeader>
-              <CardTitle className="text-3xl">{t('privacy.title')}</CardTitle>
-              <p className="text-gray-500">{t('privacy.lastUpdate')}</p>
+              <CardTitle className="text-3xl text-white">{t('privacy.title')}</CardTitle>
+              <p className="text-blue-300">{t('privacy.lastUpdate')}</p>
             </CardHeader>
             <CardContent className="space-y-6">
               <section>
-                <h2 className="text-xl font-semibold mb-3">{t('privacy.collect.title')}</h2>
-                <p className="text-gray-600">{t('privacy.collect.desc')}</p>
+                <h2 className="text-xl font-semibold mb-3 text-white">{t('privacy.collect.title')}</h2>
+                <p className="text-blue-200">{t('privacy.collect.desc')}</p>
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mb-3">{t('privacy.usage.title')}</h2>
-                <p className="text-gray-600">{t('privacy.usage.desc')}</p>
+                <h2 className="text-xl font-semibold mb-3 text-white">{t('privacy.usage.title')}</h2>
+                <p className="text-blue-200">{t('privacy.usage.desc')}</p>
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mb-3">{t('privacy.storage.title')}</h2>
-                <p className="text-gray-600">{t('privacy.storage.desc')}</p>
+                <h2 className="text-xl font-semibold mb-3 text-white">{t('privacy.storage.title')}</h2>
+                <p className="text-blue-200">{t('privacy.storage.desc')}</p>
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mb-3">{t('privacy.thirdparty.title')}</h2>
-                <p className="text-gray-600">{t('privacy.thirdparty.desc')}</p>
+                <h2 className="text-xl font-semibold mb-3 text-white">{t('privacy.thirdparty.title')}</h2>
+                <p className="text-blue-200">{t('privacy.thirdparty.desc')}</p>
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mb-3">{t('privacy.rights.title')}</h2>
-                <p className="text-gray-600">{t('privacy.rights.desc')}</p>
+                <h2 className="text-xl font-semibold mb-3 text-white">{t('privacy.rights.title')}</h2>
+                <p className="text-blue-200">{t('privacy.rights.desc')}</p>
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mb-3">{t('privacy.retention.title')}</h2>
-                <p className="text-gray-600">{t('privacy.retention.desc')}</p>
+                <h2 className="text-xl font-semibold mb-3 text-white">{t('privacy.retention.title')}</h2>
+                <p className="text-blue-200">{t('privacy.retention.desc')}</p>
               </section>
 
-              <section>
-                <h2 className="text-xl font-semibold mb-3">{t('privacy.children.title')}</h2>
-                <p className="text-gray-600">{t('privacy.children.desc')}</p>
-              </section>
-
-              <div className="pt-4">
+              <div className="pt-6 border-t border-white/20">
                 <Link href="/">
-                  <Button variant="outline">
-                    {t('common.back')}
+                  <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 to-blue-500 text-white shadow-lg shadow-cyan-500/30">
+                    {t('common.backHome')}
                   </Button>
                 </Link>
               </div>

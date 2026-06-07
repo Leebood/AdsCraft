@@ -52,7 +52,9 @@ const translations = {
     'questions.step': 'Step',
     'questions.of': 'of',
     'questions.q1': 'What is your daily budget range?',
+    'questions.budget.title': 'Budget Range',
     'questions.q2': 'How do customers order/contact you?',
+    'questions.path.title': 'Conversion Path',
     'questions.generate': 'Generate Plan',
     'questions.next': 'Next',
     'questions.budget.low': 'Less than $20',
@@ -79,6 +81,7 @@ const translations = {
     
     // 登录页
     'login.title': 'Login',
+    'login.subtitle': 'Access your personalized ads plans',
     'login.email': 'Email',
     'login.password': 'Password',
     'login.submit': 'Login',
@@ -114,6 +117,7 @@ const translations = {
     // 通用
     'common.loading': 'Loading...',
     'common.back': 'Back to Home',
+    'common.backHome': 'Back to Home',
   },
   zh: {
     // 导航
@@ -155,7 +159,9 @@ const translations = {
     'questions.step': '步骤',
     'questions.of': '共',
     'questions.q1': '每天广告预算大概多少？',
+    'questions.budget.title': '预算范围',
     'questions.q2': '客户怎么下单/联系你？',
+    'questions.path.title': '转化路径',
     'questions.generate': '生成方案',
     'questions.next': '下一步',
     'questions.budget.low': '不到$20',
@@ -182,6 +188,7 @@ const translations = {
     
     // 登录页
     'login.title': '登录',
+    'login.subtitle': '访问你的个性化广告方案',
     'login.email': '邮箱',
     'login.password': '密码',
     'login.submit': '登录',
@@ -217,6 +224,7 @@ const translations = {
     // 通用
     'common.loading': '加载中...',
     'common.back': '返回首页',
+    'common.backHome': '返回首页',
   },
 };
 
