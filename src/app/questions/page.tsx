@@ -18,7 +18,8 @@ export default function QuestionsPage() {
   const [answers, setAnswers] = useState({
     route: route,
     budget: '',
-    conversionPath: ''
+    conversionPath: '',
+    goal: ''
   });
 
   const budgetOptions = [
@@ -34,17 +35,26 @@ export default function QuestionsPage() {
     { key: 'lead', value: 'lead', label: t('questions.path.lead') }
   ];
 
+  const goalOptions = [
+    { key: 'sales', value: 'sales', label: t('questions.goal.sales') },
+    { key: 'leads', value: 'leads', label: t('questions.goal.leads') },
+    { key: 'awareness', value: 'awareness', label: t('questions.goal.awareness') }
+  ];
+
   const handleNext = () => {
     if (currentStep === 1 && answers.budget) {
       setCurrentStep(2);
     } else if (currentStep === 2 && answers.conversionPath) {
-      const planId = `${answers.route}-${answers.budget}-${answers.conversionPath}`;
+      setCurrentStep(3);
+    } else if (currentStep === 3 && answers.goal) {
+      const planId = `${answers.route}-${answers.budget}-${answers.conversionPath}-${answers.goal}`;
       window.location.href = `/plan/${planId}`;
     }
   };
 
   const isStep1Complete = answers.budget !== '';
   const isStep2Complete = answers.conversionPath !== '';
+  const isStep3Complete = answers.goal !== '';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
@@ -65,26 +75,25 @@ export default function QuestionsPage() {
 
           {/* 进度指示器 */}
           <div className="flex justify-center mb-8">
-            <div className="flex items-center gap-4">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
-                currentStep >= 1 
-                  ? 'bg-cyan-500 border-cyan-400 text-white' 
-                  : 'bg-white/10 border-white/30 text-white/50'
-              }`}>
-                1
-              </div>
-              <div className="w-16 h-1 bg-white/20 rounded">
-                <div className={`h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all ${
-                  currentStep >= 2 ? 'w-full' : 'w-0'
-                }`}></div>
-              </div>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
-                currentStep >= 2 
-                  ? 'bg-cyan-500 border-cyan-400 text-white' 
-                  : 'bg-white/10 border-white/30 text-white/50'
-              }`}>
-                2
-              </div>
+            <div className="flex items-center gap-2">
+              {[1, 2, 3].map((step) => (
+                <>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
+                    currentStep >= step 
+                      ? 'bg-cyan-500 border-cyan-400 text-white' 
+                      : 'bg-white/10 border-white/30 text-white/50'
+                  }`}>
+                    {step}
+                  </div>
+                  {step < 3 && (
+                    <div className="w-8 h-1 bg-white/20 rounded">
+                      <div className={`h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all ${
+                        currentStep > step ? 'w-full' : 'w-0'
+                      }`}></div>
+                    </div>
+                  )}
+                </>
+              ))}
             </div>
           </div>
 
@@ -135,6 +144,28 @@ export default function QuestionsPage() {
                 </div>
               )}
 
+              {currentStep === 3 && (
+                <div>
+                  <h2 className="text-xl font-semibold text-white mb-6">
+                    {t('questions.goal.title')}
+                  </h2>
+                  <RadioGroup
+                    value={answers.goal}
+                    onValueChange={(value) => setAnswers({ ...answers, goal: value })}
+                    className="space-y-4"
+                  >
+                    {goalOptions.map((option) => (
+                      <div key={option.key} className="flex items-center space-x-3">
+                        <RadioGroupItem value={option.value} id={option.key} className="border-cyan-400 text-cyan-400" />
+                        <Label htmlFor={option.key} className="text-blue-100 cursor-pointer hover:text-cyan-400 transition-colors">
+                          {option.label}
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                </div>
+              )}
+
               {/* 按钮组 */}
               <div className="flex justify-between mt-8">
                 {currentStep > 1 && (
@@ -149,14 +180,14 @@ export default function QuestionsPage() {
                 
                 <Button
                   onClick={handleNext}
-                  disabled={currentStep === 1 ? !isStep1Complete : !isStep2Complete}
+                  disabled={currentStep === 1 ? !isStep1Complete : currentStep === 2 ? !isStep2Complete : !isStep3Complete}
                   className={`${
-                    currentStep === 1 ? isStep1Complete : isStep2Complete
+                    (currentStep === 1 ? isStep1Complete : currentStep === 2 ? isStep2Complete : isStep3Complete)
                       ? 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 to-blue-500 text-white shadow-lg shadow-cyan-500/30'
                       : 'bg-white/10 border-white/30 text-white/50 cursor-not-allowed'
                   }`}
                 >
-                  {currentStep === 2 ? t('questions.generate') : t('questions.next')}
+                  {currentStep === 3 ? t('questions.generate') : t('questions.next')}
                 </Button>
               </div>
             </CardContent>
