@@ -61,7 +61,7 @@ export default function PlanPage() {
   const params = useParams();
   const planId = params.id as string;
   const { t } = useI18n();
-  const { user, isPremium } = useAuth();
+  const { isPremium } = useAuth();
 
   // Parse plan ID: route-budget-path-goal
   const parts = planId.split('-');

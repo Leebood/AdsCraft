@@ -8,7 +8,7 @@ import { useAuth } from '@/lib/auth-context';
 
 export default function DashboardPage() {
   const { t } = useI18n();
-  const { user, isPremium, signOut, setPremium } = useAuth();
+  const { user, isPremium, signOut } = useAuth();
 
   const handleSignOut = async () => {
     try {
@@ -16,10 +16,6 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Sign out error:', error);
     }
-  };
-
-  const handleUpgrade = () => {
-    setPremium(true);
   };
 
   if (!user) {
