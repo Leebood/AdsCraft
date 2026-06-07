@@ -9,10 +9,46 @@ export default function HomePage() {
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
 
   const routes = [
-    { id: 'retailer', title: t('route.retailer.title'), desc: t('route.retailer.desc'), icon: '🛒' },
-    { id: 'manufacturer', title: t('route.manufacturer.title'), desc: t('route.manufacturer.desc'), icon: '🏭' },
-    { id: 'localService', title: t('route.localService.title'), desc: t('route.localService.desc'), icon: '📍' },
-    { id: 'brand', title: t('route.brand.title'), desc: t('route.brand.desc'), icon: '✨' },
+    {
+      id: 'retailer',
+      title: t('route.retailer.title'),
+      desc: t('route.retailer.desc'),
+      icon: (
+        <svg className="w-12 h-12 text-cyan-400" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M18 6h-2c0-2.21-1.79-4-4-4S8 3.79 8 6H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6-2c1.1 0 2 .9 2 2h-4c0-1.1.9-2 2-2zm6 16H6V8h2v2c0 .55.45 1 1 1s1-.45 1-1V8h4v2c0 .55.45 1 1 1s1-.45 1-1V8h2v12z"/>
+        </svg>
+      )
+    },
+    {
+      id: 'manufacturer',
+      title: t('route.manufacturer.title'),
+      desc: t('route.manufacturer.desc'),
+      icon: (
+        <svg className="w-12 h-12 text-purple-400" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
+        </svg>
+      )
+    },
+    {
+      id: 'localService',
+      title: t('route.localService.title'),
+      desc: t('route.localService.desc'),
+      icon: (
+        <svg className="w-12 h-12 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+        </svg>
+      )
+    },
+    {
+      id: 'brand',
+      title: t('route.brand.title'),
+      desc: t('route.brand.desc'),
+      icon: (
+        <svg className="w-12 h-12 text-orange-400" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+        </svg>
+      )
+    },
   ];
 
   return (
@@ -61,7 +97,7 @@ export default function HomePage() {
                 }`}
               >
                 <div className="flex items-start gap-6">
-                  <div className={`text-4xl transition-transform duration-300 ${
+                  <div className={`transition-transform duration-300 ${
                     selectedRoute === route.id ? 'scale-110' : 'group-hover:scale-105'
                   }`}>
                     {route.icon}
@@ -105,66 +141,68 @@ export default function HomePage() {
         )}
 
         {/* Value Proposition */}
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-12">
-          {/* Configuration Recommendation */}
-          <div className="text-center group">
-            <div className="relative mb-6">
-              <div className="w-20 h-20 mx-auto bg-gradient-to-br from-cyan-500/30 to-blue-500/30 rounded-2xl flex items-center justify-center border border-cyan-400/30 group-hover:border-cyan-400/60 transition-all duration-300 group-hover:scale-110">
-                <svg className="w-10 h-10 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
-                </svg>
+        <div className="mt-20">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            {/* Configuration Recommendation */}
+            <div className="text-center group">
+              <div className="relative mb-8">
+                <div className="absolute inset-0 bg-cyan-400/10 blur-xl rounded-full group-hover:bg-cyan-400/20 transition-all duration-300" />
+                <div className="relative w-20 h-20 mx-auto bg-gradient-to-br from-cyan-500/30 to-cyan-400/20 rounded-2xl border border-cyan-400/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-10 h-10 text-cyan-400" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM7 7h2v2H7V7zm0 4h2v2H7v-2zm0 4h2v2H7v-2zm4-8h2v2h-2V7zm0 4h2v2h-2v-2zm0 4h2v2h-2v-2zm4-8h2v2h-2V7zm0 4h2v2h-2v-2zm0 4h2v2h-2v-2z"/>
+                  </svg>
+                </div>
               </div>
-              <div className="absolute inset-0 w-20 h-20 mx-auto bg-cyan-400/10 rounded-2xl blur-xl group-hover:bg-cyan-400/20 transition-all duration-300" />
+              <h4 className="text-xl font-semibold text-white mb-3 group-hover:text-cyan-300 transition-colors">
+                {t('home.value1.title')}
+              </h4>
+              <p className="text-blue-300/70 leading-relaxed">
+                {t('home.value1.desc')}
+              </p>
             </div>
-            <h3 className="text-lg font-semibold text-white mb-3 group-hover:text-cyan-300 transition-colors">
-              {t('home.value1.title')}
-            </h3>
-            <p className="text-blue-200/70 text-sm leading-relaxed">
-              {t('home.value1.desc')}
-            </p>
-          </div>
 
-          {/* Reason Analysis */}
-          <div className="text-center group">
-            <div className="relative mb-6">
-              <div className="w-20 h-20 mx-auto bg-gradient-to-br from-purple-500/30 to-pink-500/30 rounded-2xl flex items-center justify-center border border-purple-400/30 group-hover:border-purple-400/60 transition-all duration-300 group-hover:scale-110">
-                <svg className="w-10 h-10 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.042-6.364l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M12 21v-1a9 9 0 11-6.364-2.636L4.5 17.5" />
-                </svg>
+            {/* Reason Analysis */}
+            <div className="text-center group">
+              <div className="relative mb-8">
+                <div className="absolute inset-0 bg-purple-400/10 blur-xl rounded-full group-hover:bg-purple-400/20 transition-all duration-300" />
+                <div className="relative w-20 h-20 mx-auto bg-gradient-to-br from-purple-500/30 to-purple-400/20 rounded-2xl border border-purple-400/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-10 h-10 text-purple-400" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7zm2.9 11.1l-.9.6V16h-4v-2.3l-.9-.6C7.8 12.2 7 10.6 7 9c0-2.8 2.2-5 5-5s5 2.2 5 5c0 1.6-.8 3.2-2.1 4.1z"/>
+                  </svg>
+                </div>
               </div>
-              <div className="absolute inset-0 w-20 h-20 mx-auto bg-purple-400/10 rounded-2xl blur-xl group-hover:bg-purple-400/20 transition-all duration-300" />
+              <h4 className="text-xl font-semibold text-white mb-3 group-hover:text-purple-300 transition-colors">
+                {t('home.value2.title')}
+              </h4>
+              <p className="text-blue-300/70 leading-relaxed">
+                {t('home.value2.desc')}
+              </p>
             </div>
-            <h3 className="text-lg font-semibold text-white mb-3 group-hover:text-purple-300 transition-colors">
-              {t('home.value2.title')}
-            </h3>
-            <p className="text-blue-200/70 text-sm leading-relaxed">
-              {t('home.value2.desc')}
-            </p>
-          </div>
 
-          {/* Diagnosis & Optimization */}
-          <div className="text-center group">
-            <div className="relative mb-6">
-              <div className="w-20 h-20 mx-auto bg-gradient-to-br from-orange-500/30 to-red-500/30 rounded-2xl flex items-center justify-center border border-orange-400/30 group-hover:border-orange-400/60 transition-all duration-300 group-hover:scale-110">
-                <svg className="w-10 h-10 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
+            {/* Diagnosis & Optimization */}
+            <div className="text-center group">
+              <div className="relative mb-8">
+                <div className="absolute inset-0 bg-orange-400/10 blur-xl rounded-full group-hover:bg-orange-400/20 transition-all duration-300" />
+                <div className="relative w-20 h-20 mx-auto bg-gradient-to-br from-orange-500/30 to-orange-400/20 rounded-2xl border border-orange-400/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-10 h-10 text-orange-400" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.54 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.46 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+                  </svg>
+                </div>
               </div>
-              <div className="absolute inset-0 w-20 h-20 mx-auto bg-orange-400/10 rounded-2xl blur-xl group-hover:bg-orange-400/20 transition-all duration-300" />
+              <h4 className="text-xl font-semibold text-white mb-3 group-hover:text-orange-300 transition-colors">
+                {t('home.value3.title')}
+              </h4>
+              <p className="text-blue-300/70 leading-relaxed">
+                {t('home.value3.desc')}
+              </p>
             </div>
-            <h3 className="text-lg font-semibold text-white mb-3 group-hover:text-orange-300 transition-colors">
-              {t('home.value3.title')}
-            </h3>
-            <p className="text-blue-200/70 text-sm leading-relaxed">
-              {t('home.value3.desc')}
-            </p>
           </div>
         </div>
 
-        {/* Footer Note */}
-        <div className="mt-20 text-center">
-          <p className="text-blue-300/50 text-sm">
-            AdsCraft © 2024 — Facebook广告决策引擎
+        {/* Footer */}
+        <div className="mt-20 pt-8 border-t border-white/10 text-center">
+          <p className="text-blue-300/60 text-sm">
+            © 2026 AdsCraft. Facebook广告决策引擎.
           </p>
         </div>
       </div>
