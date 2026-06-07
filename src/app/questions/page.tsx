@@ -166,18 +166,9 @@ export default function QuestionsPage() {
                 </div>
               )}
 
-              {/* 按钮组 */}
+              {/* 按钮组：下一步在左侧，返回在右侧 */}
               <div className="flex justify-between mt-8">
-                {currentStep > 1 && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentStep(currentStep - 1)}
-                    className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-cyan-400"
-                  >
-                    {t('common.back')}
-                  </Button>
-                )}
-                
+                {/* 下一步/获取方案按钮 - 左侧 */}
                 <Button
                   onClick={handleNext}
                   disabled={currentStep === 1 ? !isStep1Complete : currentStep === 2 ? !isStep2Complete : !isStep3Complete}
@@ -189,20 +180,28 @@ export default function QuestionsPage() {
                 >
                   {currentStep === 3 ? t('questions.generate') : t('questions.next')}
                 </Button>
+                
+                {/* 返回按钮 - 右侧 */}
+                {currentStep > 1 ? (
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentStep(currentStep - 1)}
+                    className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-cyan-400"
+                  >
+                    {t('common.back')}
+                  </Button>
+                ) : (
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => window.history.back()}
+                    className="text-blue-200 hover:text-cyan-400 hover:bg-white/10"
+                  >
+                    {t('common.backPrevious')}
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
-
-          {/* 返回上一页 */}
-          <div className="text-center mt-8">
-            <Button 
-              variant="ghost" 
-              onClick={() => window.history.back()}
-              className="text-blue-200 hover:text-cyan-400 hover:bg-white/10"
-            >
-              {t('common.backPrevious')}
-            </Button>
-          </div>
         </div>
       </main>
     </div>

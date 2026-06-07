@@ -135,8 +135,8 @@ export default function PlanPage() {
             </CardContent>
           </Card>
 
-          {/* Back Button */}
-          <div className="mt-8 text-center">
+          {/* Back Button - 右侧 */}
+          <div className="mt-8 flex justify-end">
             <Link href="/">
               <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 to-blue-500 text-white shadow-lg shadow-cyan-500/30">
                 {t('common.back')}
