@@ -2,6 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -86,6 +87,8 @@ export default function PlanPage() {
   const planId = params.id as string;
   const { t } = useI18n();
   const { user, isPremium, checkRouteAccess } = useAuth();
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   // Parse plan ID: route-budget-path-goal
   const parts = planId.split('-');
@@ -100,6 +103,33 @@ export default function PlanPage() {
 
   // 判断用户是否可以访问完整内容
   const canAccessFullContent = user && isPremium && checkRouteAccess(subscriptionRoute);
+
+  // 保存方案到数据库
+  const handleSavePlan = async () => {
+    if (!user || saving) return;
+    
+    setSaving(true);
+    try {
+      const response = await fetch('/api/plans', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          route,
+          budget,
+          goal,
+          plan_data: config
+        })
+      });
+      
+      if (response.ok) {
+        setSaved(true);
+      }
+    } catch (error) {
+      console.error('Save plan error:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // 基础通用方案：完整的8个决策点配置（免费）
   const basicPlanItems = [
@@ -180,8 +210,19 @@ export default function PlanPage() {
             </div>
           )}
 
-          {/* Back Button - 页面最底部右侧 */}
-          <div className="mt-8 flex justify-end">
+          {/* Back Button - 页面最底部，保存按钮左侧，返回按钮右侧 */}
+          <div className="mt-8 flex justify-between items-center">
+            {/* 保存方案按钮 - 仅登录用户可见 */}
+            {user && (
+              <Button 
+                onClick={handleSavePlan}
+                disabled={saving || saved}
+                className={`${saved ? 'bg-green-500 hover:bg-green-500' : 'bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-400 hover:to-pink-500'} text-white shadow-lg ${saved ? 'shadow-green-500/30' : 'shadow-purple-500/30'}`}
+              >
+                {saving ? t('plan.saving') : saved ? t('plan.saved') : t('plan.savePlan')}
+              </Button>
+            )}
+            {!user && <div></div>}
             <Link href="/">
               <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/30">
                 {t('common.back')}

@@ -109,6 +109,9 @@ const translations = {
     'plan.format': 'Ad Format',
     'plan.event': 'Optimization Event',
     'plan.remarketing': 'Remarketing Window',
+    'plan.savePlan': 'Save Plan',
+    'plan.saving': 'Saving...',
+    'plan.saved': 'Saved',
     
     // 付费墙
     'paywall.title': 'Premium Feature',
@@ -314,6 +317,9 @@ const translations = {
     'plan.format': '广告格式',
     'plan.event': '优化事件',
     'plan.remarketing': '再营销窗口',
+    'plan.savePlan': '保存方案',
+    'plan.saving': '保存中...',
+    'plan.saved': '已保存',
     
     // 付费墙
     'paywall.title': '付费功能',
