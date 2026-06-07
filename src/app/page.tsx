@@ -77,10 +77,10 @@ export default function HomePage() {
               <span className="text-2xl">📊</span>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Configuration Recommendation
+              {t('home.value1.title')}
             </h3>
             <p className="text-gray-600">
-              Tell you which option to choose for each setting
+              {t('home.value1.desc')}
             </p>
           </div>
           <div className="text-center p-6">
@@ -88,10 +88,10 @@ export default function HomePage() {
               <span className="text-2xl">💡</span>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Reason Analysis
+              {t('home.value2.title')}
             </h3>
             <p className="text-gray-600">
-              Explain why to choose this over others
+              {t('home.value2.desc')}
             </p>
           </div>
           <div className="text-center p-6">
@@ -99,10 +99,10 @@ export default function HomePage() {
               <span className="text-2xl">🔧</span>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Diagnosis & Optimization
+              {t('home.value3.title')}
             </h3>
             <p className="text-gray-600">
-              Judge what went wrong and how to adjust
+              {t('home.value3.desc')}
             </p>
           </div>
         </div>

@@ -35,6 +35,14 @@ const translations = {
     'route.brand.title': 'Brand',
     'route.brand.desc': 'Build brand awareness first, then convert',
     
+    // 首页价值主张
+    'home.value1.title': 'Configuration Recommendation',
+    'home.value1.desc': 'Tell you which option to choose for each setting',
+    'home.value2.title': 'Reason Analysis',
+    'home.value2.desc': 'Explain why to choose this over others',
+    'home.value3.title': 'Diagnosis & Optimization',
+    'home.value3.desc': 'Judge what went wrong and how to adjust',
+    
     // 问答页
     'questions.title': 'Answer 3 Questions',
     'questions.subtitle': 'Get your customized Facebook ads plan in seconds',
@@ -126,6 +134,14 @@ const translations = {
     'route.localService.desc': '方圆几公里的生意',
     'route.brand.title': '品牌方',
     'route.brand.desc': '先种草，后转化',
+    
+    // 首页价值主张
+    'home.value1.title': '配置推荐',
+    'home.value1.desc': '告诉您每个设置该选择哪个选项',
+    'home.value2.title': '原因分析',
+    'home.value2.desc': '解释为什么选择这个而不是其他选项',
+    'home.value3.title': '诊断优化',
+    'home.value3.desc': '判断哪里出了问题以及如何调整',
     
     // 问答页
     'questions.title': '回答3个问题',
