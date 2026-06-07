@@ -18,7 +18,7 @@ export function Navigation() {
         {t('nav.questions')}
       </Link>
       <Link href="/dashboard" className="text-blue-200/80 hover:text-cyan-300 transition-colors font-medium">
-        Dashboard
+        {t('nav.dashboard')}
       </Link>
       <Link href="/login" className="text-blue-200/80 hover:text-cyan-300 transition-colors font-medium">
         {t('nav.login')}

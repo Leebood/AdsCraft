@@ -17,6 +17,7 @@ const translations = {
     'nav.home': 'Home',
     'nav.setup': 'Pre-Setup',
     'nav.questions': 'Basic Universal Plan',
+    'nav.dashboard': 'Dashboard',
     'nav.login': 'Login',
     'nav.privacy': 'Privacy Policy',
     
@@ -210,6 +211,7 @@ const translations = {
     // 导航
     'nav.home': '首页',
     'nav.questions': '基础通用方案',
+    'nav.dashboard': '仪表板',
     'nav.login': '登录',
     'nav.setup': '前期设置',
     'nav.privacy': '隐私政策',
