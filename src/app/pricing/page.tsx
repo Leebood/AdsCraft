@@ -1,12 +1,13 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useI18n } from '@/lib/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 
-export default function PricingPage() {
+function PricingContent() {
   const { t } = useI18n();
   const { setPremium } = useAuth();
   const router = useRouter();
@@ -168,5 +169,17 @@ export default function PricingPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function PricingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+        <div className="text-white text-lg">Loading...</div>
+      </div>
+    }>
+      <PricingContent />
+    </Suspense>
   );
 }
