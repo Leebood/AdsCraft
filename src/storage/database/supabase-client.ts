@@ -134,4 +134,9 @@ function getSupabaseClient(token?: string): SupabaseClient {
   });
 }
 
+// Server-side async client getter (for API routes)
+export async function getSupabaseServerClientAsync(): Promise<SupabaseClient> {
+  return getSupabaseClient();
+}
+
 export { loadEnv, getSupabaseCredentials, getSupabaseServiceRoleKey, getSupabaseClient };

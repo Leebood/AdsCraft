@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,19 +8,52 @@ import { useI18n } from '@/lib/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 
 function PricingContent() {
-  const { t } = useI18n();
-  const { setPremium } = useAuth();
+  const { t, locale } = useI18n();
+  const { user, setPremium } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const route = searchParams.get('route') || '';
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleUpgrade = () => {
-    // 模拟付费升级流程
-    // 实际项目中这里应该调用真实的支付API（如Creem）
-    console.log('Upgrading for route:', route);
-    setPremium(true);
-    // 跳转到Dashboard
-    router.push('/dashboard');
+  const handleUpgrade = async () => {
+    if (!user) {
+      // 未登录，跳转到登录页
+      router.push('/login');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      // 调用微信支付API
+      const response = await fetch('/api/payment/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          route,
+          language: locale,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || '支付创建失败');
+      }
+
+      // 微信支付H5模式：跳转到支付页面
+      if (data.h5_url) {
+        window.location.href = data.h5_url;
+      } else {
+        throw new Error('未获取到支付链接');
+      }
+    } catch (err) {
+      console.error('支付错误:', err);
+      setError(err instanceof Error ? err.message : '支付失败，请重试');
+      setIsLoading(false);
+    }
   };
 
   const routePricing: Record<string, {
@@ -141,13 +174,31 @@ function PricingContent() {
               {/* 升级按钮 */}
               <Button
                 onClick={handleUpgrade}
-                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold py-4 rounded-xl shadow-lg shadow-cyan-500/30 transition-all duration-300 hover:scale-105"
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold py-4 rounded-xl shadow-lg shadow-cyan-500/30 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {t('pricing.premium.button')}
-                <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
+                {isLoading ? (
+                  <span className="flex items-center">
+                    <svg className="animate-spin w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    {t('pricing.premium.processing')}
+                  </span>
+                ) : (
+                  <>
+                    {t('pricing.premium.button')}
+                    <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </>
+                )}
               </Button>
+
+              {/* 错误提示 */}
+              {error && (
+                <p className="text-center text-red-400 text-sm mt-4">{error}</p>
+              )}
               
               {/* 提示 */}
               <p className="text-center text-white/70 text-sm mt-4">
