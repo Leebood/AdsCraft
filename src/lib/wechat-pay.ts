@@ -10,9 +10,36 @@ const WECHAT_PAY_CONFIG = {
   mch_id: process.env.WECHAT_PAY_MCH_ID || '1746070491',
   app_id: process.env.WECHAT_PAY_APP_ID || 'wx47d0dabb64cfc8ac',
   api_key: process.env.WECHAT_PAY_API_KEY || 'liveoverlay199707315436412182leo',
-  serial_no: process.env.WECHAT_PAY_SERIAL_NO || '77550623C5D2CF603ED95DEE99FAF5991AB33206',
+  serial_no: process.env.WECHAT_PAY_SERIAL_NO || '21E3F60F30238E9DF1AE943194C9F8FC4181EBBA',
   notify_url: process.env.WECHAT_PAY_NOTIFY_URL || 'https://ailiveonline.com/api/billing/webhook/wechat',
-  private_key: process.env.WECHAT_PAY_PRIVATE_KEY || '',
+  private_key: process.env.WECHAT_PAY_PRIVATE_KEY || `-----BEGIN PRIVATE KEY-----
+MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDByIH/6ZxBgFTh
+1Ej+d2ct0phZcU5gh1pk8poXRMdJRRYMv7pAIjzEIdyzk6aDdzggAaCEgjps6F4J
+pxfPewWFhBioLVXglaIyg03JWTm7AXr0EfaY3iWodfL7jwlmWXc+TqhN6ftdDwlo
+0iwA1ubysQWjtg/0tjeEdSDsLaGaaK4/1XRxZ708KkNvvDWaWJGrjHFIMCPk9xbT
+U99uTNbn06bkt4XpBAJHTDsvuEUzi8r3xNCw5QOhYiebkgKUo7Yt7F5hohuYQwMG
+v4kUn2IsF0vCivEEJfsvU/I/9oTG2mNCUyNSojbVRr+HJXmEc1kLewTLbhGr51fV
+9l76vPpRAgMBAAECggEABb7DE+pCJrL+UT+w9lJl7bbbq3Mvhq8cn/eNV/lDC0oQ
+EEqy4+nf8VSrrWtIOYeUU2aY8rTFtKri9thMXWthS4cSEBJgBGuLRoIcEUci7gdq
+NMg/jmKvrSHqFUk1VyJ55ZABb2XrfOPQPJpWkaPNbw6Ogz8HlBK+7J9oXXgw3VoF
+6WDE8pYzncPYSXvdLpZZJvqIKGPtLsXyUkqOXEKd7atoF642yj4jAPiIn4I2okjN
+bCpzQJOKXpQu+U68bKjGRI8TFylpQyG5iNj3611oJEUu6pfWGZSO1mPpK1d+lYK6
+Vu53bTe5D84Qt9qmYsbJuw7KRKu4bOA3CpayhgRkvQKBgQDwrTpHBlydAVbLtG55
+iBx8Ou3AwCa6Nmle4OEmfDwiIm65fdNhWTPjNPlVgKJayslvJusdDpguQPWMrVkf
+nYzUqS6eWAXBVK5IXbR6vvp+pTmtYZhcTBZkXL1UVIH19RyifBRq+Dsg4KrBSWKC
+eST4bG15CkUZtmnk/YDNnuUHbwKBgQDOHvegZLMWOIaEEsTinbGDBFvfLtPYQ40t
+1iMOepECu3fucclVpW4x5fu6mC6I+gcKqK6QDn+Q+uZn4G0YzQiHfGVByPwVJx+k
+lPM9Mgb6whzWI/pDXwoh1LrGmUjTMxEsdo8LIwu+IxolQFkiVdtJ2RaYFCrM7aHS
+67rbLd86PwKBgCsIbjEg3BJemOxXWKF2StGTn8slEEefTvvd7aP59q6LxYx5CQCQ
++IwZfrNhCqZ9N8MeDE/nuiIbD0yV+ieC/hlQHrvFNVI6F+dsicagux1F4ag0mQ93
+s1FCm7+mVI5rwzDySpxNwhTA1wc0Xd7CVm/swy4vPee5C/obsZoSXRUVAoGAVTA7
+S9ESqyZlggR31ukxymJszgr+hy00FjOgfYVulWCBqszgV0NuDbVtmqr24KnlayRY
+MTWsx3DK9TeuH0fuNIDXIJ8+gEeRLmZZOXuJou3DGUX5UwrelyjioN4NWSyL9oJx
+kDrFyamcTrUPob82SIkua2A6aEP2U8QVkCyfS+UCgYBh01dTyCKk9V0uylLviB57
+OD3R/1NOrlYq5iNlvvfRAdGoj186rFGuKaZs/lq3VOsqkTUzAdKdUKys0nXCcJwg
+o4nUw8QyXNxFXN68Egarfwl4r110DuIPJyAQSiVlEay0dgkqxuY4kNSJCl8wav0/
+Lm13nk46xGQGrXe03a4nQA==
+-----END PRIVATE KEY-----`,
 };
 
 // 微信支付API地址
