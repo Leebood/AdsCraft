@@ -1,105 +1,182 @@
 import { NextRequest } from 'next/server';
-import { LLMClient, Config, HeaderUtils } from 'coze-coding-dev-sdk';
+
+// Coze智能体配置
+const COZE_API_BASE = process.env.COZE_API_BASE_URL || 'https://api.coze.cn';
+const COZE_API_TOKEN = process.env.COZE_WORKLOAD_API_TOKEN || 'pat_5D6p3jtzrjPUcw2T4Z2nHPmYpAzRhAE9fAsd8SLRkZ5bJoPEkaWpX2rAjwpd4eO1';
+const COZE_BOT_ID = process.env.COZE_BOT_ID || '7648850096180330548';
+
+interface DiagnosisRequest {
+  route: string;
+  budget: string;
+  goal: string;
+  language?: string;
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const { route, budget, goal, planData, language } = await request.json();
-    
-    if (!route || !budget || !goal) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required parameters' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
+    const body: DiagnosisRequest = await request.json();
+    const { route, budget, goal, language = 'zh' } = body;
+
+    // 构建诊断请求消息
+    const systemPrompt = language === 'zh' 
+      ? `你是一位专业的Facebook广告诊断师。请根据用户提供的广告方案信息，给出专业的诊断分析。
+
+请按以下JSON格式返回诊断结果（不要添加任何其他文字，只返回JSON）：
+{
+  "score": <综合评分，0-100的整数>,
+  "issues": [<潜在问题列表，每个问题详细说明>],
+  "suggestions": [<优化建议列表，每条建议具体可操作>],
+  "strengths": [<当前方案优势列表>]
+}`
+      : `You are a professional Facebook Ads diagnostician. Please analyze the provided ad plan information.
+
+Return the diagnosis result in JSON format only (no other text):
+{
+  "score": <overall score, integer 0-100>,
+  "issues": [<list of potential problems with detailed explanations>],
+  "suggestions": [<list of actionable optimization suggestions>],
+  "strengths": [<list of current plan advantages>]
+}`;
+
+    const userMessage = language === 'zh'
+      ? `请诊断以下Facebook广告方案：
+
+路线类型：${route}
+预算范围：${budget}
+主要目标：${goal}
+
+请给出综合评分、潜在问题、优化建议和当前优势。`
+      : `Please diagnose this Facebook Ads plan:
+
+Route Type: ${route}
+Budget Range: ${budget}
+Main Goal: ${goal}
+
+Please provide overall score, potential issues, optimization suggestions and current strengths.`;
+
+    // 调用Coze智能体流式API
+    const response = await fetch(`${COZE_API_BASE}/v3/chat`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${COZE_API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        bot_id: COZE_BOT_ID,
+        user_id: 'adscraft_user',
+        stream: true,
+        additional_messages: [
+          {
+            role: 'user',
+            content: `${systemPrompt}\n\n${userMessage}`,
+            content_type: 'text',
+          },
+        ],
+        auto_save_history: false,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Coze API error:', errorText);
+      return new Response(JSON.stringify({ error: 'AI diagnosis failed' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
-    const customHeaders = HeaderUtils.extractForwardHeaders(request.headers);
-    const config = new Config();
-    const client = new LLMClient(config, customHeaders);
-
-    // 构建系统提示
-    const systemPrompt = `你是AdsCraft的AI广告诊断专家，专门为Facebook广告提供专业诊断分析。
-
-你需要根据用户提供的信息，给出以下内容（使用JSON格式输出）：
-
-{
-  "score": <综合评分，0-100的数字>,
-  "issues": [<潜在问题列表，数组，每个问题是一段文字>],
-  "suggestions": [<优化建议列表，数组，每条建议是一段文字>],
-  "strengths": [<当前优势列表，数组，每条优势是一段文字>]
-}
-
-分析要点：
-1. 综合评分：根据预算、目标、路线匹配度给出整体评估
-2. 潜在问题：指出当前配置可能存在的风险或不足
-3. 优化建议：给出具体可执行的改进方案
-4. 当前优势：指出当前配置的亮点和优势
-
-请确保输出是纯JSON格式，不要包含其他文字说明。`;
-
-    // 路线名称映射
-    const routeNames: Record<string, string> = {
-      retailer: '零售商',
-      manufacturer: '制造商',
-      local_service: '本地服务商',
-      brand: '品牌方'
-    };
-
-    const routeName = language === 'zh' ? routeNames[route] || route : route;
-
-    // 构建用户消息
-    const userMessage = `请为以下Facebook广告配置进行诊断分析：
-
-路线类型：${routeName}
-预算范围：${budget}
-营销目标：${goal}
-方案配置：${JSON.stringify(planData || {})}
-
-请用${language === 'zh' ? '中文' : '英文'}回答，输出JSON格式的诊断结果。`;
-
-    const messages = [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userMessage }
-    ];
-
-    // 创建流式响应
+    // 创建SSE流式响应
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
-        try {
-          const llmStream = client.stream(messages as Array<{ role: 'system' | 'user' | 'assistant'; content: string }>, {
-            model: 'doubao-seed-1-8-251228',
-            temperature: 0.7
-          });
+        const reader = response.body?.getReader();
+        if (!reader) {
+          controller.close();
+          return;
+        }
 
-          for await (const chunk of llmStream) {
-            if (chunk.content) {
-              const text = chunk.content.toString();
-              controller.enqueue(encoder.encode(`data: ${text}\n\n`));
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let currentEvent = '';
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+
+            // 分割buffer为完整行
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+              const trimmed = line.trim();
+
+              // 空行标记SSE块结束
+              if (trimmed === '') {
+                currentEvent = '';
+                continue;
+              }
+
+              // 追踪当前事件类型
+              if (trimmed.startsWith('event:')) {
+                currentEvent = trimmed.slice('event:'.length).trim();
+                continue;
+              }
+
+              // 解析数据payload
+              if (trimmed.startsWith('data:')) {
+                const raw = trimmed.slice('data:'.length).trim();
+
+                // done事件
+                if (currentEvent === 'done' || raw === '[DONE]') {
+                  controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
+                  continue;
+                }
+
+                try {
+                  const data = JSON.parse(raw);
+
+                  if (currentEvent === 'conversation.message.delta') {
+                    // 深度思考模式：reasoning_content包含思考过程
+                    // 正常模式：content包含回答
+                    const content = data.reasoning_content || data.content || '';
+                    if (content) {
+                      controller.enqueue(encoder.encode(`data: ${content}\n\n`));
+                    }
+                  } else if (currentEvent === 'conversation.chat.completed') {
+                    // 对话完成
+                    controller.enqueue(encoder.encode(`data: [COMPLETED]\n\n`));
+                  } else if (currentEvent === 'conversation.chat.failed') {
+                    // 对话失败
+                    controller.enqueue(encoder.encode(`data: [ERROR] Chat failed\n\n`));
+                  }
+                } catch {
+                  // 忽略无效JSON
+                }
+              }
             }
           }
-
-          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-          controller.close();
-        } catch (error) {
-          console.error('LLM stream error:', error);
-          controller.enqueue(encoder.encode(`data: {"error": "AI诊断失败，请稍后重试"}\n\n`));
+        } finally {
+          reader.releaseLock();
           controller.close();
         }
-      }
+      },
     });
 
     return new Response(stream, {
       headers: {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive'
-      }
+        'Connection': 'keep-alive',
+      },
     });
   } catch (error) {
     console.error('AI diagnosis error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }
