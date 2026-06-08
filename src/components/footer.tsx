@@ -11,6 +11,9 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 text-center text-gray-500">
         <p>&copy; 2026 AdsCraft. {t('footer.rights')}</p>
         <div className="mt-2 flex justify-center gap-4">
+          <Link href="/terms" className="text-sm hover:text-gray-700">
+            {t('nav.terms')}
+          </Link>
           <Link href="/privacy" className="text-sm hover:text-gray-700">
             {t('nav.privacy')}
           </Link>

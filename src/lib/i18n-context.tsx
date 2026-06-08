@@ -20,6 +20,7 @@ const translations = {
     'nav.dashboard': 'Dashboard',
     'nav.login': 'Login',
     'nav.privacy': 'Privacy Policy',
+    'nav.terms': 'Terms of Service',
     
     // Footer
     'footer.rights': 'Facebook Ads Decision Engine.',
@@ -270,6 +271,24 @@ const translations = {
     'privacy.children.title': 'Children',
     'privacy.children.desc': 'This service is not for users under 18 years old.',
     
+    // 服务条款
+    'terms.title': 'Terms of Service',
+    'terms.lastUpdate': 'Last updated: June 2025',
+    'terms.accept.title': '1. Acceptance of Terms',
+    'terms.accept.desc': 'By accessing and using AdsCraft, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by these terms, please do not use this service.',
+    'terms.service.title': '2. Description of Service',
+    'terms.service.desc': 'AdsCraft is an AI-powered advertising decision engine that provides Facebook advertising strategy recommendations and analysis tools. We reserve the right to modify or discontinue the service at any time.',
+    'terms.payment.title': '3. Payment Terms',
+    'terms.payment.desc': 'Premium features require payment. All fees are non-refundable unless otherwise stated. Payments are processed through WeChat Pay. Upon successful payment, you will gain access to premium features for the selected subscription period.',
+    'terms.refund.title': '4. Refund Policy',
+    'terms.refund.desc': 'Due to the nature of digital services, refunds are generally not provided after payment. If you encounter technical issues that prevent service access, please contact our support team within 7 days of purchase.',
+    'terms.intellectual.title': '5. Intellectual Property',
+    'terms.intellectual.desc': 'All content, features, and functionality of AdsCraft, including but not limited to text, graphics, logos, and software, are owned by AdsCraft and protected by intellectual property laws.',
+    'terms.limitation.title': '6. Limitation of Liability',
+    'terms.limitation.desc': 'AdsCraft provides recommendations based on AI analysis and general advertising best practices. We do not guarantee specific results from following our recommendations. Users are responsible for their own advertising decisions.',
+    'terms.modification.title': '7. Modification of Terms',
+    'terms.modification.desc': 'We may modify these terms at any time. Modifications will be effective immediately upon posting. Your continued use of the service constitutes acceptance of the modified terms.',
+    
     // 通用
     'common.loading': 'Loading...',
     'common.back': 'Back',
@@ -284,6 +303,7 @@ const translations = {
     'nav.login': '登录',
     'nav.setup': '前期设置',
     'nav.privacy': '隐私政策',
+    'nav.terms': '服务条款',
     
     // Footer
     'footer.rights': 'Facebook广告决策引擎',
@@ -533,6 +553,24 @@ const translations = {
     'privacy.retention.desc': '活跃用户数据保留；注销后30天内完全删除。',
     'privacy.children.title': '未成年人',
     'privacy.children.desc': '本服务不面向18岁以下用户。',
+    
+    // 服务条款
+    'terms.title': '服务条款',
+    'terms.lastUpdate': '最后更新：2025年6月',
+    'terms.accept.title': '1. 接受条款',
+    'terms.accept.desc': '访问和使用AdsCraft即表示您接受并同意遵守本协议的条款和规定。如果您不同意遵守这些条款，请不要使用本服务。',
+    'terms.service.title': '2. 服务说明',
+    'terms.service.desc': 'AdsCraft是一个AI驱动的广告决策引擎，提供Facebook广告策略推荐和分析工具。我们有权随时修改或停止服务。',
+    'terms.payment.title': '3. 付费条款',
+    'terms.payment.desc': '高级功能需要付费。除非另有说明，所有费用不予退还。付款通过微信支付处理。付款成功后，您将在所选订阅期内获得高级功能访问权限。',
+    'terms.refund.title': '4. 退款政策',
+    'terms.refund.desc': '由于数字服务的性质，付款后一般不予退款。如遇技术问题导致无法访问服务，请在购买后7天内联系我们的支持团队。',
+    'terms.intellectual.title': '5. 知识产权',
+    'terms.intellectual.desc': 'AdsCraft的所有内容、功能和特性，包括但不限于文本、图形、标志和软件，均归AdsCraft所有，并受知识产权法保护。',
+    'terms.limitation.title': '6. 责任限制',
+    'terms.limitation.desc': 'AdsCraft基于AI分析和通用广告最佳实践提供推荐。我们不保证遵循推荐会获得特定结果。用户对自己的广告决策负责。',
+    'terms.modification.title': '7. 条款修改',
+    'terms.modification.desc': '我们可能随时修改这些条款。修改将在发布后立即生效。您继续使用服务即表示接受修改后的条款。',
     
     // 通用
     'common.loading': '加载中...',
