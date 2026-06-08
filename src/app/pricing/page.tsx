@@ -6,19 +6,37 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useI18n } from '@/lib/i18n-context';
 import { useAuth } from '@/lib/auth-context';
+import { CREEM_PRODUCTS } from '@/lib/creem-config';
 
 function PricingContent() {
   const { t, locale } = useI18n();
-  const { user, setPremium } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const route = searchParams.get('route') || '';
   const [isLoading, setIsLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'creem' | 'wechat'>('creem');
   const [error, setError] = useState('');
 
-  const handleUpgrade = async () => {
+  // Creem支付：直接跳转到Creem支付页面
+  const handleCreemPayment = () => {
     if (!user) {
-      // 未登录，跳转到登录页
+      router.push('/login');
+      return;
+    }
+
+    const product = CREEM_PRODUCTS[route as keyof typeof CREEM_PRODUCTS];
+    if (product) {
+      // 直接跳转到Creem支付页面
+      window.location.href = product.url;
+    } else {
+      setError('Invalid route');
+    }
+  };
+
+  // 微信支付：调用API创建订单
+  const handleWechatPayment = async () => {
+    if (!user) {
       router.push('/login');
       return;
     }
@@ -27,7 +45,6 @@ function PricingContent() {
     setError('');
 
     try {
-      // 调用微信支付API
       const response = await fetch('/api/payment/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -40,19 +57,27 @@ function PricingContent() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || '支付创建失败');
+        throw new Error(data.error || 'Payment creation failed');
       }
 
       // 微信支付H5模式：跳转到支付页面
       if (data.h5_url) {
         window.location.href = data.h5_url;
       } else {
-        throw new Error('未获取到支付链接');
+        throw new Error('Payment link not received');
       }
     } catch (err) {
-      console.error('支付错误:', err);
-      setError(err instanceof Error ? err.message : '支付失败，请重试');
+      console.error('Payment error:', err);
+      setError(err instanceof Error ? err.message : 'Payment failed, please try again');
       setIsLoading(false);
+    }
+  };
+
+  const handleUpgrade = () => {
+    if (paymentMethod === 'creem') {
+      handleCreemPayment();
+    } else {
+      handleWechatPayment();
     }
   };
 
@@ -171,13 +196,59 @@ function PricingContent() {
                 ))}
               </ul>
               
+              {/* 支付方式选择 */}
+              <div className="mb-6">
+                <p className="text-white/80 text-sm mb-3">{t('pricing.payment.select')}</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Creem支付 */}
+                  <button
+                    onClick={() => setPaymentMethod('creem')}
+                    className={`p-4 rounded-xl border-2 transition-all duration-300 ${
+                      paymentMethod === 'creem'
+                        ? 'bg-gradient-to-br from-cyan-500/30 to-blue-500/30 border-cyan-400 shadow-lg shadow-cyan-500/20'
+                        : 'bg-white/5 border-white/20 hover:border-white/40'
+                    }`}
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                      </svg>
+                      <span className="text-white font-medium">{t('pricing.payment.creem')}</span>
+                    </div>
+                    <p className="text-white/60 text-xs mt-2">{t('pricing.payment.creemDesc')}</p>
+                  </button>
+                  
+                  {/* 微信支付 */}
+                  <button
+                    onClick={() => setPaymentMethod('wechat')}
+                    className={`p-4 rounded-xl border-2 transition-all duration-300 ${
+                      paymentMethod === 'wechat'
+                        ? 'bg-gradient-to-br from-green-500/30 to-emerald-500/30 border-green-400 shadow-lg shadow-green-500/20'
+                        : 'bg-white/5 border-white/20 hover:border-white/40'
+                    }`}
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <svg className="w-6 h-6 text-green-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.3c0 1.785.794 3.415 2.127 4.638l-.826 2.463 2.553-1.185c.954.303 1.993.465 3.037.462 4.8 0 8.691-3.288 8.691-7.378 0-4.09-3.891-7.378-8.691-7.378zm4.033 6.052c.044.477-.144.943-.5 1.22-.357.277-.82.358-1.234.205-.413-.152-.713-.5-.775-.945-.062-.444.1-.887.427-1.152.327-.266.77-.324 1.174-.149.404.174.688.545.708.971zm-5.4 0c.044.477-.144.943-.5 1.22-.357.277-.82.358-1.234.205-.413-.152-.713-.5-.775-.945-.062-.444.1-.887.427-1.152.327-.266.77-.324 1.174-.149.404.174.688.545.708.971z"/>
+                      </svg>
+                      <span className="text-white font-medium">{t('pricing.payment.wechat')}</span>
+                    </div>
+                    <p className="text-white/60 text-xs mt-2">{t('pricing.payment.wechatDesc')}</p>
+                  </button>
+                </div>
+              </div>
+              
               {/* 升级按钮 */}
               <Button
                 onClick={handleUpgrade}
-                disabled={isLoading}
-                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold py-4 rounded-xl shadow-lg shadow-cyan-500/30 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isLoading && paymentMethod === 'wechat'}
+                className={`w-full font-semibold py-4 rounded-xl shadow-lg transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  paymentMethod === 'creem'
+                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 shadow-cyan-500/30'
+                    : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 shadow-green-500/30'
+                }`}
               >
-                {isLoading ? (
+                {isLoading && paymentMethod === 'wechat' ? (
                   <span className="flex items-center">
                     <svg className="animate-spin w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -187,7 +258,7 @@ function PricingContent() {
                   </span>
                 ) : (
                   <>
-                    {t('pricing.premium.button')}
+                    {paymentMethod === 'creem' ? t('pricing.payment.creemButton') : t('pricing.premium.button')}
                     <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>

@@ -253,6 +253,14 @@ const translations = {
     'pricing.comparison.feature6': 'Quick reference table',
     'pricing.comparison.partial': 'Partial',
     
+    // 支付方式
+    'pricing.payment.select': 'Select Payment Method',
+    'pricing.payment.creem': 'Credit Card',
+    'pricing.payment.creemDesc': 'Pay via Creem - Global cards accepted',
+    'pricing.payment.creemButton': 'Pay with Card',
+    'pricing.payment.wechat': 'WeChat Pay',
+    'pricing.payment.wechatDesc': 'Pay via WeChat - QR code payment',
+    
     // 隐私政策
     'privacy.title': 'Privacy Policy',
     'privacy.lastUpdate': 'Last updated: June 2026',
@@ -535,6 +543,14 @@ const translations = {
     'pricing.comparison.feature5': 'AI数据诊断',
     'pricing.comparison.feature6': '速查表',
     'pricing.comparison.partial': '部分',
+    
+    // 支付方式
+    'pricing.payment.select': '选择支付方式',
+    'pricing.payment.creem': '信用卡支付',
+    'pricing.payment.creemDesc': '通过Creem支付 - 支持全球信用卡',
+    'pricing.payment.creemButton': '信用卡支付',
+    'pricing.payment.wechat': '微信支付',
+    'pricing.payment.wechatDesc': '通过微信支付 - 扫码支付',
     
     // 隐私政策
     'privacy.title': '隐私政策',
