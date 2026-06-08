@@ -212,7 +212,7 @@ export default function PlanPage() {
 
           {/* AI诊断 */}
           <div className="mt-12">
-            <AIDiagnosis route={route} isPremium={canAccessFullContent ?? false} />
+            <AIDiagnosis route={route} budget={budget} goal={goal} planData={config} isPremium={canAccessFullContent ?? false} />
           </div>
 
           {/* Free vs Premium Comparison - 放在页面最下面 */}
