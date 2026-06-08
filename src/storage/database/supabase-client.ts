@@ -10,7 +10,16 @@ interface SupabaseCredentials {
 }
 
 function loadEnv(): void {
-  if (envLoaded || (process.env.COZE_SUPABASE_URL && process.env.COZE_SUPABASE_ANON_KEY)) {
+  if (envLoaded) return;
+  
+  // In production (Vercel/Coze), environment variables are already set
+  if (process.env.COZE_PROJECT_ENV === 'PROD' || process.env.VERCEL) {
+    envLoaded = true;
+    return;
+  }
+  
+  if (process.env.COZE_SUPABASE_URL && process.env.COZE_SUPABASE_ANON_KEY) {
+    envLoaded = true;
     return;
   }
 
