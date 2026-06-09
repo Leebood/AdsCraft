@@ -274,6 +274,7 @@ const translations = {
     'pricing.qr.copyLink': 'Copy Payment Link',
     'pricing.qr.copied': 'Link copied!',
     'pricing.qr.close': 'Close',
+    'pricing.qr.paymentComplete': 'Payment Complete - Refresh Status',
     
     // 隐私政策
     'privacy.title': 'Privacy Policy',
@@ -579,6 +580,7 @@ const translations = {
     'pricing.qr.copyLink': '复制支付链接',
     'pricing.qr.copied': '链接已复制！',
     'pricing.qr.close': '关闭',
+    'pricing.qr.paymentComplete': '支付完成 - 刷新状态',
     
     // 隐私政策
     'privacy.title': '隐私政策',

@@ -10,7 +10,7 @@ import { CREEM_PRODUCTS } from '@/lib/creem-config';
 
 function PricingContent() {
   const { t } = useI18n();
-  const { user } = useAuth();
+  const { user, refreshSubscription } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const route = searchParams.get('route') || '';
@@ -186,6 +186,19 @@ function PricingContent() {
                 className="bg-white/10 border-white/20 text-white hover:bg-white/20 mb-3"
               >
                 {t('pricing.qr.copyLink')}
+              </Button>
+              
+              {/* 支付完成按钮 */}
+              <Button
+                onClick={async () => {
+                  await refreshSubscription();
+                  setShowQrModal(false);
+                  router.push('/dashboard');
+                }}
+                variant="outline"
+                className="bg-green-500/20 border-green-400/30 text-green-400 hover:bg-green-500/30 mb-3 w-full"
+              >
+                {t('pricing.qr.paymentComplete')}
               </Button>
               
               {/* 关闭按钮 */}

@@ -15,7 +15,7 @@ interface User {
 
 // 订阅状态
 interface Subscription {
-  route: string; // 零售商、制造商、品牌方、本地服务商
+  route: string; // 零售商、制造商、品牌方、本地服务商、localService
   status: 'active' | 'expired' | 'none';
   expiresAt?: string;
 }
@@ -31,6 +31,7 @@ interface AuthContextType {
   setPremium: (value: boolean) => void;
   setSubscription: (route: string) => void;
   checkRouteAccess: (route: string) => boolean;
+  refreshSubscription: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -52,44 +53,81 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // isPremium 基于订阅状态计算
   const isPremium = subscription.status === 'active';
 
-  useEffect(() => {
-    // 从localStorage读取订阅状态（简化方案，实际应从数据库/API获取）
-    const savedSubscription = localStorage.getItem('adscraft_subscription');
-    if (savedSubscription) {
-      try {
-        const sub = JSON.parse(savedSubscription);
-        setSubscriptionState(sub);
-      } catch {
-        // ignore
-      }
-    }
+  // 从数据库获取真实订阅状态
+  const fetchSubscriptionFromDB = async (userId: string) => {
+    try {
+      const client = await getSupabaseBrowserClientWithRetry();
+      
+      // 获取当前 session token
+      const { data: { session } } = await client.auth.getSession();
+      if (!session) return;
 
+      const response = await fetch('/api/subscription', {
+        headers: {
+          'x-session': session.access_token
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSubscriptionState(data.subscription);
+        
+        // 同步到 localStorage 以减少 API 调用
+        localStorage.setItem('adscraft_subscription', JSON.stringify(data.subscription));
+      }
+    } catch (error) {
+      console.error('获取订阅状态失败:', error);
+    }
+  };
+
+  // 刷新订阅状态（支付成功后调用）
+  const refreshSubscription = async () => {
+    if (!user) return;
+    await fetchSubscriptionFromDB(user.id);
+  };
+
+  useEffect(() => {
     // 等待配置加载完成
     if (configLoading) return;
 
     // 检查当前登录状态
     getSupabaseBrowserClientWithRetry().then((client) => {
-      client.auth.getSession().then(({ data: { session } }) => {
+      client.auth.getSession().then(async ({ data: { session } }) => {
         if (session?.user) {
           setUser(session.user as User);
+          // 从数据库获取真实订阅状态
+          await fetchSubscriptionFromDB(session.user.id);
         }
         setLoading(false);
       });
 
       // 监听登录状态变化
-      const { data: { subscription } } = client.auth.onAuthStateChange((_event, session) => {
+      const { data: { subscription: authSubscription } } = client.auth.onAuthStateChange(async (_event, session) => {
         setUser(session?.user as User || null);
+        if (session?.user) {
+          // 登录后获取订阅状态
+          await fetchSubscriptionFromDB(session.user.id);
+        } else {
+          // 登出后清除订阅状态
+          setSubscriptionState({ route: '', status: 'none' });
+          localStorage.removeItem('adscraft_subscription');
+        }
         setLoading(false);
       });
 
-      return () => subscription.unsubscribe();
+      return () => authSubscription.unsubscribe();
     });
   }, [configLoading]);
 
   const signIn = async (email: string, password: string) => {
     const client = await getSupabaseBrowserClientWithRetry();
-    const { error } = await client.auth.signInWithPassword({ email, password });
+    const { error, data } = await client.auth.signInWithPassword({ email, password });
     if (error) throw error;
+    
+    // 登录成功后获取订阅状态
+    if (data.user) {
+      await fetchSubscriptionFromDB(data.user.id);
+    }
   };
 
   const signUp = async (email: string, password: string, fullName?: string) => {
@@ -113,7 +151,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSubscriptionState({ route: '', status: 'none' });
   };
 
-  // 设置订阅（简化方案，实际应调用支付API）
+  // 设置订阅（本地临时方案，支付成功后应该调用 refreshSubscription）
   const setSubscription = (route: string) => {
     const newSub: Subscription = {
       route,
@@ -135,10 +173,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   // 检查用户是否有权限访问特定路线的内容
+  // route 参数格式: 'retailer', 'manufacturer', 'brand', 'localService', 'local_service'
   const checkRouteAccess = (route: string): boolean => {
     if (!user) return false; // 未登录无权限
     if (subscription.status !== 'active') return false; // 未订阅无权限
-    return subscription.route === route; // 只能访问已订阅路线的内容
+    
+    // 兼容不同的路线名称格式
+    const normalizedRoute = route === 'local_service' ? 'localService' : route;
+    const normalizedSubscriptionRoute = subscription.route === 'local_service' ? 'localService' : subscription.route;
+    
+    return normalizedSubscriptionRoute === normalizedRoute;
   };
 
   return (
@@ -152,7 +196,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signOut,
       setPremium,
       setSubscription,
-      checkRouteAccess
+      checkRouteAccess,
+      refreshSubscription
     }}>
       {children}
     </AuthContext.Provider>
