@@ -50,7 +50,7 @@ function PricingContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           route,
-          language: locale,
+          user_id: user.id,
         }),
       });
 
