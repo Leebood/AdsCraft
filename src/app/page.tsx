@@ -125,7 +125,34 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Action Button */}
+        {/* Free Trial Section */}
+        <div className="text-center mt-8 mb-12">
+            <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-2xl p-8 border border-cyan-400/20">
+              <h4 className="text-xl font-semibold text-white mb-3">
+                {t('home.freeTrial.title')}
+              </h4>
+              <p className="text-blue-200 mb-4">
+                {t('home.freeTrial.desc')}
+              </p>
+              <div className="flex items-center justify-center gap-4 flex-wrap">
+                <a 
+                  href="https://www.creem.io/payment/prod_4iIOpYQLDR8tlnxu6Ziwz6"
+                  className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors"
+                >
+                  {t('home.freeTrial.from')}
+                </a>
+                <span className="text-white/40">→</span>
+                <a 
+                  href="https://www.creem.io/payment/prod_77H9iTdPoURp4C2Le1xhE8"
+                  className="text-cyan-400 hover:text-cyan-300 underline font-medium transition-colors"
+                >
+                  {t('home.freeTrial.seePlans')}
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Button */}
         {selectedRoute && (
           <div className="text-center mt-12 mb-16">
             <Link
@@ -201,8 +228,11 @@ export default function HomePage() {
 
         {/* Footer */}
         <div className="mt-20 pt-8 border-t border-white/10 text-center">
+          <p className="text-blue-300/60 text-sm mb-2">
+            {t('footer.rights')}
+          </p>
           <p className="text-blue-300/60 text-sm">
-            © 2026 AdsCraft. Facebook广告决策引擎.
+            {t('footer.support')}: <a href="mailto:leo.tikboost@gmail.com" className="text-cyan-400 hover:text-cyan-300 transition-colors">leo.tikboost@gmail.com</a>
           </p>
         </div>
       </div>

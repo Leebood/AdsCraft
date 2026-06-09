@@ -24,12 +24,19 @@ const translations = {
     
     // Footer
     'footer.rights': 'Facebook Ads Decision Engine.',
+    'footer.support': 'Support',
     
     // 首页
     'home.title': 'AdsCraft',
     'home.subtitle': 'Facebook Ads Decision Engine',
     'home.description': 'Not a tutorial, but a decision tool. Know what to choose, why to choose it, and how to adjust when things go wrong.',
     'home.selectRoute': 'Select Your Route',
+    
+    // 首页免费试用
+    'home.freeTrial.title': 'Try Free. Upgrade When Ready.',
+    'home.freeTrial.desc': 'Start with 3 free questions — get your full ad setup recommendation, no credit card needed.',
+    'home.freeTrial.from': 'Plans from $9.9/mo',
+    'home.freeTrial.seePlans': 'See all plans',
     
     // 路线选择
     'route.retailer.title': 'Retailer',
@@ -322,12 +329,19 @@ const translations = {
     
     // Footer
     'footer.rights': 'Facebook广告决策引擎',
+    'footer.support': '技术支持',
     
     // 首页
     'home.title': 'AdsCraft',
     'home.subtitle': 'Facebook广告决策引擎',
     'home.description': '不是教程，是决策工具。知道每个选项该选什么、为什么、跑偏了怎么调。',
     'home.selectRoute': '选择你的路线',
+    
+    // 首页免费试用
+    'home.freeTrial.title': '免费试用，随时升级',
+    'home.freeTrial.desc': '免费回答3个问题，获得完整的广告设置建议，无需信用卡。',
+    'home.freeTrial.from': '方案 $9.9/月起',
+    'home.freeTrial.seePlans': '查看全部方案',
     
     // 路线选择
     'route.retailer.title': '零售商',
