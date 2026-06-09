@@ -9,7 +9,7 @@ import { useAuth } from '@/lib/auth-context';
 import { CREEM_PRODUCTS } from '@/lib/creem-config';
 
 function PricingContent() {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -17,6 +17,8 @@ function PricingContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'creem' | 'wechat'>('creem');
   const [error, setError] = useState('');
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [showQrModal, setShowQrModal] = useState(false);
 
   // Creem支付：直接跳转到Creem支付页面
   const handleCreemPayment = () => {
@@ -27,14 +29,13 @@ function PricingContent() {
 
     const product = CREEM_PRODUCTS[route as keyof typeof CREEM_PRODUCTS];
     if (product) {
-      // 直接跳转到Creem支付页面
       window.location.href = product.url;
     } else {
       setError('Invalid route');
     }
   };
 
-  // 微信支付：调用API创建订单
+  // 微信支付：调用API创建订单，显示二维码
   const handleWechatPayment = async () => {
     if (!user) {
       router.push('/login');
@@ -60,15 +61,17 @@ function PricingContent() {
         throw new Error(data.error || 'Payment creation failed');
       }
 
-      // 微信支付H5模式：跳转到支付页面
-      if (data.h5_url) {
-        window.location.href = data.h5_url;
+      // Native支付返回code_url（二维码链接）
+      if (data.code_url) {
+        setQrCodeUrl(data.code_url);
+        setShowQrModal(true);
       } else {
         throw new Error('Payment link not received');
       }
     } catch (err) {
       console.error('Payment error:', err);
       setError(err instanceof Error ? err.message : 'Payment failed, please try again');
+    } finally {
       setIsLoading(false);
     }
   };
@@ -154,6 +157,48 @@ function PricingContent() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
       {/* 网格纹理背景 */}
       <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
+      
+      {/* 二维码弹窗 */}
+      {showQrModal && qrCodeUrl && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <Card className="bg-white/10 border-white/20 backdrop-blur-xl max-w-sm w-full">
+            <CardHeader className="text-center">
+              <CardTitle className="text-white text-xl">{t('pricing.qr.title')}</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+              {/* 二维码显示 - 使用第三方服务生成二维码图片 */}
+              <div className="bg-white p-4 rounded-xl mb-4 inline-block">
+                <img 
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrCodeUrl)}`}
+                  alt="WeChat Pay QR Code"
+                  className="w-[200px] h-[200px]"
+                />
+              </div>
+              <p className="text-white/80 text-sm mb-4">{t('pricing.qr.instruction')}</p>
+              
+              {/* 复制链接按钮 */}
+              <Button
+                onClick={() => {
+                  navigator.clipboard.writeText(qrCodeUrl);
+                  alert(t('pricing.qr.copied'));
+                }}
+                variant="outline"
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20 mb-3"
+              >
+                {t('pricing.qr.copyLink')}
+              </Button>
+              
+              {/* 关闭按钮 */}
+              <Button
+                onClick={() => setShowQrModal(false)}
+                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white"
+              >
+                {t('pricing.qr.close')}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
       
       <main className="container mx-auto px-4 py-12 relative z-10">
         <div className="max-w-2xl mx-auto">

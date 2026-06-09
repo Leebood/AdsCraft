@@ -261,6 +261,13 @@ const translations = {
     'pricing.payment.wechat': 'WeChat Pay',
     'pricing.payment.wechatDesc': 'Pay via WeChat - QR code payment',
     
+    // 二维码弹窗
+    'pricing.qr.title': 'WeChat Pay',
+    'pricing.qr.instruction': 'Open WeChat and scan this QR code to pay',
+    'pricing.qr.copyLink': 'Copy Payment Link',
+    'pricing.qr.copied': 'Link copied!',
+    'pricing.qr.close': 'Close',
+    
     // 隐私政策
     'privacy.title': 'Privacy Policy',
     'privacy.lastUpdate': 'Last updated: June 2026',
@@ -551,6 +558,13 @@ const translations = {
     'pricing.payment.creemButton': '信用卡支付',
     'pricing.payment.wechat': '微信支付',
     'pricing.payment.wechatDesc': '通过微信支付 - 扫码支付',
+    
+    // 二维码弹窗
+    'pricing.qr.title': '微信支付',
+    'pricing.qr.instruction': '打开微信扫描二维码完成支付',
+    'pricing.qr.copyLink': '复制支付链接',
+    'pricing.qr.copied': '链接已复制！',
+    'pricing.qr.close': '关闭',
     
     // 隐私政策
     'privacy.title': '隐私政策',
