@@ -85,15 +85,15 @@ export default function HomePage() {
           <h3 className="text-2xl font-semibold text-white mb-8 text-center">
             {t('home.selectRoute')}
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {routes.map((route) => (
               <button
                 key={route.id}
                 onClick={() => setSelectedRoute(route.id)}
-                className={`group relative p-8 rounded-xl border-2 transition-all duration-300 ${
+                className={`group relative p-6 rounded-2xl border transition-all duration-300 ${
                   selectedRoute === route.id
-                    ? 'bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border-cyan-400 shadow-lg shadow-cyan-500/20 scale-105'
-                    : 'bg-white/5 border-white/20 hover:border-cyan-400/50 hover:bg-white/10 hover:shadow-xl'
+                    ? 'bg-gradient-to-br from-cyan-500/30 to-blue-600/30 border-cyan-400 shadow-xl shadow-cyan-500/30 scale-[1.02]'
+                    : 'bg-gradient-to-br from-slate-800/80 to-slate-900/80 border-cyan-500/30 hover:border-cyan-400 hover:from-slate-700/80 hover:to-slate-800/80 hover:shadow-lg hover:shadow-cyan-500/10'
                 }`}
               >
                 <div className="flex items-start gap-6">
