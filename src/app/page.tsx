@@ -125,32 +125,127 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Free Trial Section */}
-        <div className="text-center mt-8 mb-12">
-            <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-2xl p-8 border border-cyan-400/20">
-              <h4 className="text-xl font-semibold text-white mb-3">
-                {t('home.freeTrial.title')}
-              </h4>
-              <p className="text-blue-200 mb-4">
-                {t('home.freeTrial.desc')}
-              </p>
-              <div className="flex items-center justify-center gap-4 flex-wrap">
-                <a 
+        {/* Pricing Plans Section */}
+        <div className="mt-12 mb-16">
+          <div className="text-center mb-10">
+            <h3 className="text-2xl font-semibold text-white mb-3">{t('home.pricing.title')}</h3>
+            <p className="text-blue-200">{t('home.pricing.subtitle')}</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 max-w-7xl mx-auto">
+            {/* Free Plan */}
+            <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-6 hover:border-cyan-400/30 transition-all">
+              <div className="text-center">
+                <h4 className="text-lg font-semibold text-white mb-1">{t('home.pricing.free.name')}</h4>
+                <div className="text-2xl font-bold text-cyan-400 mb-4">{t('home.pricing.free.price')}</div>
+                <ul className="text-sm text-blue-200 space-y-2 mb-6">
+                  <li>{t('home.pricing.free.feature1')}</li>
+                  <li>{t('home.pricing.free.feature2')}</li>
+                  <li>{t('home.pricing.free.feature3')}</li>
+                  <li>{t('home.pricing.free.feature4')}</li>
+                </ul>
+                <Link
+                  href="/questions?route=basic"
+                  className="block w-full py-2 px-4 bg-cyan-500/20 text-cyan-400 rounded-lg font-medium hover:bg-cyan-500/30 transition-colors"
+                >
+                  {t('home.pricing.getStarted')}
+                </Link>
+              </div>
+            </div>
+
+            {/* Local Service Plan */}
+            <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-6 hover:border-emerald-400/30 transition-all">
+              <div className="text-center">
+                <h4 className="text-lg font-semibold text-white mb-1">{t('home.pricing.localService.name')}</h4>
+                <div className="text-2xl font-bold text-emerald-400 mb-4">{t('home.pricing.localService.price')}</div>
+                <ul className="text-sm text-blue-200 space-y-2 mb-6">
+                  <li>{t('home.pricing.localService.feature1')}</li>
+                  <li>{t('home.pricing.localService.feature2')}</li>
+                  <li>{t('home.pricing.localService.feature3')}</li>
+                  <li>{t('home.pricing.localService.feature4')}</li>
+                  <li>{t('home.pricing.localService.feature5')}</li>
+                </ul>
+                <a
                   href="https://www.creem.io/payment/prod_4iIOpYQLDR8tlnxu6Ziwz6"
-                  className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full py-2 px-4 bg-emerald-500/20 text-emerald-400 rounded-lg font-medium hover:bg-emerald-500/30 transition-colors"
                 >
-                  {t('home.freeTrial.from')}
+                  {t('home.pricing.getStarted')}
                 </a>
-                <span className="text-white/40">→</span>
-                <a 
+              </div>
+            </div>
+
+            {/* Retailer Plan */}
+            <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-6 hover:border-yellow-400/30 transition-all">
+              <div className="text-center">
+                <h4 className="text-lg font-semibold text-white mb-1">{t('home.pricing.retailer.name')}</h4>
+                <div className="text-2xl font-bold text-yellow-400 mb-4">{t('home.pricing.retailer.price')}</div>
+                <ul className="text-sm text-blue-200 space-y-2 mb-6">
+                  <li>{t('home.pricing.retailer.feature1')}</li>
+                  <li>{t('home.pricing.retailer.feature2')}</li>
+                  <li>{t('home.pricing.retailer.feature3')}</li>
+                  <li>{t('home.pricing.retailer.feature4')}</li>
+                  <li>{t('home.pricing.retailer.feature5')}</li>
+                </ul>
+                <a
                   href="https://www.creem.io/payment/prod_77H9iTdPoURp4C2Le1xhE8"
-                  className="text-cyan-400 hover:text-cyan-300 underline font-medium transition-colors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full py-2 px-4 bg-yellow-500/20 text-yellow-400 rounded-lg font-medium hover:bg-yellow-500/30 transition-colors"
                 >
-                  {t('home.freeTrial.seePlans')}
+                  {t('home.pricing.getStarted')}
+                </a>
+              </div>
+            </div>
+
+            {/* Manufacturer Plan */}
+            <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-6 hover:border-violet-400/30 transition-all">
+              <div className="text-center">
+                <h4 className="text-lg font-semibold text-white mb-1">{t('home.pricing.manufacturer.name')}</h4>
+                <div className="text-2xl font-bold text-violet-400 mb-4">{t('home.pricing.manufacturer.price')}</div>
+                <ul className="text-sm text-blue-200 space-y-2 mb-6">
+                  <li>{t('home.pricing.manufacturer.feature1')}</li>
+                  <li>{t('home.pricing.manufacturer.feature2')}</li>
+                  <li>{t('home.pricing.manufacturer.feature3')}</li>
+                  <li>{t('home.pricing.manufacturer.feature4')}</li>
+                  <li>{t('home.pricing.manufacturer.feature5')}</li>
+                </ul>
+                <a
+                  href="https://www.creem.io/payment/prod_2jkEL15rXCjBQxkEGpXR5v"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full py-2 px-4 bg-violet-500/20 text-violet-400 rounded-lg font-medium hover:bg-violet-500/30 transition-colors"
+                >
+                  {t('home.pricing.getStarted')}
+                </a>
+              </div>
+            </div>
+
+            {/* Brand Plan */}
+            <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-6 hover:border-rose-400/30 transition-all">
+              <div className="text-center">
+                <h4 className="text-lg font-semibold text-white mb-1">{t('home.pricing.brand.name')}</h4>
+                <div className="text-2xl font-bold text-rose-400 mb-4">{t('home.pricing.brand.price')}</div>
+                <ul className="text-sm text-blue-200 space-y-2 mb-6">
+                  <li>{t('home.pricing.brand.feature1')}</li>
+                  <li>{t('home.pricing.brand.feature2')}</li>
+                  <li>{t('home.pricing.brand.feature3')}</li>
+                  <li>{t('home.pricing.brand.feature4')}</li>
+                  <li>{t('home.pricing.brand.feature5')}</li>
+                </ul>
+                <a
+                  href="https://www.creem.io/payment/prod_2B7hXzysLFhXYvP8bmTa9c"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full py-2 px-4 bg-rose-500/20 text-rose-400 rounded-lg font-medium hover:bg-rose-500/30 transition-colors"
+                >
+                  {t('home.pricing.getStarted')}
                 </a>
               </div>
             </div>
           </div>
+        </div>
 
           {/* Action Button */}
         {selectedRoute && (

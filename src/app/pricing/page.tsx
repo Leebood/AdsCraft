@@ -88,41 +88,51 @@ function PricingContent() {
     title: string;
     price: string;
     roi: string;
-    bgClass: string;
-    borderClass: string;
+    borderColor: string;
     iconColor: string;
+    buttonBg: string;
+    buttonHover: string;
+    shadowColor: string;
   }> = {
     retailer: {
       title: t('pricing.retailer.title'),
       price: '$19.9',
       roi: t('pricing.retailer.roi'),
-      bgClass: 'from-yellow-500/20 to-orange-500/20',
-      borderClass: 'border-yellow-400/50',
-      iconColor: 'text-yellow-400'
+      borderColor: 'border-yellow-400',
+      iconColor: 'text-yellow-600',
+      buttonBg: 'bg-yellow-500',
+      buttonHover: 'hover:bg-yellow-600',
+      shadowColor: 'shadow-yellow-500/20'
     },
     manufacturer: {
       title: t('pricing.manufacturer.title'),
       price: '$29.9',
       roi: t('pricing.manufacturer.roi'),
-      bgClass: 'from-violet-500/20 to-purple-500/20',
-      borderClass: 'border-violet-400/50',
-      iconColor: 'text-violet-400'
+      borderColor: 'border-violet-400',
+      iconColor: 'text-violet-600',
+      buttonBg: 'bg-violet-500',
+      buttonHover: 'hover:bg-violet-600',
+      shadowColor: 'shadow-violet-500/20'
     },
     brand: {
       title: t('pricing.brand.title'),
       price: '$29.9',
       roi: t('pricing.brand.roi'),
-      bgClass: 'from-rose-500/20 to-pink-500/20',
-      borderClass: 'border-rose-400/50',
-      iconColor: 'text-rose-400'
+      borderColor: 'border-rose-400',
+      iconColor: 'text-rose-600',
+      buttonBg: 'bg-rose-500',
+      buttonHover: 'hover:bg-rose-600',
+      shadowColor: 'shadow-rose-500/20'
     },
     local_service: {
       title: t('pricing.localService.title'),
       price: '$9.9',
       roi: t('pricing.localService.roi'),
-      bgClass: 'from-emerald-500/20 to-teal-500/20',
-      borderClass: 'border-emerald-400/50',
-      iconColor: 'text-emerald-400'
+      borderColor: 'border-emerald-400',
+      iconColor: 'text-emerald-600',
+      buttonBg: 'bg-emerald-500',
+      buttonHover: 'hover:bg-emerald-600',
+      shadowColor: 'shadow-emerald-500/20'
     }
   };
 
@@ -160,21 +170,21 @@ function PricingContent() {
       
       {/* 二维码弹窗 */}
       {showQrModal && qrCodeUrl && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <Card className="bg-white/10 border-white/20 backdrop-blur-xl max-w-sm w-full">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <Card className="bg-white border border-gray-200 shadow-xl max-w-sm w-full">
             <CardHeader className="text-center">
-              <CardTitle className="text-white text-xl">{t('pricing.qr.title')}</CardTitle>
+              <CardTitle className="text-gray-800 text-xl">{t('pricing.qr.title')}</CardTitle>
             </CardHeader>
             <CardContent className="text-center">
-              {/* 二维码显示 - 使用第三方服务生成二维码图片 */}
-              <div className="bg-white p-4 rounded-xl mb-4 inline-block">
+              {/* 二维码显示 */}
+              <div className="bg-gray-50 p-4 rounded-xl mb-4 inline-block border border-gray-200">
                 <img 
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrCodeUrl)}`}
                   alt="WeChat Pay QR Code"
                   className="w-[200px] h-[200px]"
                 />
               </div>
-              <p className="text-white/80 text-sm mb-4">{t('pricing.qr.instruction')}</p>
+              <p className="text-gray-600 text-sm mb-4">{t('pricing.qr.instruction')}</p>
               
               {/* 复制链接按钮 */}
               <Button
@@ -183,7 +193,7 @@ function PricingContent() {
                   alert(t('pricing.qr.copied'));
                 }}
                 variant="outline"
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20 mb-3"
+                className="bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100 mb-3"
               >
                 {t('pricing.qr.copyLink')}
               </Button>
@@ -196,7 +206,7 @@ function PricingContent() {
                   router.push('/dashboard');
                 }}
                 variant="outline"
-                className="bg-green-500/20 border-green-400/30 text-green-400 hover:bg-green-500/30 mb-3 w-full"
+                className="bg-green-50 border-green-400 text-green-600 hover:bg-green-100 mb-3 w-full"
               >
                 {t('pricing.qr.paymentComplete')}
               </Button>
@@ -204,7 +214,7 @@ function PricingContent() {
               {/* 关闭按钮 */}
               <Button
                 onClick={() => setShowQrModal(false)}
-                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white"
+                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
               >
                 {t('pricing.qr.close')}
               </Button>
@@ -218,62 +228,59 @@ function PricingContent() {
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-white mb-2">{t('pricing.title')}</h1>
-            <p className="text-blue-300 text-lg">{t('pricing.subtitle')}</p>
+            <p className="text-blue-200 text-lg">{t('pricing.subtitle')}</p>
           </div>
 
-          {/* 单一付费方案卡片 */}
-          <Card className={`bg-gradient-to-br ${pricingData.bgClass} border-2 ${pricingData.borderClass} backdrop-blur-xl shadow-2xl hover:shadow-3xl transition-all duration-300`}>
-            {/* 光晕效果 */}
-            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 blur-3xl opacity-50"></div>
-            
-            <CardHeader className="text-center pb-4 relative z-10">
+          {/* 单一付费方案卡片 - 白底配色 */}
+          <Card className={`bg-white border-2 ${pricingData.borderColor} shadow-xl ${pricingData.shadowColor} hover:shadow-2xl transition-all duration-300`}>
+            <CardHeader className="text-center pb-4">
               <CardTitle className={`text-2xl font-bold ${pricingData.iconColor}`}>
                 {pricingData.title}
               </CardTitle>
               <div className="mt-4">
-                <span className="text-5xl font-bold text-white">{pricingData.price}</span>
-                <span className="text-blue-200 text-lg ml-2">{t('pricing.premium.period')}</span>
+                <span className="text-5xl font-bold text-gray-800">{pricingData.price}</span>
+                <span className="text-gray-500 text-lg ml-2">{t('pricing.premium.period')}</span>
               </div>
             </CardHeader>
             
-            <CardContent className="relative z-10">
+            <CardContent>
               {/* ROI预期 */}
-              <div className="mb-6 p-4 bg-black/20 rounded-lg border border-white/20">
-                <p className="text-white font-medium">{t('pricing.roi.title')}: {pricingData.roi}</p>
+              <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <p className="text-gray-700 font-medium">{t('pricing.roi.title')}: {pricingData.roi}</p>
               </div>
               
               {/* 功能列表 */}
               <ul className="space-y-3 mb-8">
                 {features.map((feature, index) => (
                   <li key={index} className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-white mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    <span className="text-white">{feature}</span>
+                    <span className="text-gray-700">{feature}</span>
                   </li>
                 ))}
               </ul>
               
               {/* 支付方式选择 */}
               <div className="mb-6">
-                <p className="text-white/80 text-sm mb-3">{t('pricing.payment.select')}</p>
+                <p className="text-gray-600 text-sm mb-3">{t('pricing.payment.select')}</p>
                 <div className="grid grid-cols-2 gap-3">
                   {/* Creem支付 */}
                   <button
                     onClick={() => setPaymentMethod('creem')}
                     className={`p-4 rounded-xl border-2 transition-all duration-300 ${
                       paymentMethod === 'creem'
-                        ? 'bg-gradient-to-br from-cyan-500/30 to-blue-500/30 border-cyan-400 shadow-lg shadow-cyan-500/20'
-                        : 'bg-white/5 border-white/20 hover:border-white/40'
+                        ? 'bg-blue-50 border-blue-400 shadow-lg'
+                        : 'bg-gray-50 border-gray-200 hover:border-gray-300'
                     }`}
                   >
                     <div className="flex items-center justify-center gap-2">
-                      <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                       </svg>
-                      <span className="text-white font-medium">{t('pricing.payment.creem')}</span>
+                      <span className="text-gray-700 font-medium">{t('pricing.payment.creem')}</span>
                     </div>
-                    <p className="text-white/60 text-xs mt-2">{t('pricing.payment.creemDesc')}</p>
+                    <p className="text-gray-500 text-xs mt-2">{t('pricing.payment.creemDesc')}</p>
                   </button>
                   
                   {/* 微信支付 */}
@@ -281,17 +288,17 @@ function PricingContent() {
                     onClick={() => setPaymentMethod('wechat')}
                     className={`p-4 rounded-xl border-2 transition-all duration-300 ${
                       paymentMethod === 'wechat'
-                        ? 'bg-gradient-to-br from-green-500/30 to-emerald-500/30 border-green-400 shadow-lg shadow-green-500/20'
-                        : 'bg-white/5 border-white/20 hover:border-white/40'
+                        ? 'bg-green-50 border-green-400 shadow-lg'
+                        : 'bg-gray-50 border-gray-200 hover:border-gray-300'
                     }`}
                   >
                     <div className="flex items-center justify-center gap-2">
-                      <svg className="w-6 h-6 text-green-400" fill="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-6 h-6 text-green-500" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.3c0 1.785.794 3.415 2.127 4.638l-.826 2.463 2.553-1.185c.954.303 1.993.465 3.037.462 4.8 0 8.691-3.288 8.691-7.378 0-4.09-3.891-7.378-8.691-7.378zm4.033 6.052c.044.477-.144.943-.5 1.22-.357.277-.82.358-1.234.205-.413-.152-.713-.5-.775-.945-.062-.444.1-.887.427-1.152.327-.266.77-.324 1.174-.149.404.174.688.545.708.971zm-5.4 0c.044.477-.144.943-.5 1.22-.357.277-.82.358-1.234.205-.413-.152-.713-.5-.775-.945-.062-.444.1-.887.427-1.152.327-.266.77-.324 1.174-.149.404.174.688.545.708.971z"/>
                       </svg>
-                      <span className="text-white font-medium">{t('pricing.payment.wechat')}</span>
+                      <span className="text-gray-700 font-medium">{t('pricing.payment.wechat')}</span>
                     </div>
-                    <p className="text-white/60 text-xs mt-2">{t('pricing.payment.wechatDesc')}</p>
+                    <p className="text-gray-500 text-xs mt-2">{t('pricing.payment.wechatDesc')}</p>
                   </button>
                 </div>
               </div>
@@ -300,10 +307,10 @@ function PricingContent() {
               <Button
                 onClick={handleUpgrade}
                 disabled={isLoading && paymentMethod === 'wechat'}
-                className={`w-full font-semibold py-4 rounded-xl shadow-lg transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
+                className={`w-full font-semibold py-4 rounded-xl shadow-lg transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed text-white ${
                   paymentMethod === 'creem'
-                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 shadow-cyan-500/30'
-                    : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 shadow-green-500/30'
+                    ? 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600'
+                    : `${pricingData.buttonBg} ${pricingData.buttonHover}`
                 }`}
               >
                 {isLoading && paymentMethod === 'wechat' ? (
@@ -326,11 +333,11 @@ function PricingContent() {
 
               {/* 错误提示 */}
               {error && (
-                <p className="text-center text-red-400 text-sm mt-4">{error}</p>
+                <p className="text-center text-red-500 text-sm mt-4">{error}</p>
               )}
               
               {/* 提示 */}
-              <p className="text-center text-white/70 text-sm mt-4">
+              <p className="text-center text-gray-500 text-sm mt-4">
                 {t('pricing.premium.note')}
               </p>
             </CardContent>
@@ -341,7 +348,7 @@ function PricingContent() {
             <Button
               variant="ghost"
               onClick={() => router.back()}
-              className="text-blue-300 hover:text-white hover:bg-white/10"
+              className="text-gray-600 hover:text-gray-800 hover:bg-gray-100"
             >
               {t('common.backPrevious')}
             </Button>
