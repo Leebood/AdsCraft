@@ -20,18 +20,13 @@ function PricingContent() {
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [showQrModal, setShowQrModal] = useState(false);
 
-  // Creem支付：直接跳转到Creem支付页面
+  // Creem支付：直接跳转到Creem支付页面（无需登录验证，Creem会处理）
   const handleCreemPayment = () => {
-    if (!user) {
-      router.push('/login');
-      return;
-    }
-
     const product = CREEM_PRODUCTS[route as keyof typeof CREEM_PRODUCTS];
     if (product) {
-      window.location.href = product.url;
+      window.open(product.url, '_blank');
     } else {
-      setError('Invalid route');
+      setError(t('pricing.error.invalidRoute'));
     }
   };
 

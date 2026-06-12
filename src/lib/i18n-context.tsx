@@ -301,6 +301,7 @@ const translations = {
     'pricing.payment.creemButton': 'Pay with Card',
     'pricing.payment.wechat': 'WeChat Pay',
     'pricing.payment.wechatDesc': 'Pay via WeChat - QR code payment',
+    'pricing.error.invalidRoute': 'Invalid route selected',
     
     // 二维码弹窗
     'pricing.qr.title': 'WeChat Pay',
@@ -641,6 +642,7 @@ const translations = {
     'pricing.payment.creemButton': '信用卡支付',
     'pricing.payment.wechat': '微信支付',
     'pricing.payment.wechatDesc': '通过微信支付 - 扫码支付',
+    'pricing.error.invalidRoute': '选择的路线无效',
     
     // 二维码弹窗
     'pricing.qr.title': '微信支付',
