@@ -159,6 +159,7 @@ const translations = {
     'coldStart.title': 'Cold Start Strategy',
     'coldStart.locked': 'Premium Tips Locked',
     'coldStart.unlockHint': 'Upgrade to unlock advanced cold start tips',
+    'coldStart.upgradeButton': 'Upgrade Now',
     'coldStart.premiumTips': 'Advanced Tips',
     'coldStart.retailer.title': 'For e-commerce retailers: Start with broad targeting and let the algorithm learn',
     'coldStart.retailer.step1': 'Use broad targeting (no detailed restrictions) for first 3-5 days',
@@ -302,6 +303,7 @@ const translations = {
     'pricing.payment.wechat': 'WeChat Pay',
     'pricing.payment.wechatDesc': 'Pay via WeChat - QR code payment',
     'pricing.error.invalidRoute': 'Invalid route selected',
+    'pricing.error.loginRequired': 'Please login first to use WeChat Pay',
     
     // 二维码弹窗
     'pricing.qr.title': 'WeChat Pay',
@@ -500,6 +502,7 @@ const translations = {
     'coldStart.title': '冷启动策略',
     'coldStart.locked': '高级技巧已锁定',
     'coldStart.unlockHint': '升级解锁高级冷启动技巧',
+    'coldStart.upgradeButton': '立即升级',
     'coldStart.premiumTips': '高级技巧',
     'coldStart.retailer.title': '电商零售商：从宽泛定向开始，让算法学习',
     'coldStart.retailer.step1': '前3-5天使用宽泛定向（不做详细限制）',
@@ -643,6 +646,7 @@ const translations = {
     'pricing.payment.wechat': '微信支付',
     'pricing.payment.wechatDesc': '通过微信支付 - 扫码支付',
     'pricing.error.invalidRoute': '选择的路线无效',
+    'pricing.error.loginRequired': '请先登录后再使用微信支付',
     
     // 二维码弹窗
     'pricing.qr.title': '微信支付',

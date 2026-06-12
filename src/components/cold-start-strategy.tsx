@@ -99,7 +99,13 @@ export function ColdStartStrategy({ route, isPremium }: ColdStartStrategyProps) 
             <div className="text-center">
               <Lock className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
               <p className="text-white font-semibold mb-1">{t('coldStart.locked')}</p>
-              <p className="text-blue-200/70 text-sm">{t('coldStart.unlockHint')}</p>
+              <p className="text-blue-200/70 text-sm mb-3">{t('coldStart.unlockHint')}</p>
+              <a
+                href="/pricing?route=retailer"
+                className="inline-block px-6 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-lg hover:from-emerald-400 to-teal-500 transition-all"
+              >
+                {t('coldStart.upgradeButton')}
+              </a>
             </div>
           </div>
         )}

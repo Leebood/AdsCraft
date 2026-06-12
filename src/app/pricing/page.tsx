@@ -33,7 +33,8 @@ function PricingContent() {
   // 微信支付：调用API创建订单，显示二维码
   const handleWechatPayment = async () => {
     if (!user) {
-      router.push('/login');
+      // 用户未登录时，显示提示而不是跳转
+      setError(t('pricing.error.loginRequired'));
       return;
     }
 
