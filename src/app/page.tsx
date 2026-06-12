@@ -242,10 +242,10 @@ export default function HomePage() {
         {selectedRoute && (
           <div className="text-center mt-12 mb-16">
             <Link
-              href="/setup-checklist"
+              href={`/questions?route=${selectedRoute}`}
               className="inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-semibold text-lg hover:from-cyan-400 hover:to-blue-500 transition-all duration-300 shadow-lg shadow-cyan-500/30 hover:shadow-xl hover:shadow-cyan-500/40 hover:scale-105"
             >
-              {t('questions.generate')}
+              {t('home.startNow')}
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>

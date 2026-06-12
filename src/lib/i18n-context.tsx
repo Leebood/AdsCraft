@@ -32,6 +32,7 @@ const translations = {
     'home.subtitle': 'Facebook Ads Decision Engine',
     'home.description': 'Not a tutorial, but a decision tool. Know what to choose, why to choose it, and how to adjust when things go wrong.',
     'home.selectRoute': 'Select Your Route',
+    'home.startNow': 'Start Now',
     
     // 首页定价方案
     'home.pricing.title': 'Choose Your Plan',
@@ -375,6 +376,7 @@ const translations = {
     'home.subtitle': 'Facebook广告决策引擎',
     'home.description': '不是教程，是决策工具。知道每个选项该选什么、为什么、跑偏了怎么调。',
     'home.selectRoute': '选择你的路线',
+    'home.startNow': '立即开始',
     
     // 首页定价方案
     'home.pricing.title': '选择你的方案',
