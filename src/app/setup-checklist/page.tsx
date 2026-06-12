@@ -1,17 +1,19 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useI18n } from '@/lib/i18n-context'
 
 const REQUIRED_ITEMS = ['page', 'ad_account', 'pixel']
 const RECOMMENDED_ITEMS = ['domain', 'events']
 const OPTIONAL_ITEMS = ['bm', 'whatsapp']
 
-export default function SetupChecklistPage() {
+function SetupChecklistContent() {
   const { t } = useI18n()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const route = searchParams.get('route') || 'retailer'
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({})
 
   const allRequiredChecked = REQUIRED_ITEMS.every(item => checkedItems[`pre_setup_${item}`])
@@ -25,7 +27,7 @@ export default function SetupChecklistPage() {
 
   const handleNext = () => {
     if (allRequiredChecked) {
-      router.push('/questions')
+      router.push(`/questions?route=${route}`)
     }
   }
 
@@ -241,5 +243,13 @@ export default function SetupChecklistPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function SetupChecklistPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center"><div className="text-white">Loading...</div></div>}>
+      <SetupChecklistContent />
+    </Suspense>
   )
 }

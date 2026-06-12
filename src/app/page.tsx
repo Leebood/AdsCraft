@@ -88,7 +88,7 @@ export default function HomePage() {
           {selectedRoute && (
             <div className="mb-6 flex justify-center">
               <button
-                onClick={() => router.push(`/questions?route=${selectedRoute}`)}
+                onClick={() => router.push(`/setup-checklist?route=${selectedRoute}`)}
                 className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl text-white font-semibold shadow-lg shadow-cyan-500/30 hover:from-cyan-400 hover:to-blue-500 hover:scale-105 transition-all duration-300 flex items-center gap-2"
               >
                 {t('home.startNow')}
