@@ -73,15 +73,11 @@ const getRoutePricing = (route: string) => {
   return pricing[route] || pricing.retailer;
 };
 
-// 获取路线对应的订阅链接
+// 获取路线对应的订阅链接（保持与CREEM_PRODUCTS键名一致）
 const getSubscriptionRoute = (route: string): string => {
-  const routeMap: Record<string, string> = {
-    retailer: 'retailer',
-    manufacturer: 'manufacturer',
-    brand: 'brand',
-    local_service: 'localService'
-  };
-  return routeMap[route] || 'retailer';
+  // 确保路线名称与CREEM_PRODUCTS配置一致
+  const validRoutes = ['retailer', 'manufacturer', 'brand', 'local_service'];
+  return validRoutes.includes(route) ? route : 'retailer';
 };
 
 export default function PlanPage() {
