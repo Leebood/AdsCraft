@@ -88,7 +88,7 @@ export default function PlanPage() {
   const params = useParams();
   const planId = params.id as string;
   const { t } = useI18n();
-  const { user, isPremium, checkRouteAccess } = useAuth();
+  const { user, loading, isPremium, checkRouteAccess } = useAuth();
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -103,8 +103,8 @@ export default function PlanPage() {
   const pricing = getRoutePricing(route);
   const subscriptionRoute = getSubscriptionRoute(route);
 
-  // 判断用户是否可以访问完整内容
-  const canAccessFullContent = user && isPremium && checkRouteAccess(subscriptionRoute);
+  // 判断用户是否可以访问完整内容（loading时不做判断）
+  const canAccessFullContent = !loading && user && isPremium && checkRouteAccess(subscriptionRoute);
 
   // 保存方案到数据库
   const handleSavePlan = async () => {

@@ -19,6 +19,7 @@ const translations = {
     'nav.questions': 'Basic Universal Plan',
     'nav.dashboard': 'Dashboard',
     'nav.login': 'Login',
+    'nav.logout': 'Logout',
     'nav.privacy': 'Privacy Policy',
     'nav.terms': 'Terms of Service',
     
@@ -357,6 +358,7 @@ const translations = {
     'nav.questions': '基础通用方案',
     'nav.dashboard': '仪表板',
     'nav.login': '登录',
+    'nav.logout': '退出登录',
     'nav.setup': '前期设置',
     'nav.privacy': '隐私政策',
     'nav.terms': '服务条款',
