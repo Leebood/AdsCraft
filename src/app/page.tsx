@@ -2,10 +2,12 @@
 
 import { useI18n } from '@/lib/i18n-context';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export default function HomePage() {
   const { t } = useI18n();
+  const router = useRouter();
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
 
   const routes = [
@@ -81,29 +83,44 @@ export default function HomePage() {
         </div>
 
         {/* Route Selection */}
-        <div className="mb-12">
-          <h3 className="text-2xl font-semibold text-white mb-8 text-center">
+        <div className="mb-8">
+          {/* Start Button - Above Route Selection */}
+          {selectedRoute && (
+            <div className="mb-6 flex justify-center">
+              <button
+                onClick={() => router.push(`/questions?route=${selectedRoute}`)}
+                className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl text-white font-semibold shadow-lg shadow-cyan-500/30 hover:from-cyan-400 hover:to-blue-500 hover:scale-105 transition-all duration-300 flex items-center gap-2"
+              >
+                {t('home.startNow')}
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </button>
+            </div>
+          )}
+          
+          <h3 className="text-2xl font-semibold text-white mb-6 text-center">
             {t('home.selectRoute')}
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {routes.map((route) => (
               <button
                 key={route.id}
                 onClick={() => setSelectedRoute(route.id)}
-                className={`group relative p-6 rounded-2xl border transition-all duration-300 ${
+                className={`group relative p-4 rounded-2xl border transition-all duration-300 ${
                   selectedRoute === route.id
                     ? 'bg-gradient-to-br from-cyan-500/30 to-blue-600/30 border-cyan-400 shadow-xl shadow-cyan-500/30 scale-[1.02]'
                     : 'bg-gradient-to-br from-slate-800/80 to-slate-900/80 border-cyan-500/30 hover:border-cyan-400 hover:from-slate-700/80 hover:to-slate-800/80 hover:shadow-lg hover:shadow-cyan-500/10'
                 }`}
               >
-                <div className="flex items-start gap-6">
+                <div className="flex items-start gap-4">
                   <div className={`transition-transform duration-300 ${
                     selectedRoute === route.id ? 'scale-110' : 'group-hover:scale-105'
                   }`}>
                     {route.icon}
                   </div>
                   <div className="flex-1">
-                    <h4 className="text-xl font-semibold text-white mb-2 group-hover:text-cyan-300 transition-colors">
+                    <h4 className="text-lg font-semibold text-white mb-1 group-hover:text-cyan-300 transition-colors">
                       {route.title}
                     </h4>
                     <p className="text-blue-200/80 text-sm leading-relaxed">
@@ -111,9 +128,9 @@ export default function HomePage() {
                     </p>
                   </div>
                   {selectedRoute === route.id && (
-                    <div className="absolute top-4 right-4">
-                      <div className="w-6 h-6 bg-cyan-400 rounded-full flex items-center justify-center">
-                        <svg className="w-4 h-4 text-slate-900" fill="currentColor" viewBox="0 0 20 20">
+                    <div className="absolute top-3 right-3">
+                      <div className="w-5 h-5 bg-cyan-400 rounded-full flex items-center justify-center">
+                        <svg className="w-3 h-3 text-slate-900" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
                         </svg>
                       </div>
@@ -237,21 +254,6 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-
-          {/* Action Button */}
-        {selectedRoute && (
-          <div className="text-center mt-12 mb-16">
-            <Link
-              href={`/questions?route=${selectedRoute}`}
-              className="inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-semibold text-lg hover:from-cyan-400 hover:to-blue-500 transition-all duration-300 shadow-lg shadow-cyan-500/30 hover:shadow-xl hover:shadow-cyan-500/40 hover:scale-105"
-            >
-              {t('home.startNow')}
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </Link>
-          </div>
-        )}
 
         {/* Value Proposition */}
         <div className="mt-20">
