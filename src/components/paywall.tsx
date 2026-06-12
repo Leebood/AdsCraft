@@ -13,14 +13,15 @@ interface PaywallProps {
 
 export function Paywall({ route, price, roi, isLoggedIn }: PaywallProps) {
   const { t } = useI18n();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   
-  // 如果没有传入isLoggedIn，使用useAuth的状态
-  const isUserLoggedIn = isLoggedIn !== undefined ? isLoggedIn : !!user;
+  // loading时不做判断，避免状态错误
+  // 如果没有传入isLoggedIn，使用useAuth的状态（但要确保loading已结束）
+  const isUserLoggedIn = loading ? false : (isLoggedIn !== undefined ? isLoggedIn : !!user);
   
-  // 根据登录状态决定跳转链接
-  const actionLink = isUserLoggedIn ? `/pricing?route=${route || 'retailer'}` : '/login';
-  const actionText = isUserLoggedIn ? t('paywall.cta') : t('nav.login');
+  // 根据登录状态决定跳转链接（loading时等待，不跳转）
+  const actionLink = loading ? '#' : (isUserLoggedIn ? `/pricing?route=${route || 'retailer'}` : '/login');
+  const actionText = loading ? '...' : (isUserLoggedIn ? t('paywall.cta') : t('nav.login'));
   
   return (
     <div className="bg-gradient-to-br from-white/10 to-white/5 border border-white/20 rounded-xl p-6 backdrop-blur-sm">
