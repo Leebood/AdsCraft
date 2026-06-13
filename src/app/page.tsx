@@ -4,11 +4,23 @@ import { useI18n } from '@/lib/i18n-context';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useAuth } from '@/lib/auth-context';
 
 export default function HomePage() {
   const { t } = useI18n();
   const router = useRouter();
+  const { user, loading } = useAuth();
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
+  
+  // 处理需要登录的操作
+  const handleAuthRequiredAction = (targetPath: string) => {
+    if (loading) return; // 加载中不操作
+    if (user) {
+      router.push(targetPath);
+    } else {
+      router.push('/login');
+    }
+  };
 
   const routes = [
     {
@@ -88,10 +100,11 @@ export default function HomePage() {
           {selectedRoute && (
             <div className="mb-6 flex justify-center">
               <button
-                onClick={() => router.push(`/setup-checklist?route=${selectedRoute}`)}
-                className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl text-white font-semibold shadow-lg shadow-cyan-500/30 hover:from-cyan-400 hover:to-blue-500 hover:scale-105 transition-all duration-300 flex items-center gap-2"
+                onClick={() => handleAuthRequiredAction(`/setup-checklist?route=${selectedRoute}`)}
+                disabled={loading}
+                className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl text-white font-semibold shadow-lg shadow-cyan-500/30 hover:from-cyan-400 hover:to-blue-500 hover:scale-105 transition-all duration-300 flex items-center gap-2 disabled:opacity-50"
               >
-                {t('home.startNow')}
+                {loading ? '...' : t('home.startNow')}
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
@@ -160,12 +173,13 @@ export default function HomePage() {
                   <li>{t('home.pricing.free.feature2')}</li>
                   <li>{t('home.pricing.free.feature3')}</li>
                 </ul>
-                <Link
-                  href="/questions?route=basic"
-                  className="block w-full py-1.5 px-3 bg-cyan-500/20 text-cyan-400 rounded-md text-sm font-medium hover:bg-cyan-500/30 transition-colors"
+                <button
+                  onClick={() => handleAuthRequiredAction('/questions?route=basic')}
+                  disabled={loading}
+                  className="block w-full py-1.5 px-3 bg-cyan-500/20 text-cyan-400 rounded-md text-sm font-medium hover:bg-cyan-500/30 transition-colors disabled:opacity-50"
                 >
-                  {t('home.pricing.getStarted')}
-                </Link>
+                  {loading ? '...' : t('home.pricing.getStarted')}
+                </button>
               </div>
             </div>
 
