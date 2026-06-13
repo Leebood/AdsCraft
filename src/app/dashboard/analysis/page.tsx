@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { useI18n } from '@/lib/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 import { getSupabaseBrowserClientAsync } from '@/lib/supabase-browser';
-import { Download, BarChart3, LineChart, Lock } from 'lucide-react';
+import { Download, BarChart3, LineChart, Lock, Target, Wallet } from 'lucide-react';
 
 // 截图数据类型
 interface SnapshotData {
@@ -43,6 +43,25 @@ interface HistorySnapshot {
   created_at: string;
 }
 
+// 用户方案类型
+interface UserPlan {
+  route: string;
+  budget: string;
+  goal: string;
+}
+
+// 获取路线中文名称
+function getRouteName(route: string, locale: string): string {
+  const routeNames: Record<string, Record<string, string>> = {
+    'retailer': { zh: '零售商', en: 'Retailer' },
+    'manufacturer': { zh: '制造商', en: 'Manufacturer' },
+    'local_service': { zh: '本地服务商', en: 'Local Service' },
+    'brand': { zh: '品牌方', en: 'Brand Owner' },
+    'basic': { zh: '基础通用方案', en: 'Basic Plan' },
+  };
+  return routeNames[route]?.[locale] || route;
+}
+
 function AnalysisContent() {
   const { locale } = useI18n();
   const { user, isPremium, subscription } = useAuth();
@@ -59,10 +78,47 @@ function AnalysisContent() {
   const [selectedDays, setSelectedDays] = useState(daysFilter);
   const [error, setError] = useState<string>('');
   const [dragOver, setDragOver] = useState(false);
+  const [userPlan, setUserPlan] = useState<UserPlan | null>(null);
+  const [checkingPlan, setCheckingPlan] = useState(true);
+
+  // 检查用户是否有保存的方案
+  const checkUserPlan = useCallback(async () => {
+    if (!user) {
+      setCheckingPlan(false);
+      return;
+    }
+    
+    try {
+      const client = await getSupabaseBrowserClientAsync();
+      const { data: plans } = await client
+        .from('plans')
+        .select('route, budget, goal')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      if (plans && plans.length > 0) {
+        setUserPlan(plans[0]);
+      }
+    } catch (err) {
+      console.error('检查方案错误:', err);
+    } finally {
+      setCheckingPlan(false);
+    }
+  }, [user]);
+
+  // 用户是否有访问权限（有方案 OR 有订阅）
+  const hasAccess = userPlan !== null || isPremium;
+
+  useEffect(() => {
+    if (user) {
+      checkUserPlan();
+    }
+  }, [user, checkUserPlan]);
 
   // 获取历史数据和分析
   const fetchHistoryAndAnalysis = useCallback(async () => {
-    if (!user) return;
+    if (!user || !hasAccess) return;
     
     try {
       setLoading(true);
@@ -83,19 +139,23 @@ function AnalysisContent() {
         const data = await response.json();
         setHistoryData(data.data || []);
         setAnalysis(data.analysis || '');
+        // 如果API返回了方案信息，更新本地状态
+        if (data.planInfo) {
+          setUserPlan(data.planInfo);
+        }
       }
     } catch (err) {
       console.error('获取历史数据错误:', err);
     } finally {
       setLoading(false);
     }
-  }, [user, selectedDays]);
+  }, [user, hasAccess, selectedDays]);
 
   useEffect(() => {
-    if (user) {
+    if (user && hasAccess && !checkingPlan) {
       fetchHistoryAndAnalysis();
     }
-  }, [user, fetchHistoryAndAnalysis]);
+  }, [user, hasAccess, checkingPlan, fetchHistoryAndAnalysis]);
 
   // 处理文件上传
   const handleFileUpload = async (file: File) => {
@@ -210,6 +270,10 @@ function AnalysisContent() {
         // 保存成功，刷新数据
         setExtractedData(null);
         setAnalysis(data.analysis);
+        // 如果API返回了方案信息，更新本地状态
+        if (data.planInfo) {
+          setUserPlan(data.planInfo);
+        }
         fetchHistoryAndAnalysis();
       }
     } catch (err) {
@@ -229,6 +293,15 @@ function AnalysisContent() {
     });
   };
 
+  // Loading状态
+  if (checkingPlan) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+        <div className="animate-spin w-10 h-10 border-2 border-cyan-400 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden flex items-center justify-center">
@@ -247,8 +320,8 @@ function AnalysisContent() {
     );
   }
 
-  // 付费墙检查 - 需要订阅才能使用分析功能
-  if (!isPremium) {
+  // 付费墙检查 - 需要有方案 OR 有订阅才能使用分析功能
+  if (!hasAccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden flex items-center justify-center">
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
@@ -256,7 +329,7 @@ function AnalysisContent() {
           <CardContent className="text-center py-12">
             <Lock className="w-12 h-12 text-cyan-400 mx-auto mb-6" />
             <h2 className="text-2xl font-bold text-white mb-4">
-              {locale === 'zh' ? '截图分析为付费功能' : 'Screenshot Analysis is a Premium Feature'}
+              {locale === 'zh' ? '截图分析需要先完成设置' : 'Complete Setup to Unlock Analysis'}
             </h2>
             <p className="text-blue-200 mb-2">
               {locale === 'zh' 
@@ -265,14 +338,21 @@ function AnalysisContent() {
             </p>
             <p className="text-blue-300/70 mb-6">
               {locale === 'zh'
-                ? '订阅任意路线后即可使用，上传截图让AI帮你分析广告表现'
-                : 'Subscribe to any route to upload screenshots and get AI-powered analysis'}
+                ? '请先完成广告策略设置，或订阅任意路线解锁此功能'
+                : 'Complete your ad strategy setup first, or subscribe to unlock this feature'}
             </p>
-            <Link href="/pricing">
-              <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/30">
-                {locale === 'zh' ? '升级订阅' : 'Upgrade Now'}
-              </Button>
-            </Link>
+            <div className="flex gap-4 justify-center">
+              <Link href="/setup-checklist">
+                <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/30">
+                  {locale === 'zh' ? '开始设置' : 'Start Setup'}
+                </Button>
+              </Link>
+              <Link href="/pricing">
+                <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                  {locale === 'zh' ? '查看订阅' : 'View Plans'}
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -292,9 +372,47 @@ function AnalysisContent() {
               {locale === 'zh' ? '广告截图分析' : 'Ad Snapshot Analysis'}
             </h1>
             <p className="text-blue-200">
-              {locale === 'zh' ? '上传截图，AI自动提取指标并分析' : 'Upload screenshots, AI extracts metrics and analyzes'}
+              {locale === 'zh' ? '上传截图，AI自动提取指标并分析' : 'Upload snapshots, AI extracts metrics and analyzes'}
             </p>
           </div>
+
+          {/* 用户方案信息卡片 */}
+          {userPlan && (
+            <Card className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border-cyan-400/30 backdrop-blur-sm shadow-xl mb-6">
+              <CardContent className="py-4">
+                <div className="flex items-center gap-6 justify-center flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <Target className="w-5 h-5 text-cyan-400" />
+                    <span className="text-blue-200">
+                      {locale === 'zh' ? '路线：' : 'Route: '}
+                    </span>
+                    <span className="text-white font-semibold">
+                      {getRouteName(userPlan.route, locale)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Wallet className="w-5 h-5 text-cyan-400" />
+                    <span className="text-blue-200">
+                      {locale === 'zh' ? '预算：' : 'Budget: '}
+                    </span>
+                    <span className="text-white font-semibold">{userPlan.budget}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Target className="w-5 h-5 text-cyan-400" />
+                    <span className="text-blue-200">
+                      {locale === 'zh' ? '目标：' : 'Goal: '}
+                    </span>
+                    <span className="text-white font-semibold">{userPlan.goal}</span>
+                  </div>
+                </div>
+                <p className="text-center text-blue-300/70 text-sm mt-3">
+                  {locale === 'zh' 
+                    ? 'AI分析将基于您的策略设置给出针对性建议'
+                    : 'AI analysis will provide tailored suggestions based on your strategy settings'}
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* 区域1：上传区 */}
           <Card className="bg-white/5 border-white/20 backdrop-blur-sm shadow-xl mb-6">
