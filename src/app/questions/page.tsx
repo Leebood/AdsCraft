@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useI18n } from '@/lib/i18n-context';
+import { useAuth } from '@/lib/auth-context';
 
 function QuestionsContent() {
   const searchParams = useSearchParams();
@@ -209,6 +210,37 @@ function QuestionsContent() {
 }
 
 export default function QuestionsPage() {
+  const { t, locale } = useI18n();
+  const { user, loading } = useAuth();
+
+  // 未登录时显示登录提示
+  if (!loading && !user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden flex items-center justify-center">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
+        <Card className="w-full max-w-md bg-white/5 border-white/20 backdrop-blur-sm shadow-xl relative z-10">
+          <CardContent className="text-center py-12">
+            <p className="text-blue-200 mb-6">{locale === 'zh' ? '请登录以访问基础通用方案' : 'Please login to access questions'}</p>
+            <Link href="/login">
+              <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/30">
+                {t('login.title')}
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // 加载中时显示加载状态
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+        <div className="text-white text-lg">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center">

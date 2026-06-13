@@ -4,6 +4,9 @@ import { useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useI18n } from '@/lib/i18n-context'
+import { useAuth } from '@/lib/auth-context'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 
 const REQUIRED_ITEMS = ['page', 'ad_account', 'pixel']
 const RECOMMENDED_ITEMS = ['domain', 'events']
@@ -247,6 +250,42 @@ function SetupChecklistContent() {
 }
 
 export default function SetupChecklistPage() {
+  const { t, locale } = useI18n()
+  const { user, loading } = useAuth()
+
+  // 未登录时显示登录提示
+  if (!loading && !user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden flex items-center justify-center">
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)',
+            backgroundSize: '40px 40px'
+          }} />
+        </div>
+        <Card className="w-full max-w-md bg-white/5 border-white/20 backdrop-blur-sm shadow-xl relative z-10">
+          <CardContent className="text-center py-12">
+            <p className="text-blue-200 mb-6">{locale === 'zh' ? '请登录以访问前期设置' : 'Please login to access setup checklist'}</p>
+            <Link href="/login">
+              <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/30">
+                {t('login.title')}
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // 加载中时显示加载状态
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    )
+  }
+
   return (
     <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center"><div className="text-white">Loading...</div></div>}>
       <SetupChecklistContent />

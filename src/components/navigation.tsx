@@ -8,20 +8,30 @@ export function Navigation() {
   const { t } = useI18n();
   const { user, loading, isPremium, signOut } = useAuth();
   
+  // 需要登录才能访问的链接
+  const authRequiredLinks = [
+    { href: '/setup-checklist', label: t('nav.setup') },
+    { href: '/questions', label: t('nav.questions') },
+    { href: '/dashboard', label: t('nav.dashboard') }
+  ];
+  
   return (
     <nav className="flex gap-6 items-center">
       <Link href="/" className="text-blue-200/80 hover:text-cyan-300 transition-colors font-medium">
         {t('nav.home')}
       </Link>
-      <Link href="/setup-checklist" className="text-blue-200/80 hover:text-cyan-300 transition-colors font-medium">
-        {t('nav.setup')}
-      </Link>
-      <Link href="/questions" className="text-blue-200/80 hover:text-cyan-300 transition-colors font-medium">
-        {t('nav.questions')}
-      </Link>
-      <Link href="/dashboard" className="text-blue-200/80 hover:text-cyan-300 transition-colors font-medium">
-        {t('nav.dashboard')}
-      </Link>
+      {/* 需要登录才能访问的链接 */}
+      {!loading && authRequiredLinks.map((link) => (
+        user ? (
+          <Link key={link.href} href={link.href} className="text-blue-200/80 hover:text-cyan-300 transition-colors font-medium">
+            {link.label}
+          </Link>
+        ) : (
+          <Link key={link.href} href="/login" className="text-blue-200/80 hover:text-cyan-300 transition-colors font-medium">
+            {link.label}
+          </Link>
+        )
+      ))}
       {user && isPremium && (
         <Link href="/dashboard/analysis" className="text-blue-200/80 hover:text-cyan-300 transition-colors font-medium">
           {t('nav.analysis')}
