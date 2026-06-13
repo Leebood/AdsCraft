@@ -17,6 +17,17 @@ import { AIDiagnosis } from '@/components/ai-diagnosis';
 // 根据路线、预算、路径、目标生成精确配置
 const getPlanConfig = (route: string, budget: string, path: string, goal: string) => {
   const configs = {
+    // 基础通用方案（免费）- 通用配置，不区分线路
+    basic: {
+      objective: 'Traffic → Sales',
+      budgetStrategy: budget === 'low' ? 'ABO $10-20/day' : budget === 'mid' ? 'ABO → CBO ($30-50/day)' : 'CBO ($50+/day)',
+      audience: 'Core + Interest + LAA (test)',
+      placement: 'Advantage+ (FB+IG+AN)',
+      bid: 'Minimum cost → Cost cap',
+      format: 'Single image + Video + Carousel',
+      optimization: 'Link Clicks → ViewContent → Purchase',
+      remarketing: '7-day ATC + 14-day engagement + 30-day browse'
+    },
     retailer: {
       objective: goal === 'sales' ? 'Sales' : 'Traffic',
       budgetStrategy: budget === 'low' ? 'ABO $10-20/day' : budget === 'mid' ? 'ABO → CBO ($30-50/day)' : 'CBO ($50+/day)',
@@ -59,25 +70,34 @@ const getPlanConfig = (route: string, budget: string, path: string, goal: string
     }
   };
 
-  return configs[route as keyof typeof configs] || configs.retailer;
+  // 兼容 localService（camelCase）和 local_service（snake_case）
+  const normalizedRoute = route === 'localService' ? 'local_service' : route;
+  return configs[normalizedRoute as keyof typeof configs] || configs.basic;
 };
 
 // 获取路线定价信息
 const getRoutePricing = (route: string) => {
   const pricing: Record<string, { price: string; roi: string }> = {
+    basic: { price: '免费', roi: '基础通用配置' },
     retailer: { price: '$19.9/月', roi: '优化1天预算即可覆盖' },
     manufacturer: { price: '$29.9/月', roi: '1个精准询盘即可覆盖' },
     brand: { price: '$29.9/月', roi: '1次有效品牌曝光即可覆盖' },
     local_service: { price: '$9.9/月', roi: '1个到店客户即可覆盖' }
   };
-  return pricing[route] || pricing.retailer;
+  // 兼容 localService（camelCase）
+  const normalizedRoute = route === 'localService' ? 'local_service' : route;
+  return pricing[normalizedRoute] || pricing.basic;
 };
 
 // 获取路线对应的订阅链接（保持与CREEM_PRODUCTS键名一致）
 const getSubscriptionRoute = (route: string): string => {
+  // basic 是免费方案，不需要订阅
+  if (route === 'basic') return 'basic';
+  // 兼容 localService（camelCase）
+  const normalizedRoute = route === 'localService' ? 'local_service' : route;
   // 确保路线名称与CREEM_PRODUCTS配置一致
   const validRoutes = ['retailer', 'manufacturer', 'brand', 'local_service'];
-  return validRoutes.includes(route) ? route : 'retailer';
+  return validRoutes.includes(normalizedRoute) ? normalizedRoute : 'retailer';
 };
 
 export default function PlanPage() {
@@ -99,8 +119,14 @@ export default function PlanPage() {
   const pricing = getRoutePricing(route);
   const subscriptionRoute = getSubscriptionRoute(route);
 
-  // 判断用户是否可以访问完整内容（loading时不做判断）
-  const canAccessFullContent = !loading && user && isPremium && checkRouteAccess(subscriptionRoute);
+  // 判断用户是否可以访问完整内容
+  // basic 是免费方案：登录用户可看基础配置，但付费功能（5阶段、冷启动、AI诊断）仍需订阅
+  // 付费线路：需要订阅才能看所有内容
+  const isBasicPlan = route === 'basic';
+  const canAccessBasicContent = !loading && user; // 登录即可看基础配置
+  const canAccessPremiumFeatures = !loading && user && isPremium && (
+    isBasicPlan || checkRouteAccess(subscriptionRoute)
+  );
 
   // 保存方案到数据库
   const handleSavePlan = async () => {
@@ -182,8 +208,8 @@ export default function PlanPage() {
                 </TableBody>
               </Table>
 
-              {/* 付费解锁内容 */}
-              {!canAccessFullContent && (
+              {/* 付费解锁内容 - 仅付费线路显示付费墙 */}
+              {!canAccessBasicContent && !isBasicPlan && (
                 <div className="mt-8">
                   <Paywall 
                     route={subscriptionRoute} 
@@ -193,26 +219,37 @@ export default function PlanPage() {
                   />
                 </div>
               )}
+              {/* basic 路线登录提示 */}
+              {!canAccessBasicContent && isBasicPlan && (
+                <div className="mt-8">
+                  <Paywall 
+                    route="basic" 
+                    price="免费" 
+                    roi="登录即可查看"
+                    isLoggedIn={!!user}
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
 
           {/* 5阶段递进指南 */}
           <div className="mt-12">
-            <StageGuide route={route} isPremium={canAccessFullContent ?? false} />
+            <StageGuide route={route} isPremium={canAccessPremiumFeatures ?? false} />
           </div>
 
           {/* 冷启动策略 */}
           <div className="mt-12">
-            <ColdStartStrategy route={route} isPremium={canAccessFullContent ?? false} />
+            <ColdStartStrategy route={route} isPremium={canAccessPremiumFeatures ?? false} />
           </div>
 
           {/* AI诊断 */}
           <div className="mt-12">
-            <AIDiagnosis route={route} budget={budget} goal={goal} planData={config} isPremium={canAccessFullContent ?? false} />
+            <AIDiagnosis route={route} budget={budget} goal={goal} planData={config} isPremium={canAccessPremiumFeatures ?? false} />
           </div>
 
-          {/* Free vs Premium Comparison - 放在页面最下面 */}
-          {!canAccessFullContent && (
+          {/* Free vs Premium Comparison */}
+          {!canAccessPremiumFeatures && !isBasicPlan && (
             <div className="mt-12">
               <ComparisonTable />
             </div>

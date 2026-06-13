@@ -44,7 +44,7 @@ export default function HomePage() {
       )
     },
     {
-      id: 'localService',
+      id: 'local_service',
       title: t('route.localService.title'),
       desc: t('route.localService.desc'),
       icon: (
