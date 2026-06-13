@@ -2,13 +2,14 @@
 
 import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useI18n } from '@/lib/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 import { getSupabaseBrowserClientAsync } from '@/lib/supabase-browser';
-import { Download, BarChart3, LineChart } from 'lucide-react';
+import { Download, BarChart3, LineChart, Lock } from 'lucide-react';
 
 // 截图数据类型
 interface SnapshotData {
@@ -44,7 +45,7 @@ interface HistorySnapshot {
 
 function AnalysisContent() {
   const { locale } = useI18n();
-  const { user } = useAuth();
+  const { user, isPremium, subscription } = useAuth();
   const searchParams = useSearchParams();
   const daysFilter = searchParams.get('days') || '30';
   
@@ -235,9 +236,43 @@ function AnalysisContent() {
         <Card className="w-full max-w-md bg-white/5 border-white/20 backdrop-blur-sm shadow-xl relative z-10">
           <CardContent className="text-center py-12">
             <p className="text-blue-200 mb-6">{locale === 'zh' ? '请登录以使用分析功能' : 'Please login to use analysis features'}</p>
-            <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 to-blue-500 text-white shadow-lg shadow-cyan-500/30">
-              {locale === 'zh' ? '登录' : 'Login'}
-            </Button>
+            <Link href="/login">
+              <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 to-blue-500 text-white shadow-lg shadow-cyan-500/30">
+                {locale === 'zh' ? '登录' : 'Login'}
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // 付费墙检查 - 需要订阅才能使用分析功能
+  if (!isPremium) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden flex items-center justify-center">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
+        <Card className="w-full max-w-lg bg-white/5 border-white/20 backdrop-blur-sm shadow-xl relative z-10">
+          <CardContent className="text-center py-12">
+            <Lock className="w-12 h-12 text-cyan-400 mx-auto mb-6" />
+            <h2 className="text-2xl font-bold text-white mb-4">
+              {locale === 'zh' ? '截图分析为付费功能' : 'Screenshot Analysis is a Premium Feature'}
+            </h2>
+            <p className="text-blue-200 mb-2">
+              {locale === 'zh' 
+                ? '截图分析是AI诊断的数据基础，让AI分析有据可依' 
+                : 'Screenshot analysis provides data foundation for AI diagnosis'}
+            </p>
+            <p className="text-blue-300/70 mb-6">
+              {locale === 'zh'
+                ? '订阅任意路线后即可使用，上传截图让AI帮你分析广告表现'
+                : 'Subscribe to any route to upload screenshots and get AI-powered analysis'}
+            </p>
+            <Link href="/pricing">
+              <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/30">
+                {locale === 'zh' ? '升级订阅' : 'Upgrade Now'}
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       </div>

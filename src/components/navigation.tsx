@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/auth-context';
 
 export function Navigation() {
   const { t } = useI18n();
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, isPremium, signOut } = useAuth();
   
   return (
     <nav className="flex gap-6 items-center">
@@ -22,7 +22,7 @@ export function Navigation() {
       <Link href="/dashboard" className="text-blue-200/80 hover:text-cyan-300 transition-colors font-medium">
         {t('nav.dashboard')}
       </Link>
-      {user && (
+      {user && isPremium && (
         <Link href="/dashboard/analysis" className="text-blue-200/80 hover:text-cyan-300 transition-colors font-medium">
           {t('nav.analysis')}
         </Link>
