@@ -50,3 +50,30 @@ export const subscriptions = pgTable(
 		index("subscriptions_order_id_idx").on(table.order_id),
 	]
 );
+
+// 广告截图数据表
+export const adSnapshots = pgTable(
+	"ad_snapshots",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		user_id: uuid("user_id").notNull().default(sql`auth.uid()`),
+		campaign_name: varchar("campaign_name", { length: 200 }),
+		snapshot_date: varchar("snapshot_date", { length: 20 }), // DATE as string
+		spend: varchar("spend", { length: 20 }), // DECIMAL as string
+		impressions: varchar("impressions", { length: 20 }), // INTEGER as string
+		clicks: varchar("clicks", { length: 20 }), // INTEGER as string
+		ctr: varchar("ctr", { length: 20 }), // DECIMAL as string
+		cpc: varchar("cpc", { length: 20 }), // DECIMAL as string
+		conversions: varchar("conversions", { length: 20 }), // INTEGER as string
+		cpa: varchar("cpa", { length: 20 }), // DECIMAL as string
+		roas: varchar("roas", { length: 20 }), // DECIMAL as string
+		raw_image_url: varchar("raw_image_url", { length: 500 }),
+		analysis_result: varchar("analysis_result", { length: 1000 }), // AI分析结论
+		created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("ad_snapshots_user_id_idx").on(table.user_id),
+		index("ad_snapshots_snapshot_date_idx").on(table.snapshot_date),
+		index("ad_snapshots_created_at_idx").on(table.created_at),
+	]
+);

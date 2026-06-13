@@ -22,6 +22,7 @@ const translations = {
     'nav.logout': 'Logout',
     'nav.privacy': 'Privacy Policy',
     'nav.terms': 'Terms of Service',
+    'nav.analysis': 'Analysis',
     
     // Footer
     'footer.rights': 'Facebook Ads Decision Engine.',
@@ -366,6 +367,7 @@ const translations = {
     'nav.setup': '前期设置',
     'nav.privacy': '隐私政策',
     'nav.terms': '服务条款',
+    'nav.analysis': '分析',
     
     // Footer
     'footer.rights': 'Facebook广告决策引擎',

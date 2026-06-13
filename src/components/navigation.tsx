@@ -22,6 +22,11 @@ export function Navigation() {
       <Link href="/dashboard" className="text-blue-200/80 hover:text-cyan-300 transition-colors font-medium">
         {t('nav.dashboard')}
       </Link>
+      {user && (
+        <Link href="/dashboard/analysis" className="text-blue-200/80 hover:text-cyan-300 transition-colors font-medium">
+          {t('nav.analysis')}
+        </Link>
+      )}
       {!loading && (
         user ? (
           <button 
