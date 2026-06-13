@@ -90,6 +90,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 等待配置加载完成
     if (configLoading) return;
 
+    let authSubscription: { unsubscribe: () => void } | null = null;
+
     // 检查当前登录状态
     getSupabaseBrowserClientWithRetry().then((client) => {
       client.auth.getSession().then(async ({ data: { session } }) => {
@@ -102,7 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       // 监听登录状态变化
-      const { data: { subscription: authSubscription } } = client.auth.onAuthStateChange(async (_event, session) => {
+      const { data } = client.auth.onAuthStateChange(async (_event, session) => {
         setUser(session?.user as User || null);
         if (session?.user) {
           // 登录后获取订阅状态
@@ -114,9 +116,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         setLoading(false);
       });
-
-      return () => authSubscription.unsubscribe();
+      
+      authSubscription = data.subscription;
     });
+
+    // 正确的清理函数位置
+    return () => {
+      if (authSubscription) {
+        authSubscription.unsubscribe();
+      }
+    };
   }, [configLoading]);
 
   const signIn = async (email: string, password: string) => {
