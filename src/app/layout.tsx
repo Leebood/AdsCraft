@@ -24,8 +24,8 @@ export default function RootLayout({
         <SupabaseConfigProvider>
           <AuthProvider>
             <I18nProvider>
-            {/* Header */}
-            <header className="border-b border-white/10 bg-slate-900/80 sticky top-0 z-50 backdrop-blur-sm">
+            {/* Header - 增强背景对比度确保可见 */}
+            <header className="border-b border-cyan-400/20 bg-slate-900/95 sticky top-0 z-50 backdrop-blur-md shadow-lg shadow-cyan-500/5">
               <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
                 <Link href="/" className="text-xl font-bold text-white hover:text-cyan-400 transition-colors">
                   AdsCraft
