@@ -67,8 +67,8 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900">
-      {/* Animated Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
+      {/* Animated Background Pattern - 使用 fixed 定位避免覆盖导航栏 */}
+      <div className="fixed inset-0 opacity-10 pointer-events-none z-0">
         <div className="absolute inset-0" style={{
           backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)',
           backgroundSize: '40px 40px'
