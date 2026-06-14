@@ -102,9 +102,17 @@ export default function HomePage() {
               <button
                 onClick={() => handleAuthRequiredAction(`/setup-checklist?route=${selectedRoute}`)}
                 disabled={loading}
-                className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl text-white font-semibold shadow-lg shadow-cyan-500/30 hover:from-cyan-400 hover:to-blue-500 hover:scale-105 transition-all duration-300 flex items-center gap-2 disabled:opacity-50"
+                className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl text-white font-semibold shadow-lg shadow-cyan-500/30 hover:from-cyan-400 hover:to-blue-500 hover:scale-105 transition-all duration-300 flex items-center gap-2 disabled:opacity-70 disabled:cursor-wait"
               >
-                {loading ? '...' : t('home.startNow')}
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                    </svg>
+                    Loading...
+                  </span>
+                ) : t('home.startNow')}
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
@@ -176,9 +184,9 @@ export default function HomePage() {
                 <button
                   onClick={() => handleAuthRequiredAction('/questions?route=basic')}
                   disabled={loading}
-                  className="block w-full py-1.5 px-3 bg-cyan-500/20 text-cyan-400 rounded-md text-sm font-medium hover:bg-cyan-500/30 transition-colors disabled:opacity-50"
+                  className="block w-full py-1.5 px-3 bg-cyan-500/20 text-cyan-400 rounded-md text-sm font-medium hover:bg-cyan-500/30 transition-colors disabled:opacity-70 disabled:cursor-wait"
                 >
-                  {loading ? '...' : t('home.pricing.getStarted')}
+                  {loading ? 'Loading...' : t('home.pricing.getStarted')}
                 </button>
               </div>
             </div>
