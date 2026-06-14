@@ -88,7 +88,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // 等待配置加载完成
-    if (configLoading) return;
+    if (configLoading) {
+      // 配置加载中，保持 loading=true
+      return;
+    }
 
     let authSubscription: { unsubscribe: () => void } | null = null;
 
@@ -100,6 +103,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // 从数据库获取真实订阅状态
           await fetchSubscriptionFromDB(session.user.id);
         }
+        setLoading(false);
+      }).catch(() => {
+        // 即使获取 session 失败，也要设置 loading=false
         setLoading(false);
       });
 
@@ -118,6 +124,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       authSubscription = data.subscription;
+    }).catch(() => {
+      // 即使获取 client 失败，也要设置 loading=false
+      setLoading(false);
     });
 
     // 正确的清理函数位置

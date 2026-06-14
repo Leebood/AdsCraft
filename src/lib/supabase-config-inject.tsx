@@ -35,6 +35,15 @@ export function SupabaseConfigProvider({ children }: SupabaseConfigProviderProps
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // 设置超时，确保即使 API 失败也能最终设置 isLoading=false
+    const timeoutId = setTimeout(() => {
+      if (isLoading) {
+        console.warn('Supabase config load timeout, using fallback');
+        setIsLoading(false);
+        setError('Config load timeout');
+      }
+    }, 5000); // 5秒超时
+
     fetch('/api/supabase-config')
       .then((res) => {
         if (!res.ok) {
@@ -56,6 +65,7 @@ export function SupabaseConfigProvider({ children }: SupabaseConfigProviderProps
         console.error('Failed to load Supabase config:', err);
       })
       .finally(() => {
+        clearTimeout(timeoutId);
         setIsLoading(false);
       });
   }, []);
