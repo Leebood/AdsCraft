@@ -78,23 +78,23 @@ function QuestionsContent() {
           <div className="flex justify-center mb-8">
             <div className="flex items-center gap-2">
               {[1, 2, 3].map((step) => (
-                <>
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
-                    currentStep >= step 
-                      ? 'bg-cyan-500 border-cyan-400 text-white' 
-                      : 'bg-white/10 border-white/30 text-white/50'
-                  }`}>
-                    {step}
-                  </div>
-                  {step < 3 && (
-                    <div className="w-8 h-1 bg-white/20 rounded">
-                      <div className={`h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all ${
-                        currentStep > step ? 'w-full' : 'w-0'
-                      }`}></div>
+                  <div key={step} className="flex items-center">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
+                      currentStep >= step 
+                        ? 'bg-cyan-500 border-cyan-400 text-white' 
+                        : 'bg-white/10 border-white/30 text-white/50'
+                    }`}>
+                      {step}
                     </div>
-                  )}
-                </>
-              ))}
+                    {step < 3 && (
+                      <div className="w-8 h-1 bg-white/20 rounded">
+                        <div className={`h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all ${
+                          currentStep > step ? 'w-full' : 'w-0'
+                        }`}></div>
+                      </div>
+                    )}
+                  </div>
+                ))}
             </div>
           </div>
 
