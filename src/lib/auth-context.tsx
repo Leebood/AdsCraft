@@ -95,39 +95,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     let authSubscription: { unsubscribe: () => void } | null = null;
 
-    // 检查当前登录状态
-    getSupabaseBrowserClientWithRetry().then((client) => {
-      client.auth.getSession().then(async ({ data: { session } }) => {
+    // 使用 async/await 确保错误处理正确
+    const initAuth = async () => {
+      try {
+        const client = await getSupabaseBrowserClientWithRetry();
+        
+        // 获取当前 session
+        const { data: { session } } = await client.auth.getSession();
         if (session?.user) {
           setUser(session.user as User);
           // 从数据库获取真实订阅状态
           await fetchSubscriptionFromDB(session.user.id);
         }
+        
+        // 监听登录状态变化
+        const { data } = client.auth.onAuthStateChange(async (_event, session) => {
+          setUser(session?.user as User || null);
+          if (session?.user) {
+            await fetchSubscriptionFromDB(session.user.id);
+          } else {
+            setSubscriptionState({ route: '', status: 'none' });
+            localStorage.removeItem('adscraft_subscription');
+          }
+          setLoading(false);
+        });
+        
+        authSubscription = data.subscription;
+      } catch (error) {
+        console.error('Auth initialization failed:', error);
+      } finally {
+        // 确保 loading 最终变为 false
         setLoading(false);
-      }).catch(() => {
-        // 即使获取 session 失败，也要设置 loading=false
-        setLoading(false);
-      });
+      }
+    };
 
-      // 监听登录状态变化
-      const { data } = client.auth.onAuthStateChange(async (_event, session) => {
-        setUser(session?.user as User || null);
-        if (session?.user) {
-          // 登录后获取订阅状态
-          await fetchSubscriptionFromDB(session.user.id);
-        } else {
-          // 登出后清除订阅状态
-          setSubscriptionState({ route: '', status: 'none' });
-          localStorage.removeItem('adscraft_subscription');
-        }
-        setLoading(false);
-      });
-      
-      authSubscription = data.subscription;
-    }).catch(() => {
-      // 即使获取 client 失败，也要设置 loading=false
-      setLoading(false);
-    });
+    initAuth();
 
     // 正确的清理函数位置
     return () => {
