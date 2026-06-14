@@ -8,6 +8,10 @@ export function Navigation() {
   const { t } = useI18n();
   const { user, loading, isPremium, signOut } = useAuth();
   
+  // 分析功能：付费用户或已登录用户都可以看到链接
+  // 页面会根据是否有方案记录或订阅来决定访问权限
+  const canSeeAnalysisLink = user && (isPremium || true); // 登录用户都能看到，页面会做权限检查
+  
   // 需要登录才能访问的链接
   const authRequiredLinks = [
     { href: '/setup-checklist', label: t('nav.setup') },
@@ -32,7 +36,7 @@ export function Navigation() {
           </Link>
         )
       ))}
-      {user && isPremium && (
+      {user && (
         <Link href="/dashboard/analysis" className="text-blue-200/80 hover:text-cyan-300 transition-colors font-medium">
           {t('nav.analysis')}
         </Link>
