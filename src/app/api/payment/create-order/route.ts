@@ -43,8 +43,10 @@ export async function POST(request: NextRequest) {
       user_id,
       route,
       status: 'pending',
-      out_trade_no,
+      order_id: out_trade_no, // 使用正确的字段名 order_id
+      price: `${pricing.price_cny / 100}元`,
       created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     });
     
     return NextResponse.json({

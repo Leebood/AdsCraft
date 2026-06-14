@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       const { data: subscription, error: fetchError } = await supabase
         .from('subscriptions')
         .select('*')
-        .eq('out_trade_no', paymentData.out_trade_no)
+        .eq('order_id', paymentData.out_trade_no) // 使用正确的字段名 order_id
         .single();
       
       if (fetchError || !subscription) {
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
           paid_at: paymentData.success_time || new Date().toISOString(),
           updated_at: new Date().toISOString(),
         })
-        .eq('out_trade_no', paymentData.out_trade_no);
+        .eq('order_id', paymentData.out_trade_no); // 使用正确的字段名 order_id
       
       console.log('支付成功:', paymentData.out_trade_no);
       
