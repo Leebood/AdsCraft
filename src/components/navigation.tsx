@@ -76,8 +76,8 @@ export function Navigation() {
       
       {/* 升级提示弹窗 */}
       {showUpgradeModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="bg-slate-900/95 border border-cyan-400/30 rounded-2xl p-8 max-w-md mx-4 shadow-xl shadow-cyan-500/20">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-slate-900/95 border border-cyan-400/30 rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-xl shadow-cyan-500/20 mt-16 sm:mt-0">
             <h3 className="text-2xl font-bold text-white mb-4">需要订阅升级</h3>
             <p className="text-blue-200/80 mb-6 leading-relaxed">
               分析功能需要订阅才能使用。升级后您可以：
