@@ -3,14 +3,20 @@
 import { useI18n } from '@/lib/i18n-context';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
+import { tiktokPixel } from '@/lib/tiktok-pixel';
 
 export default function HomePage() {
   const { t } = useI18n();
   const router = useRouter();
   const { user, loading } = useAuth();
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
+  
+  // TikTok Pixel: 页面浏览追踪
+  useEffect(() => {
+    tiktokPixel.viewContent();
+  }, []);
   
   // 处理需要登录的操作
   const handleAuthRequiredAction = (targetPath: string) => {
@@ -20,6 +26,12 @@ export default function HomePage() {
     } else {
       router.push('/login');
     }
+  };
+
+  // 处理"立即开始"按钮点击
+  const handleStartClick = (targetPath: string) => {
+    tiktokPixel.addToCart(); // TikTok Pixel: 开始答题追踪
+    handleAuthRequiredAction(targetPath);
   };
 
   const routes = [
@@ -100,7 +112,7 @@ export default function HomePage() {
           {selectedRoute && (
             <div className="mb-6 flex justify-center">
               <button
-                onClick={() => handleAuthRequiredAction(`/setup-checklist?route=${selectedRoute}`)}
+                onClick={() => handleStartClick(`/setup-checklist?route=${selectedRoute}`)}
                 disabled={loading}
                 className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl text-white font-semibold shadow-lg shadow-cyan-500/30 hover:from-cyan-400 hover:to-blue-500 hover:scale-105 transition-all duration-300 flex items-center gap-2 disabled:opacity-70 disabled:cursor-wait"
               >

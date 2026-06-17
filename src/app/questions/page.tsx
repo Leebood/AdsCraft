@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useI18n } from '@/lib/i18n-context';
 import { useAuth } from '@/lib/auth-context';
+import { tiktokPixel } from '@/lib/tiktok-pixel';
 
 function QuestionsContent() {
   const searchParams = useSearchParams();
@@ -48,6 +49,7 @@ function QuestionsContent() {
     } else if (currentStep === 2 && answers.conversionPath) {
       setCurrentStep(3);
     } else if (currentStep === 3 && answers.goal) {
+      tiktokPixel.initiateCheckout(); // TikTok Pixel: 提交诊断追踪
       const planId = `${answers.route}-${answers.budget}-${answers.conversionPath}-${answers.goal}`;
       window.location.href = `/plan/${planId}`;
     }
