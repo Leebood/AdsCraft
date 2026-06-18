@@ -210,7 +210,7 @@ export const facebookConfig: PlatformConfig = {
       color: '#10B981',
       price: 9.9,
       priceText: '$9.9/mo',
-      priceTextZh: '$9.9/月',
+      priceTextZh: '¥71/月',
       creemLink: 'https://www.creem.io/payment/prod_4iIOpYQLDR8tlnxu6Ziwz6'
     },
     { 
@@ -224,7 +224,7 @@ export const facebookConfig: PlatformConfig = {
       color: '#F59E0B',
       price: 19.9,
       priceText: '$19.9/mo',
-      priceTextZh: '$19.9/月',
+      priceTextZh: '¥143/月',
       creemLink: 'https://www.creem.io/payment/prod_77H9iTdPoURp4C2Le1xhE8'
     },
     { 
@@ -238,7 +238,7 @@ export const facebookConfig: PlatformConfig = {
       color: '#8B5CF6',
       price: 29.9,
       priceText: '$29.9/mo',
-      priceTextZh: '$29.9/月',
+      priceTextZh: '¥215/月',
       creemLink: 'https://www.creem.io/payment/prod_2jkEL15rXCjBQxkEGpXR5v'
     },
     { 
@@ -252,7 +252,7 @@ export const facebookConfig: PlatformConfig = {
       color: '#EC4899',
       price: 29.9,
       priceText: '$29.9/mo',
-      priceTextZh: '$29.9/月',
+      priceTextZh: '¥215/月',
       creemLink: 'https://www.creem.io/payment/prod_2B7hXzysLFhXYvP8bmTa9c'
     }
   ],
@@ -441,7 +441,7 @@ export const tiktokConfig: PlatformConfig = {
       color: '#10B981',
       price: 14.9,
       priceText: '$14.9/mo',
-      priceTextZh: '$14.9/月',
+      priceTextZh: '¥107/月',
       creemLink: 'https://www.creem.io/payment/prod_sOYjwKXMpsOig5VmY0R4d' 
     },
     { 
@@ -455,7 +455,7 @@ export const tiktokConfig: PlatformConfig = {
       color: '#3B82F6',
       price: 24.9,
       priceText: '$24.9/mo',
-      priceTextZh: '$24.9/月',
+      priceTextZh: '¥179/月',
       creemLink: 'https://www.creem.io/payment/prod_8D7PXxYlpaNfTQ9MgMoQ2'
     },
     { 
@@ -469,7 +469,7 @@ export const tiktokConfig: PlatformConfig = {
       color: '#EC4899',
       price: 39.9,
       priceText: '$39.9/mo',
-      priceTextZh: '$39.9/月',
+      priceTextZh: '¥287/月',
       creemLink: 'https://www.creem.io/payment/prod_6TrbXbote5e43Baxh87OlK'
     }
   ],
