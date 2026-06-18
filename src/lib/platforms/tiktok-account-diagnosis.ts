@@ -7,6 +7,17 @@
 // 账号阶段类型
 export type AccountStage = 'new_account' | 'stable_account' | 'declining_account';
 
+// 子阶段配置（用于起号详细阶段）
+export interface SubStage {
+  name: string;
+  nameZh: string;
+  days: string;
+  checklist: string[];
+  checklistZh: string[];
+  kpi: string;
+  kpiZh: string;
+}
+
 // SOP 配置结构（统一格式）
 export interface SOPConfig {
   id: AccountStage;
@@ -14,6 +25,8 @@ export interface SOPConfig {
   nameZh: string;
   icon: string;
   color: string;
+  // 子阶段（仅新账号有）
+  subStages?: SubStage[];
   // SOP 标准结构：阶段→核心任务→关键指标→常见坑→推荐动作
   sop: {
     stage: string;
@@ -34,6 +47,7 @@ export interface SOPConfig {
 
 // ========================================
 // 新账号（0-30天）冷启动 SOP
+// 包含详细子阶段：养号→内容冷启动→投流加速
 // ========================================
 const NEW_ACCOUNT_SOP: SOPConfig = {
   id: 'new_account',
@@ -41,6 +55,70 @@ const NEW_ACCOUNT_SOP: SOPConfig = {
   nameZh: '新账号冷启动SOP',
   icon: '🌱',
   color: '#22D3EE',
+  // 起号详细子阶段
+  subStages: [
+    {
+      name: 'Account Setup & Labeling',
+      nameZh: '养号打标签',
+      days: 'Day 1-5',
+      checklist: [
+        'Complete profile (avatar, bio, category tags)',
+        'Follow 10-20 accounts in your niche, watch fully + engage',
+        'Find niche content in For You feed, like + comment + save',
+        'Do NOT post content, do NOT change ID, avoid frequent actions',
+        'Goal: Let algorithm recognize your content preferences'
+      ],
+      checklistZh: [
+        '完善Profile（头像/简介/分类标签）',
+        '关注10-20个同赛道账号，完整观看+互动',
+        'For You页刷到同赛道内容，点赞+评论+收藏',
+        '不要发内容，不要改ID，不要频繁操作',
+        '目标：让算法识别你的内容偏好和创作者方向'
+      ],
+      kpi: 'For You feed 80%+ niche content = labeling complete',
+      kpiZh: 'For You页80%内容与目标赛道相关 = 标签打好'
+    },
+    {
+      name: 'Content Cold Start',
+      nameZh: '内容冷启动',
+      days: 'Day 6-30',
+      checklist: [
+        'Post 1 video daily, fixed time (local 7-10pm peak)',
+        'First 3 seconds must have hook (conflict/suspense/visual impact)',
+        'First 5 videos: adapt proven templates (NOT copy)',
+        'Use 3-5 precise tags + 2 broad tags',
+        'Reply to every comment, create engagement signals'
+      ],
+      checklistZh: [
+        '每天发1条，固定时间（当地晚7-10点高峰）',
+        '前3秒必须有钩子（冲突/悬念/视觉冲击）',
+        '前5条用同赛道爆款模板改编（不是搬运）',
+        '标签用3-5个精准标签+2个宽标签',
+        '回复每条评论，制造互动信号'
+      ],
+      kpi: '70% completion rate = advanced traffic pool; 1 video >1000 views in 5 = cold start success',
+      kpiZh: '70%完播率 = 进入高级流量池；5条内有1条过1000播放 = 冷启动成功'
+    },
+    {
+      name: 'Ads Acceleration',
+      nameZh: '投流加速',
+      days: 'Day 15+ (after organic traffic)',
+      checklist: [
+        'Select highest organic view video for Spark Ads',
+        'Budget $20-50/day, Community Interaction objective',
+        'Run 3-5 days, CPL <$0.5 = acceptable',
+        'After 500+ followers, switch to Traffic objective for landing page'
+      ],
+      checklistZh: [
+        '选自然播放最高的视频投Spark Ads',
+        '预算$20-50/天，Community Interaction目标',
+        '投3-5天看数据，CPL(每粉丝成本)<$0.5算合格',
+        '有500+粉丝后切Traffic目标引流落地页'
+      ],
+      kpi: 'Fan cost <$0.5 / Organic traffic >60% = healthy',
+      kpiZh: '粉丝成本<$0.5 / 自然流量占比>60% = 健康'
+    }
+  ],
   sop: {
     stage: 'Cold Start Phase',
     stageZh: '冷启动阶段',
@@ -94,14 +172,14 @@ const NEW_ACCOUNT_SOP: SOPConfig = {
       '素材稳定再放量'
     ]
   },
-  diagnosisPrompt: `你是TikTok新账号冷启动专家。请基于以下SOP框架进行诊断：
+  diagnosisPrompt: `你是TikTok新账号冷启动专家。用户是TikTok新号（0-30天），请评估起号阶段健康度：
 
-【冷启动SOP框架】
+【起号SOP框架】
 阶段：冷启动期（0-30天）
-核心任务：建立Pixel事件≥50个、积累初始互动数据、测试素材变体、完成学习期
-关键指标：Pixel事件≥50、CTR≥1.2%、广告通过率、学习期完成
-常见坑：定向太多广告组、素材测试不够、过早切CBO、放大过快
-推荐动作：ABO起步$10-20/天→3组、学完再缩、素材稳定再放量
+子阶段：
+- Day 1-5 养号打标签：完善Profile→关注同赛道→互动→不打扰→For You页80%同赛道
+- Day 6-30 内容冷启动：每天1条→前3秒钩子→爆款模板改编→标签策略→回复评论
+- Day 15+ 投流加速：选高播放投Spark→$20-50/天→CPL<$0.5→500粉后切Traffic
 
 【账号当前状态】
 投放天数：{days_running}
@@ -109,27 +187,29 @@ const NEW_ACCOUNT_SOP: SOPConfig = {
 Pixel事件数：{pixel_events}
 CTR：{ctr}
 转化数：{conversions}
+粉丝数：{followers}
+完播率：{completion_rate}
 
 【诊断任务】
-1. 对照SOP核心任务，评估完成进度
-2. 对照关键指标，识别差距
-3. 对照常见坑，检测是否踩坑
-4. 输出符合SOP框架的优化建议
+1. 标签是否精准（For You页是否80%+同赛道）
+2. 内容发布频率和节奏
+3. 前3秒钩子效果（完播率）
+4. 是否过早投流（自然流量未验证就花钱 = 浪费）
+5. 互动率（评论/分享比单纯点赞更有价值）
 
 【输出格式】
 {
-  "sop_progress": {
-    "core_tasks_status": [{"task": "任务名", "status": "完成/进行中/未开始", "gap": "差距分析"}],
-    "metrics_status": [{"metric": "指标名", "current": "当前值", "target": "目标值", "gap": "差距"}]
-  },
-  "pitfalls_detected": [{"pitfall": "坑名", "detected": true/false, "severity": "高/中/低"}],
-  "recommended_actions": [{"action": "动作", "priority": "P0/P1/P2", "timeline": "建议执行时间"}],
-  "expected_outcome": "执行SOP后的预期效果"
-}`
+  "current_sub_stage": "Day X-X / 养号/内容冷启动/投流加速",
+  "stage_health": {"metric": "指标", "status": "健康/注意/危险", "value": "当前值"},
+  "checklist_progress": [{"item": "清单项", "completed": true/false}],
+  "next_actions": [{"action": "下一步动作", "priority": "P0/P1/P2", "timeline": "建议时间"}],
+  "pitfalls_warning": ["常见坑提醒"],
+  "expected_milestone": "下一个里程碑"`
 };
 
 // ========================================
 // 老号平平（30-90天）突破瓶颈 SOP
+// 5步提升：找爆款公式→砍不工作→重做钩子→SEO优化→旧内容造新流量
 // ========================================
 const STABLE_ACCOUNT_SOP: SOPConfig = {
   id: 'stable_account',
@@ -190,14 +270,14 @@ const STABLE_ACCOUNT_SOP: SOPConfig = {
       '测试Spark Ads/轮播广告'
     ]
   },
-  diagnosisPrompt: `你是TikTok广告优化专家。请基于以下突破瓶颈SOP框架进行诊断：
+  diagnosisPrompt: `你是TikTok广告优化专家。用户的TikTok账号已运营一段时间但反响平平，请诊断：
 
-【突破瓶颈SOP框架】
-阶段：稳定但平平期（30-90天）
-核心任务：找到最佳组合、优化转化链路、定期刷新素材、测试新格式
-关键指标：CPA趋势、投放周期、频次控制<3、素材新鲜度
-常见坑：加预算不测试、频次过高不处理、受众疲劳、素材不轮换
-推荐动作：素材轮测→CBO过渡、频次>3扩受众、每周增加新受众
+【老号提升5步SOP】
+1. 找爆款公式：分析账号Top 5播放视频的共同特征（主题/节奏/开头/标签）
+2. 砍不工作内容：暂停与Top 5特征差异大的方向（连续3条<500播放 = 停止）
+3. 重做3秒钩子：把表现最好的3条视频，只用前3秒框架，换内容重做（完播率权重40-50%）
+4. SEO优化：标题/文案/标签加入搜索关键词（2026年40%流量来自搜索）
+5. 旧内容造新流量：6个月前爆款，换开头/BGM/标题重发（间隔>90天，改动>30%）
 
 【账号当前状态】
 投放天数：{days_running}
@@ -206,23 +286,28 @@ const STABLE_ACCOUNT_SOP: SOPConfig = {
 当前频次：{frequency}
 CPA趋势：{cpa_trend}
 素材使用天数：{creative_age}
+Top 5平均播放：{top5_avg_views}
+完播率：{completion_rate}
 
 【诊断任务】
-1. 对照SOP核心任务，识别未执行项
-2. 对照关键指标，量化差距
-3. 对照常见坑，检测瓶颈根源
-4. 输出突破瓶颈的优先行动
+1. 先判断是内容问题还是Shadowban：
+   - Shadowban特征：播放量突然从千级降到个位数、所有视频同时低迷、搜索搜不到账号
+   - 内容问题特征：有高有低、新视频偶尔过千
+2. 分析内容方向是否聚焦（泛内容比垂类低45%触达）
+3. 检查3秒钩子质量（完播率<40% = 钩子不行）
+4. 是否利用搜索流量（40%流量来自搜索，关键词是否覆盖）
+5. 发布节奏是否稳定（断更>7天会掉权重）
 
 【输出格式】
 {
-  "sop_progress": {
-    "core_tasks_status": [{"task": "任务名", "status": "执行状态", "last_action": "上次执行时间"}],
-    "metrics_status": [{"metric": "指标名", "current": "当前值", "potential": "改善潜力"}]
-  },
-  "bottlenecks_identified": [{"bottleneck": "瓶颈", "root_cause": "根因", "severity": "严重度"}],
-  "breakthrough_actions": [{"action": "动作", "priority": "P0/P1/P2", "expected_impact": "预期效果"}],
-  "expected_breakthrough": "突破后的预期指标提升"
-}`
+  "shadowban_check": {"is_shadowban": true/false, "evidence": "证据"},
+  "content_focus_score": 0-100,
+  "hook_quality": {"completion_rate": "数值", "rating": "优秀/合格/需改进"},
+  "seo_coverage": {"keywords_found": [], "coverage_score": 0-100},
+  "posting_rhythm": {"last_post_days": "天数", "stable": true/false},
+  "5_step_plan": [{"step": "步骤名", "priority": "P0/P1/P2", "action": "具体动作"}],
+  "2_week_schedule": [{"week": 1/2, "tasks": []}],
+  "expected_breakthrough": "预期效果"`
 };
 
 // ========================================
@@ -289,14 +374,14 @@ const DECLINING_ACCOUNT_SOP: SOPConfig = {
       '上线3-5个新素材'
     ]
   },
-  diagnosisPrompt: `你是TikTok广告诊断专家。请基于以下恢复SOP框架进行诊断：
+  diagnosisPrompt: `你是TikTok广告诊断专家。用户的TikTok老号之前有流量但现在掉量，请诊断：
 
-【恢复SOP框架】
-阶段：掉量期（90天+）
-核心任务：诊断掉量原因→止血→重建、识别触发点、审查疲劳、检查政策
-关键指标：CPA飙升幅度、展示量变化、竞品变化、账号限制状态
-常见坑：加预算硬扛、素材大改不测试、忽略政策变化、不诊断就行动
-推荐动作：先诊断素材/受众/竞品→调整方向→逐步恢复不要大改
+【掉量诊断SOP】
+1. 掉量时间线：突然掉（可能是违规/算法更新）vs 渐渐掉（内容疲劳）
+2. 检查是否违规（社区准则警告/内容被限流/账号受限）
+3. 同赛道竞品是否也掉（行业性 vs 账号独有问题）
+4. 内容是否同质化（观众审美疲劳，需要内容升级）
+5. 是否被Shadowban（搜索账号名看能否搜到）
 
 【账号当前状态】
 投放天数：{days_running}
@@ -304,23 +389,25 @@ const DECLINING_ACCOUNT_SOP: SOPConfig = {
 效果变化：CTR从{ctr_old}降至{ctr_new}
 CPA变化：从{cpa_old}升至{cpa_new}
 掉量开始时间：{decline_start}
+掉量幅度：{decline_magnitude}
+账号状态：{account_status}
 
 【诊断任务】
-1. 对照SOP核心任务，紧急排查
-2. 对照关键指标，定位问题
-3. 对照常见坑，识别根因
-4. 输出恢复行动优先级
+1. 掉量时间线：突然掉 vs 渐渐掉
+2. 检查是否违规（社区准则警告/内容被限流/账号受限）
+3. 同赛道竞品是否也掉（行业性 vs 账号独有问题）
+4. 内容是否同质化（观众审美疲劳）
+5. 是否被Shadowban（搜索账号名看能否搜到）
 
 【输出格式】
 {
-  "sop_progress": {
-    "core_tasks_status": [{"task": "任务名", "status": "排查结果", "finding": "发现"}],
-    "metrics_status": [{"metric": "指标名", "before": "掉量前", "after": "掉量后", "change": "变化幅度"}]
-  },
-  "decline_triggers": [{"trigger": "触发原因", "confidence": 0.8, "evidence": "证据"}],
-  "recovery_actions": [{"action": "动作", "priority": "P0/P1/P2", "timeline": "执行时间"}],
-  "expected_recovery": "恢复时间和预期效果"
-}`
+  "decline_type": "突然/渐渐",
+  "decline_cause": [{"cause": "原因", "confidence": 0.8, "evidence": "证据"}],
+  "violation_check": {"has_violation": true/false, "type": "违规类型"},
+  "competitor_analysis": {"industry_decline": true/false, "competitors_affected": []},
+  "shadowban_check": {"is_shadowban": true/false, "searchable": true/false},
+  "recovery_strategy": [{"step": "步骤", "priority": "P0/P1/P2", "action": "具体动作"}],
+  "expected_recovery": "预计恢复周期和效果"`
 };
 
 // ========================================
@@ -383,6 +470,11 @@ export function getAccountStageDiagnosisPrompt(stage: AccountStage): string {
   return ACCOUNT_STAGE_SOP_CONFIGS[stage].diagnosisPrompt;
 }
 
+// 获取新账号子阶段（Day 1-5/6-30/15+）
+export function getNewAccountSubStages(): SubStage[] {
+  return NEW_ACCOUNT_SOP.subStages || [];
+}
+
 // 获取 SOP 概要（用于诊断结果页前置展示）
 export function getSOPSummary(stage: AccountStage, locale: 'zh' | 'en'): {
   stage: string;
@@ -391,6 +483,7 @@ export function getSOPSummary(stage: AccountStage, locale: 'zh' | 'en'): {
   keyMetrics: string[];
   commonPitfalls: string[];
   recommendedActions: string[];
+  subStages?: SubStage[];
 } {
   const config = ACCOUNT_STAGE_SOP_CONFIGS[stage];
   const sop = config.sop;
@@ -400,7 +493,8 @@ export function getSOPSummary(stage: AccountStage, locale: 'zh' | 'en'): {
     coreTasks: locale === 'zh' ? sop.coreTasksZh : sop.coreTasks,
     keyMetrics: locale === 'zh' ? sop.keyMetricsZh : sop.keyMetrics,
     commonPitfalls: locale === 'zh' ? sop.commonPitfallsZh : sop.commonPitfalls,
-    recommendedActions: locale === 'zh' ? sop.recommendedActionsZh : sop.recommendedActions
+    recommendedActions: locale === 'zh' ? sop.recommendedActionsZh : sop.recommendedActions,
+    subStages: config.subStages
   };
 }
 
