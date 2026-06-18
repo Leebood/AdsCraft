@@ -324,3 +324,77 @@ export function getPlatformRoutes(platformId: PlatformId) {
   const config = getPlatformConfig(platformId);
   return config?.routes || [];
 }
+
+// ========================================
+// Quiz 配置
+// ========================================
+
+// Facebook Quiz 配置
+export const FACEBOOK_QUIZ_CONFIG = {
+  budget: {
+    titleZh: '你的日均广告预算是多少？',
+    titleEn: 'What is your daily ad budget?',
+    options: [
+      { id: 'low', value: 'low', labelZh: '低预算 (<$30/天)', labelEn: 'Low Budget (<$30/day)', descriptionZh: '适合测试和小规模投放', descriptionEn: 'Suitable for testing' },
+      { id: 'mid', value: 'mid', labelZh: '中等预算 ($30-100/天)', labelEn: 'Medium Budget ($30-100/day)', descriptionZh: '适合稳定增长', descriptionEn: 'Suitable for growth' },
+      { id: 'high', value: 'high', labelZh: '高预算 (>$100/天)', labelEn: 'High Budget (>$100/day)', descriptionZh: '适合规模化', descriptionEn: 'Suitable for scaling' }
+    ]
+  },
+  conversionPath: {
+    titleZh: '你的转化路径是什么？',
+    titleEn: 'What is your conversion path?',
+    options: [
+      { id: 'shopify', value: 'shopify', labelZh: 'Shopify 独立站', labelEn: 'Shopify Store', descriptionZh: '电商独立站', descriptionEn: 'E-commerce store' },
+      { id: 'whatsapp', value: 'whatsapp', labelZh: 'WhatsApp 联络', labelEn: 'WhatsApp Contact', descriptionZh: 'WhatsApp转化', descriptionEn: 'WhatsApp conversion' },
+      { id: 'store', value: 'store', labelZh: '线下门店', labelEn: 'Physical Store', descriptionZh: '实体店', descriptionEn: 'Offline store' },
+      { id: 'lead', value: 'lead', labelZh: '线索收集', labelEn: 'Lead Gen', descriptionZh: '收集客户信息', descriptionEn: 'Collect leads' }
+    ]
+  },
+  goal: {
+    titleZh: '你的广告目标是什么？',
+    titleEn: 'What is your ad goal?',
+    options: [
+      { id: 'sales', value: 'sales', labelZh: '直接销售', labelEn: 'Direct Sales', descriptionZh: '成交转化', descriptionEn: 'Sales conversion' },
+      { id: 'leads', value: 'leads', labelZh: '线索获取', labelEn: 'Lead Gen', descriptionZh: '获取客户', descriptionEn: 'Get customers' },
+      { id: 'awareness', value: 'awareness', labelZh: '品牌曝光', labelEn: 'Brand Awareness', descriptionZh: '品牌知名度', descriptionEn: 'Brand awareness' }
+    ]
+  }
+};
+
+// TikTok Quiz 配置
+export const TIKTOK_QUIZ_CONFIG = {
+  budget: {
+    titleZh: '你的日均广告预算是多少？',
+    titleEn: 'What is your daily ad budget?',
+    options: [
+      { id: 'low', value: 'low', labelZh: '低预算 (<$50/天)', labelEn: 'Low Budget (<$50/day)', descriptionZh: '冷启动测试', descriptionEn: 'Cold start testing' },
+      { id: 'mid', value: 'mid', labelZh: '中等预算 ($50-200/天)', labelEn: 'Medium Budget ($50-200/day)', descriptionZh: '稳定增长', descriptionEn: 'Stable growth' },
+      { id: 'high', value: 'high', labelZh: '高预算 (>$200/天)', labelEn: 'High Budget (>$200/day)', descriptionZh: '规模化投放', descriptionEn: 'Scale up' }
+    ]
+  },
+  conversionPath: {
+    titleZh: '你的转化路径是什么？',
+    titleEn: 'What is your conversion path?',
+    options: [
+      { id: 'shopify', value: 'shopify', labelZh: 'Shopify 独立站', labelEn: 'Shopify Store', descriptionZh: '独立站成交', descriptionEn: 'Store sales' },
+      { id: 'tiktok_shop', value: 'tiktok_shop', labelZh: 'TikTok Shop', labelEn: 'TikTok Shop', descriptionZh: '小店成交', descriptionEn: 'Shop sales' },
+      { id: 'app', value: 'app', labelZh: 'App 安装', labelEn: 'App Install', descriptionZh: '应用下载', descriptionEn: 'App download' },
+      { id: 'lead', value: 'lead', labelZh: '线索收集', labelEn: 'Lead Gen', descriptionZh: '收集客户', descriptionEn: 'Collect leads' }
+    ]
+  },
+  goal: {
+    titleZh: '你的广告目标是什么？',
+    titleEn: 'What is your ad goal?',
+    options: [
+      { id: 'sales', value: 'sales', labelZh: '销售转化', labelEn: 'Sales', descriptionZh: '最大化GMV', descriptionEn: 'Maximize GMV' },
+      { id: 'app_install', value: 'app_install', labelZh: 'App安装', labelEn: 'App Install', descriptionZh: '应用下载', descriptionEn: 'App downloads' },
+      { id: 'awareness', value: 'awareness', labelZh: '品牌曝光', labelEn: 'Awareness', descriptionZh: '品牌认知', descriptionEn: 'Brand awareness' },
+      { id: 'live', value: 'live', labelZh: '直播引流', labelEn: 'Live Stream', descriptionZh: '直播间', descriptionEn: 'Live stream' }
+    ]
+  }
+};
+
+// 获取 Quiz 配置
+export function getQuizConfig(platform: PlatformId) {
+  return platform === 'tiktok' ? TIKTOK_QUIZ_CONFIG : FACEBOOK_QUIZ_CONFIG;
+}
