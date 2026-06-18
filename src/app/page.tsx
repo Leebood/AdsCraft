@@ -6,11 +6,13 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { tiktokPixel } from '@/lib/tiktok-pixel';
+import { PLATFORM_CONFIGS, PlatformId } from '@/lib/platforms/registry';
 
 export default function HomePage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const router = useRouter();
   const { user, loading } = useAuth();
+  const [selectedPlatform, setSelectedPlatform] = useState<PlatformId | null>(null);
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
   
   // TikTok Pixel: 页面浏览追踪
@@ -33,6 +35,9 @@ export default function HomePage() {
     tiktokPixel.addToCart(); // TikTok Pixel: 开始答题追踪
     handleAuthRequiredAction(targetPath);
   };
+  
+  // 获取当前平台配置
+  const currentPlatformConfig = selectedPlatform ? PLATFORM_CONFIGS[selectedPlatform] : null;
 
   const routes = [
     {
@@ -106,74 +111,122 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* Route Selection */}
-        <div className="mb-8">
-          {/* Start Button - Above Route Selection */}
-          {selectedRoute && (
-            <div className="mb-6 flex justify-center">
-              <button
-                onClick={() => handleStartClick(`/setup-checklist?route=${selectedRoute}`)}
-                disabled={loading}
-                className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl text-white font-semibold shadow-lg shadow-cyan-500/30 hover:from-cyan-400 hover:to-blue-500 hover:scale-105 transition-all duration-300 flex items-center gap-2 disabled:opacity-70 disabled:cursor-wait"
-              >
-                {loading ? (
-                  <span className="flex items-center gap-2">
-                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                    </svg>
-                    Loading...
-                  </span>
-                ) : t('home.startNow')}
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </button>
-            </div>
-          )}
-          
+        {/* Platform Selection - Step 1 */}
+        <div className="mb-12">
           <h3 className="text-2xl font-semibold text-white mb-6 text-center">
-            {t('home.selectRoute')}
+            {locale === 'zh' ? '选择广告平台' : 'Select Your Platform'}
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {routes.map((route) => (
+          <div className="flex justify-center gap-4 mb-4">
+            {Object.entries(PLATFORM_CONFIGS).map(([id, config]) => (
               <button
-                key={route.id}
-                onClick={() => setSelectedRoute(route.id)}
-                className={`group relative p-4 rounded-2xl border transition-all duration-300 ${
-                  selectedRoute === route.id
+                key={id}
+                onClick={() => {
+                  setSelectedPlatform(id as PlatformId);
+                  setSelectedRoute(null); // 重置线路选择
+                }}
+                className={`group relative p-6 rounded-2xl border transition-all duration-300 min-w-[200px] ${
+                  selectedPlatform === id
                     ? 'bg-gradient-to-br from-cyan-500/30 to-blue-600/30 border-cyan-400 shadow-xl shadow-cyan-500/30 scale-[1.02]'
                     : 'bg-gradient-to-br from-slate-800/80 to-slate-900/80 border-cyan-500/30 hover:border-cyan-400 hover:from-slate-700/80 hover:to-slate-800/80 hover:shadow-lg hover:shadow-cyan-500/10'
                 }`}
               >
-                <div className="flex items-start gap-4">
-                  <div className={`transition-transform duration-300 ${
-                    selectedRoute === route.id ? 'scale-110' : 'group-hover:scale-105'
+                <div className="flex flex-col items-center gap-3">
+                  <div className={`text-5xl transition-transform duration-300 ${
+                    selectedPlatform === id ? 'scale-110' : 'group-hover:scale-105'
                   }`}>
-                    {route.icon}
+                    {config.icon}
                   </div>
-                  <div className="flex-1">
-                    <h4 className="text-lg font-semibold text-white mb-1 group-hover:text-cyan-300 transition-colors">
-                      {route.title}
-                    </h4>
-                    <p className="text-blue-200/80 text-sm leading-relaxed">
-                      {route.desc}
-                    </p>
-                  </div>
-                  {selectedRoute === route.id && (
-                    <div className="absolute top-3 right-3">
-                      <div className="w-5 h-5 bg-cyan-400 rounded-full flex items-center justify-center">
-                        <svg className="w-3 h-3 text-slate-900" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
-                        </svg>
-                      </div>
-                    </div>
-                  )}
+                  <h4 className="text-lg font-semibold text-white group-hover:text-cyan-300 transition-colors">
+                    {locale === 'zh' ? config.labelZh : config.label}
+                  </h4>
+                  <p className="text-blue-200/80 text-sm text-center">
+                    {locale === 'zh' ? config.descriptionZh : config.description}
+                  </p>
                 </div>
+                {selectedPlatform === id && (
+                  <div className="absolute top-3 right-3">
+                    <div className="w-5 h-5 bg-cyan-400 rounded-full flex items-center justify-center">
+                      <svg className="w-3 h-3 text-slate-900" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
               </button>
             ))}
           </div>
         </div>
+
+        {/* Route Selection - Step 2 (only show after platform selected) */}
+        {selectedPlatform && currentPlatformConfig && (
+          <div className="mb-8 animate-fade-in">
+            {/* Start Button - Above Route Selection */}
+            {selectedRoute && (
+              <div className="mb-6 flex justify-center">
+                <button
+                  onClick={() => handleStartClick(`/setup-checklist?route=${selectedRoute}&platform=${selectedPlatform}`)}
+                  disabled={loading}
+                  className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl text-white font-semibold shadow-lg shadow-cyan-500/30 hover:from-cyan-400 hover:to-blue-500 hover:scale-105 transition-all duration-300 flex items-center gap-2 disabled:opacity-70 disabled:cursor-wait"
+                >
+                  {loading ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                      </svg>
+                      Loading...
+                    </span>
+                  ) : t('home.startNow')}
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </button>
+              </div>
+            )}
+            
+            <h3 className="text-2xl font-semibold text-white mb-6 text-center">
+              {t('home.selectRoute')}
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+              {routes.map((route) => (
+                <button
+                  key={route.id}
+                  onClick={() => setSelectedRoute(route.id)}
+                  className={`group relative p-4 rounded-2xl border transition-all duration-300 ${
+                    selectedRoute === route.id
+                      ? 'bg-gradient-to-br from-cyan-500/30 to-blue-600/30 border-cyan-400 shadow-xl shadow-cyan-500/30 scale-[1.02]'
+                      : 'bg-gradient-to-br from-slate-800/80 to-slate-900/80 border-cyan-500/30 hover:border-cyan-400 hover:from-slate-700/80 hover:to-slate-800/80 hover:shadow-lg hover:shadow-cyan-500/10'
+                  }`}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className={`transition-transform duration-300 ${
+                      selectedRoute === route.id ? 'scale-110' : 'group-hover:scale-105'
+                    }`}>
+                      {route.icon}
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-lg font-semibold text-white mb-1 group-hover:text-cyan-300 transition-colors">
+                        {route.title}
+                      </h4>
+                      <p className="text-blue-200/80 text-sm leading-relaxed">
+                        {route.desc}
+                      </p>
+                    </div>
+                    {selectedRoute === route.id && (
+                      <div className="absolute top-3 right-3">
+                        <div className="w-5 h-5 bg-cyan-400 rounded-full flex items-center justify-center">
+                          <svg className="w-3 h-3 text-slate-900" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                          </svg>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Pricing Plans Section */}
         <div className="mt-8 mb-12">

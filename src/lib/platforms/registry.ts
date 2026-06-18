@@ -23,6 +23,10 @@ export interface PlatformConfig {
   id: string;                    // 'facebook' | 'tiktok' | 'google_ads'
   name: string;                  // 'Facebook' | 'TikTok' | 'Google Ads'
   nameZh: string;                // 中文名
+  label?: string;                // 显示标签（英文）
+  labelZh?: string;              // 显示标签（中文）
+  description?: string;          // 描述（英文）
+  descriptionZh?: string;        // 描述（中文）
   icon: string;                  // 品牌图标 emoji 或 SVG
   color: string;                 // 品牌色
 
@@ -278,18 +282,31 @@ export const tiktokConfig: PlatformConfig = {
 };
 
 /**
+ * 平台ID类型
+ */
+export type PlatformId = 'facebook' | 'tiktok';
+
+/**
  * 平台注册表
  */
-export const platformRegistry: Record<string, PlatformConfig> = {
+export const platformRegistry: Record<PlatformId, PlatformConfig> = {
   facebook: facebookConfig,
   tiktok: tiktokConfig
   // google_ads: googleAdsConfig // 预留
 };
 
 /**
+ * 平台配置列表（用于首页平台选择器）
+ */
+export const PLATFORM_CONFIGS: Record<PlatformId, PlatformConfig> = {
+  facebook: facebookConfig,
+  tiktok: tiktokConfig
+};
+
+/**
  * 获取平台配置
  */
-export function getPlatformConfig(platformId: string): PlatformConfig | undefined {
+export function getPlatformConfig(platformId: PlatformId): PlatformConfig | undefined {
   return platformRegistry[platformId];
 }
 
@@ -303,7 +320,7 @@ export function getAllPlatforms(): PlatformConfig[] {
 /**
  * 获取平台的路线列表
  */
-export function getPlatformRoutes(platformId: string) {
+export function getPlatformRoutes(platformId: PlatformId) {
   const config = getPlatformConfig(platformId);
   return config?.routes || [];
 }
