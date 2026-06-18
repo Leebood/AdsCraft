@@ -33,16 +33,30 @@ const getConfigPreview = (route: string, budget: string) => {
 };
 
 // 获取路线定价信息
-const getRoutePricing = (route: string) => {
-  const pricing: Record<string, { price: string; priceEn: string; creemLink: string }> = {
+const getRoutePricing = (route: string, platform: string = 'facebook') => {
+  // Facebook 线路定价
+  const fbPricing: Record<string, { price: string; priceEn: string; creemLink: string }> = {
     free: { price: '免费', priceEn: 'Free', creemLink: '' },
     local_service: { price: '$9.9/月', priceEn: '$9.9/mo', creemLink: 'https://www.creem.io/payment/prod_4iIOpYQLDR8tlnxu6Ziwz6' },
     retailer: { price: '$19.9/月', priceEn: '$19.9/mo', creemLink: 'https://www.creem.io/payment/prod_77H9iTdPoURp4C2Le1xhE8' },
     manufacturer: { price: '$29.9/月', priceEn: '$29.9/mo', creemLink: 'https://www.creem.io/payment/prod_2jkEL15rXCjBQxkEGpXR5v' },
     brand: { price: '$29.9/月', priceEn: '$29.9/mo', creemLink: 'https://www.creem.io/payment/prod_2B7hXzysLFhXYvP8bmTa9c' },
   };
+  
+  // TikTok 线路定价（Creem链接待补充）
+  const tkPricing: Record<string, { price: string; priceEn: string; creemLink: string }> = {
+    rejection_check: { price: '免费', priceEn: 'Free', creemLink: '' },
+    local_service: { price: '$9.9/月', priceEn: '$9.9/mo', creemLink: '' }, // TODO: 补充Creem链接
+    website_conv: { price: '$19.9/月', priceEn: '$19.9/mo', creemLink: '' }, // TODO: 补充Creem链接
+    brand_awareness: { price: '$29.9/月', priceEn: '$29.9/mo', creemLink: '' }, // TODO: 补充Creem链接
+  };
+  
   const normalizedRoute = route === 'localService' ? 'local_service' : route;
-  return pricing[normalizedRoute] || pricing.free;
+  
+  if (platform === 'tiktok') {
+    return tkPricing[normalizedRoute] || tkPricing.rejection_check;
+  }
+  return fbPricing[normalizedRoute] || fbPricing.free;
 };
 
 function PlanContent() {
@@ -63,7 +77,7 @@ function PlanContent() {
   const goal = parts[4] || 'sales';
 
   const configPreview = getConfigPreview(route, budget);
-  const pricing = getRoutePricing(route);
+  const pricing = getRoutePricing(route, platform);
   const isFreeRoute = route === 'free' || route === 'rejection_check';
   
   // 判断用户是否可以访问完整内容

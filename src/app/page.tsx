@@ -215,7 +215,7 @@ export default function HomePage() {
                   return (
                     <button
                       key={route.id}
-                      onClick={() => hasPaymentLink && handleRouteClick('tiktok', route)}
+                      onClick={() => handleRouteClick('tiktok', route)}
                       disabled={loading || isPaidButNoLink}
                       className={`group w-full p-4 rounded-xl border transition-all duration-300 flex items-center gap-4 bg-white/5 border-white/10 hover:bg-white/10 ${styles.hoverBorder} ${isPaidButNoLink ? 'opacity-60 cursor-not-allowed' : ''} disabled:opacity-70 disabled:cursor-wait`}
                     >
