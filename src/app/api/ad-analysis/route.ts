@@ -123,17 +123,26 @@ export async function GET(request: NextRequest) {
     // 获取查询参数
     const { searchParams } = new URL(request.url);
     const days = parseInt(searchParams.get('days') || '30', 10);
+    const platform = searchParams.get('platform'); // 可选平台过滤
 
     // 查询历史数据
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
-    const { data: historyData, error: historyError } = await supabase
+    // 构建查询条件
+    let query = supabase
       .from('ad_snapshots')
       .select('*')
       .eq('user_id', user.id)
       .gte('created_at', startDate.toISOString())
       .order('created_at', { ascending: false });
+    
+    // 如果指定了平台，添加过滤条件
+    if (platform && ['facebook', 'tiktok'].includes(platform)) {
+      query = query.eq('platform', platform);
+    }
+
+    const { data: historyData, error: historyError } = await query;
 
     if (historyError) {
       console.error('历史数据查询错误:', historyError);

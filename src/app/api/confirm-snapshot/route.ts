@@ -133,6 +133,8 @@ export async function POST(request: NextRequest) {
       roas,
       raw_image_url,
       file_key,
+      platform = 'facebook',  // 默认 Facebook，因为当前是截图上传流程
+      source = 'screenshot',  // 默认截图来源
     } = body;
 
     // 写入数据库
@@ -151,6 +153,8 @@ export async function POST(request: NextRequest) {
         cpa: cpa || null,
         roas: roas || null,
         raw_image_url: raw_image_url || null,
+        platform: platform,      // 平台字段
+        source: source,          // 数据来源
       })
       .select()
       .single();
