@@ -87,18 +87,74 @@ export const DEEP_ANALYSIS_PROMPT = `
 }
 `;
 
-// 知识检索函数（使用 pgvector）
+// 知识检索函数（使用关键词检索作为兜底）
 export async function searchKnowledge(
   query: string,
   platform: string,
   limit: number = 5
-): Promise<Array<{ id: string; title: string; content: string; similarity: number }>> {
-  // TODO: 实现 pgvector 语义检索
-  // 需要先启用 pgvector 扩展：CREATE EXTENSION vector;
-  // 然后生成 query embedding 并进行向量检索
-  
-  console.log('Knowledge search:', { query, platform, limit });
-  return [];
+): Promise<Array<{ id: string; title: string; content: string; summary: string; similarity: number }>> {
+  try {
+    // 动态导入 Supabase 客户端
+    const { getSupabaseServerClientAsync } = await import('@/storage/database/supabase-client');
+    const supabase = await getSupabaseServerClientAsync();
+    
+    // 先获取该平台所有知识库数据（兜底方案）
+    const { data, error } = await supabase
+      .from('knowledge_base')
+      .select('id, title, content, summary, tags')
+      .eq('platform', platform)
+      .is('user_id', null) // 只获取公共知识
+      .limit(20);
+    
+    if (error) {
+      console.error('Knowledge search error:', error);
+      return [];
+    }
+    
+    if (!data || data.length === 0) {
+      return [];
+    }
+    
+    // 提取关键词进行匹配
+    const keywords = query.toLowerCase().split(/\s+/).filter(k => k.length > 1);
+    
+    // 在内存中进行关键词匹配
+    const results = data
+      .map(item => {
+        const titleLower = item.title?.toLowerCase() || '';
+        const contentLower = item.content?.toLowerCase() || '';
+        const summaryLower = item.summary?.toLowerCase() || '';
+        const tagsLower = (item.tags || []).join(' ').toLowerCase();
+        
+        // 计算匹配的关键词数量
+        const matchedKeywords = keywords.filter(k => 
+          titleLower.includes(k) ||
+          contentLower.includes(k) ||
+          summaryLower.includes(k) ||
+          tagsLower.includes(k)
+        );
+        
+        // 计算相似度评分
+        const similarity = matchedKeywords.length / Math.max(keywords.length, 1);
+        
+        return {
+          id: item.id,
+          title: item.title,
+          content: item.content,
+          summary: item.summary,
+          similarity: Math.round(similarity * 100) / 100,
+          matchedCount: matchedKeywords.length,
+        };
+      })
+      .filter(item => item.matchedCount > 0)
+      .sort((a, b) => b.similarity - a.similarity || b.matchedCount - a.matchedCount)
+      .slice(0, limit);
+    
+    return results;
+  } catch (err) {
+    console.error('Knowledge search failed:', err);
+    return [];
+  }
 }
 
 // 案例相似度检索
