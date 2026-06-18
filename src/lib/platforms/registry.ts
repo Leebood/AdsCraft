@@ -439,11 +439,10 @@ export const tiktokConfig: PlatformConfig = {
       // 简洁抽象几何图标：定位/门店
       icon: `<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="3"/><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z"/></svg>`,
       color: '#10B981',
-      price: 9.9,
-      priceText: '$9.9/mo',
-      priceTextZh: '$9.9/月',
-      // TODO: 需要在 Creem 新建产品
-      creemLink: '' 
+      price: 14.9,
+      priceText: '$14.9/mo',
+      priceTextZh: '$14.9/月',
+      creemLink: 'https://www.creem.io/payment/prod_sOYjwKXMpsOig5VmY0R4d' 
     },
     { 
       id: 'website_conv', 
@@ -454,11 +453,10 @@ export const tiktokConfig: PlatformConfig = {
       // 简洁抽象几何图标：网页/转化
       icon: `<svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="8" x2="22" y2="8" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="6" r="1"/><circle cx="10" cy="6" r="1"/><path d="M8 14l3 3 5-5"/></svg>`,
       color: '#3B82F6',
-      price: 19.9,
-      priceText: '$19.9/mo',
-      priceTextZh: '$19.9/月',
-      // TODO: 需要在 Creem 新建产品
-      creemLink: ''
+      price: 24.9,
+      priceText: '$24.9/mo',
+      priceTextZh: '$24.9/月',
+      creemLink: 'https://www.creem.io/payment/prod_8D7PXxYlpaNfTQ9MgMoQ2'
     },
     { 
       id: 'brand_awareness', 
@@ -469,11 +467,10 @@ export const tiktokConfig: PlatformConfig = {
       // 简洁抽象几何图标：星星/品牌
       icon: `<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12,2 15,8.5 22,9 17,14 18.5,21 12,17.5 5.5,21 7,14 2,9 9,8.5"/></svg>`,
       color: '#EC4899',
-      price: 29.9,
-      priceText: '$29.9/mo',
-      priceTextZh: '$29.9/月',
-      // TODO: 需要在 Creem 新建产品
-      creemLink: ''
+      price: 39.9,
+      priceText: '$39.9/mo',
+      priceTextZh: '$39.9/月',
+      creemLink: 'https://www.creem.io/payment/prod_6TrbXbote5e43Baxh87OlK'
     }
   ],
   
