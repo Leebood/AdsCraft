@@ -1,63 +1,151 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useI18n } from '@/lib/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 import { tiktokPixel } from '@/lib/tiktok-pixel';
+import { PLATFORM_CONFIGS, PlatformId, QuizStep, ComplianceItem } from '@/lib/platforms/registry';
+import { ComplianceChecklist } from '@/components/compliance-checklist';
+import { ACCOUNT_STAGE_QUIZ } from '@/lib/platforms/tiktok-account-diagnosis';
 
-function QuestionsContent() {
+function QuizContent() {
   const searchParams = useSearchParams();
-  const route = searchParams.get('route') || 'retailer';
-  const { t } = useI18n();
+  const platform = (searchParams.get('platform') || 'facebook') as PlatformId;
+  const route = searchParams.get('route') || 'free';
+  const { t, locale } = useI18n();
+
+  // 获取平台配置
+  const platformConfig = PLATFORM_CONFIGS[platform];
+  const quizFlow: QuizStep[] = platformConfig?.quizFlow || [];
+  
+  // TikTok 颦号阶段问题
+  const accountStageQuiz = platform === 'tiktok' ? ACCOUNT_STAGE_QUIZ : null;
+  const totalSteps = quizFlow.length + (accountStageQuiz ? 1 : 0);
 
   const [currentStep, setCurrentStep] = useState(1);
-  const [answers, setAnswers] = useState({
+  const [answers, setAnswers] = useState<Record<string, string>>({
     route: route,
-    budget: '',
-    conversionPath: '',
-    goal: ''
   });
+  const [showCompliance, setShowCompliance] = useState(false);
+  const [compliancePassed, setCompliancePassed] = useState(false);
 
-  const budgetOptions = [
-    { key: 'low', value: 'low', label: t('questions.budget.low') },
-    { key: 'mid', value: 'mid', label: t('questions.budget.mid') },
-    { key: 'high', value: 'high', label: t('questions.budget.high') }
-  ];
+  // 获取当前步骤的配置
+  const getCurrentStepConfig = (): QuizStep | null => {
+    if (currentStep <= quizFlow.length) {
+      return quizFlow[currentStep - 1];
+    }
+    // TikTok 账号阶段问题
+    if (accountStageQuiz && currentStep === quizFlow.length + 1) {
+      return accountStageQuiz;
+    }
+    return null;
+  };
 
-  const pathOptions = [
-    { key: 'shopify', value: 'shopify', label: t('questions.path.shopify') },
-    { key: 'whatsapp', value: 'whatsapp', label: t('questions.path.whatsapp') },
-    { key: 'store', value: 'store', label: t('questions.path.store') },
-    { key: 'lead', value: 'lead', label: t('questions.path.lead') }
-  ];
-
-  const goalOptions = [
-    { key: 'sales', value: 'sales', label: t('questions.goal.sales') },
-    { key: 'leads', value: 'leads', label: t('questions.goal.leads') },
-    { key: 'awareness', value: 'awareness', label: t('questions.goal.awareness') }
-  ];
+  const currentStepConfig = getCurrentStepConfig();
+  const isLastQuizStep = currentStep === totalSteps;
+  const isAnswered = currentStepConfig ? answers[currentStepConfig.id] !== undefined && answers[currentStepConfig.id] !== '' : false;
 
   const handleNext = () => {
-    if (currentStep === 1 && answers.budget) {
-      setCurrentStep(2);
-    } else if (currentStep === 2 && answers.conversionPath) {
-      setCurrentStep(3);
-    } else if (currentStep === 3 && answers.goal) {
-      tiktokPixel.initiateCheckout(); // TikTok Pixel: 提交诊断追踪
-      const planId = `${answers.route}-${answers.budget}-${answers.conversionPath}-${answers.goal}`;
-      window.location.href = `/plan/${planId}`;
+    if (!isAnswered) return;
+
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1);
+    } else if (isLastQuizStep) {
+      // 最后一步，显示合规检查
+      if (platformConfig?.complianceChecklist?.length > 0 && !compliancePassed) {
+        setShowCompliance(true);
+      } else {
+        // 已通过合规检查或无合规检查，直接跳转
+        proceedToPlan();
+      }
     }
   };
 
-  const isStep1Complete = answers.budget !== '';
-  const isStep2Complete = answers.conversionPath !== '';
-  const isStep3Complete = answers.goal !== '';
+  const handleCompliancePass = () => {
+    setCompliancePassed(true);
+    setShowCompliance(false);
+    proceedToPlan();
+  };
+
+  const handleComplianceSkip = () => {
+    setShowCompliance(false);
+    proceedToPlan();
+  };
+
+  const proceedToPlan = () => {
+    tiktokPixel.initiateCheckout(); // TikTok Pixel: 提交诊断追踪
+    
+    // 构建 planId，包含平台信息
+    const answerKeys = Object.keys(answers).filter(k => k !== 'route');
+    const answerValues = answerKeys.map(k => answers[k]).join('-');
+    const planId = `${platform}-${route}-${answerValues}`;
+    
+    window.location.href = `/plan/${planId}`;
+  };
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    } else {
+      window.history.back();
+    }
+  };
+
+  // 渲染选项
+  const renderOptions = (step: QuizStep) => {
+    return step.options.map((option) => (
+      <div key={option.id} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+        <RadioGroupItem 
+          value={option.value} 
+          id={option.id} 
+          className="border-cyan-400 text-cyan-400" 
+        />
+        <Label htmlFor={option.id} className="flex-1 cursor-pointer">
+          <span className="text-blue-100 hover:text-cyan-400 transition-colors">
+            {locale === 'zh' ? option.labelZh || option.label : option.label}
+          </span>
+          {option.description && (
+            <span className="text-blue-300/60 text-sm ml-2">
+              ({locale === 'zh' ? option.descriptionZh || option.description : option.description})
+            </span>
+          )}
+        </Label>
+      </div>
+    ));
+  };
+
+  // 渲染合规检查弹窗
+  if (showCompliance) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden flex items-center justify-center">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
+        <Card className="w-full max-w-2xl bg-white/5 border-white/20 backdrop-blur-sm shadow-xl relative z-10">
+          <CardContent className="p-6">
+            <h2 className="text-2xl font-bold text-white mb-4 text-center">
+              {locale === 'zh' ? '合规预检' : 'Compliance Checklist'}
+            </h2>
+            <p className="text-blue-200 mb-6 text-center">
+              {locale === 'zh' 
+                ? '请确认以下合规要点，避免广告被拒审' 
+                : 'Please confirm these compliance points to avoid ad rejection'}
+            </p>
+            
+            <ComplianceChecklist 
+              platform={platform}
+              onComplete={handleCompliancePass}
+              onSkip={handleComplianceSkip}
+            />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
@@ -68,150 +156,103 @@ function QuestionsContent() {
         <div className="max-w-2xl mx-auto">
           {/* 标题 */}
           <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full mb-4">
+              <span className="text-lg">{platformConfig?.icon}</span>
+              <span className="text-blue-200 font-medium">
+                {locale === 'zh' ? platformConfig?.nameZh || platformConfig?.name : platformConfig?.name}
+              </span>
+            </div>
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
-              {t('questions.title')}
+              {locale === 'zh' ? '诊断配置' : 'Diagnostic Configuration'}
             </h1>
             <p className="text-lg text-blue-200">
-              {t('questions.subtitle')}
+              {locale === 'zh' 
+                ? '回答以下问题，获取个性化诊断方案' 
+                : 'Answer the following questions to get personalized diagnosis'}
             </p>
           </div>
 
           {/* 进度指示器 */}
           <div className="flex justify-center mb-8">
             <div className="flex items-center gap-2">
-              {[1, 2, 3].map((step) => (
-                  <div key={step} className="flex items-center">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
-                      currentStep >= step 
-                        ? 'bg-cyan-500 border-cyan-400 text-white' 
-                        : 'bg-white/10 border-white/30 text-white/50'
-                    }`}>
-                      {step}
-                    </div>
-                    {step < 3 && (
-                      <div className="w-8 h-1 bg-white/20 rounded">
-                        <div className={`h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all ${
-                          currentStep > step ? 'w-full' : 'w-0'
-                        }`}></div>
-                      </div>
-                    )}
+              {Array.from({ length: totalSteps }).map((_, idx) => (
+                <div key={idx} className="flex items-center">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
+                    currentStep >= idx + 1 
+                      ? 'bg-cyan-500 border-cyan-400 text-white' 
+                      : 'bg-white/10 border-white/30 text-white/50'
+                  }`}>
+                    {idx + 1}
                   </div>
-                ))}
+                  {idx < totalSteps - 1 && (
+                    <div className="w-8 h-1 bg-white/20 rounded">
+                      <div className={`h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all ${
+                        currentStep > idx + 1 ? 'w-full' : 'w-0'
+                      }`}></div>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
 
           {/* 问题卡片 */}
-          <Card className="bg-white/5 border-white/20 backdrop-blur-sm shadow-xl">
-            <CardContent className="p-6">
-              {currentStep === 1 && (
-                <div>
-                  <h2 className="text-xl font-semibold text-white mb-6">
-                    {t('questions.budget.title')}
-                  </h2>
-                  <RadioGroup
-                    value={answers.budget}
-                    onValueChange={(value) => setAnswers({ ...answers, budget: value })}
-                    className="space-y-4"
-                  >
-                    {budgetOptions.map((option) => (
-                      <div key={option.key} className="flex items-center space-x-3">
-                        <RadioGroupItem value={option.value} id={option.key} className="border-cyan-400 text-cyan-400" />
-                        <Label htmlFor={option.key} className="text-blue-100 cursor-pointer hover:text-cyan-400 transition-colors">
-                          {option.label}
-                        </Label>
-                      </div>
-                    ))}
-                  </RadioGroup>
-                </div>
-              )}
+          {currentStepConfig && (
+            <Card className="bg-white/5 border-white/20 backdrop-blur-sm shadow-xl">
+              <CardContent className="p-6">
+                <h2 className="text-xl font-semibold text-white mb-2">
+                  {locale === 'zh' 
+                    ? currentStepConfig.titleZh || currentStepConfig.title 
+                    : currentStepConfig.title}
+                </h2>
+                <p className="text-blue-300/70 mb-6">
+                  {locale === 'zh' 
+                    ? currentStepConfig.descriptionZh || currentStepConfig.description 
+                    : currentStepConfig.description}
+                </p>
 
-              {currentStep === 2 && (
-                <div>
-                  <h2 className="text-xl font-semibold text-white mb-6">
-                    {t('questions.path.title')}
-                  </h2>
-                  <RadioGroup
-                    value={answers.conversionPath}
-                    onValueChange={(value) => setAnswers({ ...answers, conversionPath: value })}
-                    className="space-y-4"
-                  >
-                    {pathOptions.map((option) => (
-                      <div key={option.key} className="flex items-center space-x-3">
-                        <RadioGroupItem value={option.value} id={option.key} className="border-cyan-400 text-cyan-400" />
-                        <Label htmlFor={option.key} className="text-blue-100 cursor-pointer hover:text-cyan-400 transition-colors">
-                          {option.label}
-                        </Label>
-                      </div>
-                    ))}
-                  </RadioGroup>
-                </div>
-              )}
-
-              {currentStep === 3 && (
-                <div>
-                  <h2 className="text-xl font-semibold text-white mb-6">
-                    {t('questions.goal.title')}
-                  </h2>
-                  <RadioGroup
-                    value={answers.goal}
-                    onValueChange={(value) => setAnswers({ ...answers, goal: value })}
-                    className="space-y-4"
-                  >
-                    {goalOptions.map((option) => (
-                      <div key={option.key} className="flex items-center space-x-3">
-                        <RadioGroupItem value={option.value} id={option.key} className="border-cyan-400 text-cyan-400" />
-                        <Label htmlFor={option.key} className="text-blue-100 cursor-pointer hover:text-cyan-400 transition-colors">
-                          {option.label}
-                        </Label>
-                      </div>
-                    ))}
-                  </RadioGroup>
-                </div>
-              )}
-
-              {/* 按钮组：下一步在左侧，返回在右侧 */}
-              <div className="flex justify-between mt-8">
-                {/* 下一步/获取方案按钮 - 左侧 */}
-                <Button
-                  onClick={handleNext}
-                  disabled={currentStep === 1 ? !isStep1Complete : currentStep === 2 ? !isStep2Complete : !isStep3Complete}
-                  className={`${
-                    (currentStep === 1 ? isStep1Complete : currentStep === 2 ? isStep2Complete : isStep3Complete)
-                      ? 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 to-blue-500 text-white shadow-lg shadow-cyan-500/30'
-                      : 'bg-white/10 border-white/30 text-white/50 cursor-not-allowed'
-                  }`}
+                <RadioGroup
+                  value={answers[currentStepConfig.id] || ''}
+                  onValueChange={(value) => setAnswers({ ...answers, [currentStepConfig.id]: value })}
+                  className="space-y-2"
                 >
-                  {currentStep === 3 ? t('questions.generate') : t('questions.next')}
-                </Button>
-                
-                {/* 返回按钮 - 右侧 */}
-                {currentStep > 1 ? (
+                  {renderOptions(currentStepConfig)}
+                </RadioGroup>
+
+                {/* 按钮组 */}
+                <div className="flex justify-between mt-8">
                   <Button
-                    variant="outline"
-                    onClick={() => setCurrentStep(currentStep - 1)}
-                    className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-cyan-400"
+                    onClick={handleNext}
+                    disabled={!isAnswered}
+                    className={`${
+                      isAnswered
+                        ? 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 to-blue-500 text-white shadow-lg shadow-cyan-500/30'
+                        : 'bg-white/10 border-white/30 text-white/50 cursor-not-allowed'
+                    }`}
                   >
-                    {t('common.back')}
+                    {isLastQuizStep 
+                      ? (locale === 'zh' ? '获取方案' : 'Get Plan') 
+                      : (locale === 'zh' ? '下一步' : 'Next')}
                   </Button>
-                ) : (
+                  
                   <Button 
                     variant="ghost" 
-                    onClick={() => window.history.back()}
+                    onClick={handleBack}
                     className="text-blue-200 hover:text-cyan-400 hover:bg-white/10"
                   >
-                    {t('common.backPrevious')}
+                    {locale === 'zh' ? '返回' : 'Back'}
                   </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </main>
     </div>
   );
 }
 
-export default function QuestionsPage() {
+export default function QuizPage() {
   const { t, locale } = useI18n();
   const { user, loading } = useAuth();
 
@@ -222,7 +263,9 @@ export default function QuestionsPage() {
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
         <Card className="w-full max-w-md bg-white/5 border-white/20 backdrop-blur-sm shadow-xl relative z-10">
           <CardContent className="text-center py-12">
-            <p className="text-blue-200 mb-6">{locale === 'zh' ? '请登录以访问基础通用方案' : 'Please login to access questions'}</p>
+            <p className="text-blue-200 mb-6">
+              {locale === 'zh' ? '请登录以访问诊断方案' : 'Please login to access diagnosis'}
+            </p>
             <Link href="/login">
               <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/30">
                 {t('login.title')}
@@ -249,7 +292,7 @@ export default function QuestionsPage() {
         <div className="text-white text-lg">Loading...</div>
       </div>
     }>
-      <QuestionsContent />
+      <QuizContent />
     </Suspense>
   );
 }
