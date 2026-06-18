@@ -88,7 +88,7 @@ export default function HomePage() {
             AdsCraft — {locale === 'zh' ? 'AI广告优化引擎' : 'AI Ad Optimization Engine'}
           </h1>
           <h2 className="text-xl md:text-2xl text-blue-200 mb-8 font-light">
-            {locale === 'zh' ? '给定条件，算出你的最优投放配置' : 'Given conditions, compute your optimal ad configuration'}
+            {locale === 'zh' ? '让你的 Facebook & TikTok 广告更精准' : 'Make your Facebook & TikTok ads more precise'}
           </h2>
           
           {/* 四步流程可视化 */}
