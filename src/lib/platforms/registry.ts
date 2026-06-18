@@ -184,13 +184,13 @@ export const facebookConfig: PlatformConfig = {
   },
   
   routes: [
-    // Facebook 线路：免费通用方案 + 4个付费线路
+    // Facebook 线路：免费通用方案+诊断 + 4个付费线路
     { 
       id: 'free', 
-      name: 'Free Plan', 
-      nameZh: '免费通用方案', 
-      description: 'Basic configuration recommendation',
-      descriptionZh: '基础配置推荐',
+      name: 'Free Plan + Diagnosis', 
+      nameZh: '免费通用方案+诊断', 
+      description: 'Free diagnosis + basic config preview',
+      descriptionZh: '免费诊断分析 + 配置预览',
       // 简洁抽象几何图标：礼物盒/免费
       icon: `<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8V21"/><path d="M3 12h18"/><path d="M12 3c-2 0-4 2-4 5h8c0-3-2-5-4-5z"/></svg>`,
       color: '#22D3EE',
@@ -415,19 +415,19 @@ export const tiktokConfig: PlatformConfig = {
   },
   
   routes: [
-    // TikTok 线路：免费拒审排查 + 3个付费线路
+    // TikTok 线路：免费诊断+拒审排查 + 3个付费线路
     { 
       id: 'rejection_check', 
-      name: 'Rejection Check', 
-      nameZh: '拒审排查', 
-      description: 'Free ad rejection diagnosis',
-      descriptionZh: '免费广告拒审诊断',
+      name: 'Free Diagnosis + Rejection Check', 
+      nameZh: '免费诊断+拒审排查', 
+      description: 'Free diagnosis + ad rejection analysis',
+      descriptionZh: '免费诊断分析 + 拒审排查',
       // 简洁抽象几何图标：放大镜/排查
       icon: `<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="11" cy="11" r="7"/><line x1="16" y1="16" x2="21" y2="21" stroke="currentColor" stroke-width="2"/></svg>`,
       color: '#22D3EE',
       price: 0,
-      priceText: 'Free',
-      priceTextZh: '免费',
+      priceText: '$0',
+      priceTextZh: '$0',
       isFree: true
     },
     { 
@@ -616,7 +616,165 @@ export const FACEBOOK_QUIZ_CONFIG = {
   }
 };
 
-// TikTok Quiz 配置
+// TikTok 线路专属 Quiz 配置类型
+export type RouteQuizStep = {
+  id: string;
+  titleZh: string;
+  titleEn: string;
+  options: {
+    id: string;
+    value: string;
+    labelZh: string;
+    labelEn: string;
+    descriptionZh: string;
+    descriptionEn: string;
+  }[];
+};
+
+export type RouteQuizConfig = Record<string, RouteQuizStep[]>;
+
+// TikTok 线路专属 Quiz 配置（每条线路独立答题2-3题，不交叉）
+export const TIKTOK_ROUTE_QUIZ_CONFIGS: RouteQuizConfig = {
+  // Local Service 线路：业务类型→目标客户→预算范围
+  local_service: [
+    {
+      id: 'business_type',
+      titleZh: '你的业务类型是什么？',
+      titleEn: 'What is your business type?',
+      options: [
+        { id: 'restaurant', value: 'restaurant', labelZh: '餐饮/餐厅', labelEn: 'Restaurant/Food', descriptionZh: '本地餐饮服务', descriptionEn: 'Local food service' },
+        { id: 'beauty', value: 'beauty', labelZh: '美容/SPA', labelEn: 'Beauty/SPA', descriptionZh: '美容美发服务', descriptionEn: 'Beauty services' },
+        { id: 'fitness', value: 'fitness', labelZh: '健身/瑜伽', labelEn: 'Fitness/Yoga', descriptionZh: '健身运动服务', descriptionEn: 'Fitness services' },
+        { id: 'medical', value: 'medical', labelZh: '医疗/诊所', labelEn: 'Medical/Clinic', descriptionZh: '本地医疗服务', descriptionEn: 'Local medical' },
+        { id: 'education', value: 'education', labelZh: '教育/培训', labelEn: 'Education/Training', descriptionZh: '本地教育机构', descriptionEn: 'Local education' },
+        { id: 'auto', value: 'auto', labelZh: '汽车服务', labelEn: 'Auto Service', descriptionZh: '汽车维修保养', descriptionEn: 'Auto repair' }
+      ]
+    },
+    {
+      id: 'target_customer',
+      titleZh: '你的目标客户是谁？',
+      titleEn: 'Who is your target customer?',
+      options: [
+        { id: 'local', value: 'local', labelZh: '附近居民（5-10km）', labelEn: 'Nearby residents (5-10km)', descriptionZh: '覆盖周边社区', descriptionEn: 'Cover nearby communities' },
+        { id: 'city', value: 'city', labelZh: '城市范围（全市）', labelEn: 'City-wide', descriptionZh: '覆盖整个城市', descriptionEn: 'Cover entire city' },
+        { id: 'specific', value: 'specific', labelZh: '特定人群', labelEn: 'Specific group', descriptionZh: '针对特定年龄段/兴趣', descriptionEn: 'Specific age/interest' }
+      ]
+    },
+    {
+      id: 'budget_range',
+      titleZh: '你的日均预算范围？',
+      titleEn: 'What is your daily budget?',
+      options: [
+        { id: 'low', value: 'low', labelZh: '$10-30/天', labelEn: '$10-30/day', descriptionZh: '小规模测试', descriptionEn: 'Small scale testing' },
+        { id: 'mid', value: 'mid', labelZh: '$30-100/天', labelEn: '$30-100/day', descriptionZh: '稳定投放', descriptionEn: 'Stable running' },
+        { id: 'high', value: 'high', labelZh: '>$100/天', labelEn: '>$100/day', descriptionZh: '规模化投放', descriptionEn: 'Scale up' }
+      ]
+    }
+  ],
+  
+  // Website Conversion 线路：产品类型→转化目标→日均预算
+  website_conv: [
+    {
+      id: 'product_type',
+      titleZh: '你的产品类型是什么？',
+      titleEn: 'What is your product type?',
+      options: [
+        { id: 'physical', value: 'physical', labelZh: '实体商品', labelEn: 'Physical Products', descriptionZh: '有物流配送的商品', descriptionEn: 'Products with shipping' },
+        { id: 'digital', value: 'digital', labelZh: '数字产品', labelEn: 'Digital Products', descriptionZh: '软件/课程/电子书', descriptionEn: 'Software/Courses' },
+        { id: 'subscription', value: 'subscription', labelZh: '订阅服务', labelEn: 'Subscription Service', descriptionZh: '月付/年付订阅', descriptionEn: 'Monthly/Yearly subscription' },
+        { id: 'service', value: 'service', labelZh: '在线服务', labelEn: 'Online Service', descriptionZh: '咨询/设计等在线服务', descriptionEn: 'Online consulting' }
+      ]
+    },
+    {
+      id: 'conversion_goal',
+      titleZh: '你的主要转化目标？',
+      titleEn: 'What is your conversion goal?',
+      options: [
+        { id: 'purchase', value: 'purchase', labelZh: '直接购买', labelEn: 'Direct Purchase', descriptionZh: '完成下单付款', descriptionEn: 'Complete purchase' },
+        { id: 'signup', value: 'signup', labelZh: '注册/订阅', labelEn: 'Sign Up', descriptionZh: '用户注册账号', descriptionEn: 'User registration' },
+        { id: 'download', value: 'download', labelZh: '下载/试用', labelEn: 'Download/Trial', descriptionZh: '下载应用或试用', descriptionEn: 'Download app/trial' },
+        { id: 'contact', value: 'contact', labelZh: '联系咨询', labelEn: 'Contact Us', descriptionZh: '提交联系方式', descriptionEn: 'Submit contact' }
+      ]
+    },
+    {
+      id: 'daily_budget',
+      titleZh: '你的日均预算？',
+      titleEn: 'What is your daily budget?',
+      options: [
+        { id: 'low', value: 'low', labelZh: '$20-50/天', labelEn: '$20-50/day', descriptionZh: '初期测试', descriptionEn: 'Initial testing' },
+        { id: 'mid', value: 'mid', labelZh: '$50-150/天', labelEn: '$50-150/day', descriptionZh: '稳定投放', descriptionEn: 'Stable running' },
+        { id: 'high', value: 'high', labelZh: '>$150/天', labelEn: '>$150/day', descriptionZh: '规模化', descriptionEn: 'Scale up' }
+      ]
+    }
+  ],
+  
+  // Brand Awareness 线路：行业→目标受众→投放周期
+  brand_awareness: [
+    {
+      id: 'industry',
+      titleZh: '你所在的行业？',
+      titleEn: 'What is your industry?',
+      options: [
+        { id: 'fashion', value: 'fashion', labelZh: '时尚/服饰', labelEn: 'Fashion/Apparel', descriptionZh: '服装鞋帽配饰', descriptionEn: 'Clothing & accessories' },
+        { id: 'tech', value: 'tech', labelZh: '科技/数码', labelEn: 'Tech/Digital', descriptionZh: '电子产品数码', descriptionEn: 'Electronics' },
+        { id: 'food', value: 'food', labelZh: '食品/饮料', labelEn: 'Food/Beverage', descriptionZh: '食品酒水饮料', descriptionEn: 'Food & drinks' },
+        { id: 'health', value: 'health', labelZh: '健康/保健', labelEn: 'Health/Wellness', descriptionZh: '健康保健产品', descriptionEn: 'Health products' },
+        { id: 'home', value: 'home', labelZh: '家居/生活', labelEn: 'Home/Lifestyle', descriptionZh: '家居日用产品', descriptionEn: 'Home products' },
+        { id: 'other', value: 'other', labelZh: '其他行业', labelEn: 'Other', descriptionZh: '其他行业类型', descriptionEn: 'Other industries' }
+      ]
+    },
+    {
+      id: 'target_audience',
+      titleZh: '你的目标受众？',
+      titleEn: 'Who is your target audience?',
+      options: [
+        { id: 'young', value: 'young', labelZh: '年轻人群（18-25岁）', labelEn: 'Young (18-25)', descriptionZh: '大学生/年轻人', descriptionEn: 'College/Young adults' },
+        { id: 'adult', value: 'adult', labelZh: '成年人群（25-40岁）', labelEn: 'Adults (25-40)', descriptionZh: '职场人士', descriptionEn: 'Working professionals' },
+        { id: 'mature', value: 'mature', labelZh: '成熟人群（40+岁）', labelEn: 'Mature (40+)', descriptionZh: '中年及以上', descriptionEn: 'Middle-aged and above' },
+        { id: 'broad', value: 'broad', labelZh: '广泛覆盖', labelEn: 'Broad Coverage', descriptionZh: '不限年龄广泛投放', descriptionEn: 'No age limit' }
+      ]
+    },
+    {
+      id: 'campaign_duration',
+      titleZh: '你的投放周期？',
+      titleEn: 'What is your campaign duration?',
+      options: [
+        { id: 'short', value: 'short', labelZh: '短期（1-2周）', labelEn: 'Short (1-2 weeks)', descriptionZh: '新品上市/活动推广', descriptionEn: 'New launch/Event' },
+        { id: 'mid', value: 'mid', labelZh: '中期（1-3个月）', labelEn: 'Medium (1-3 months)', descriptionZh: '品牌认知建立', descriptionEn: 'Brand awareness' },
+        { id: 'long', value: 'long', labelZh: '长期（3个月以上）', labelEn: 'Long (3+ months)', descriptionZh: '持续品牌曝光', descriptionEn: 'Continuous exposure' }
+      ]
+    }
+  ],
+  
+  // 拒审排查入口：上传拒审通知截图→选拒审类型→AI排查
+  rejection_check: [
+    {
+      id: 'rejection_type',
+      titleZh: '你的广告被拒审的原因类型？',
+      titleEn: 'What type of rejection did you receive?',
+      options: [
+        { id: 'creative', value: 'creative', labelZh: '素材问题', labelEn: 'Creative Issue', descriptionZh: '图片/视频不符合规范', descriptionEn: 'Image/video not compliant' },
+        { id: 'copy', value: 'copy', labelZh: '文案问题', labelEn: 'Copy Issue', descriptionZh: '文字描述违反政策', descriptionEn: 'Text violates policy' },
+        { id: 'landing', value: 'landing', labelZh: '落地页问题', labelEn: 'Landing Page Issue', descriptionZh: '网站页面不符合要求', descriptionEn: 'Website not compliant' },
+        { id: 'product', value: 'product', labelZh: '产品问题', labelEn: 'Product Issue', descriptionZh: '产品类型受限', descriptionEn: 'Product type restricted' },
+        { id: 'unknown', value: 'unknown', labelZh: '原因不明', labelEn: 'Unknown', descriptionZh: '不清楚具体原因', descriptionEn: 'Not sure the reason' }
+      ]
+    },
+    {
+      id: 'ad_format',
+      titleZh: '被拒审的广告格式？',
+      titleEn: 'What ad format was rejected?',
+      options: [
+        { id: 'video', value: 'video', labelZh: '视频广告', labelEn: 'Video Ad', descriptionZh: '短视频广告素材', descriptionEn: 'Short video ad' },
+        { id: 'image', value: 'image', labelZh: '图片广告', labelEn: 'Image Ad', descriptionZh: '静态图片广告', descriptionEn: 'Static image ad' },
+        { id: 'carousel', value: 'carousel', labelZh: '轮播广告', labelEn: 'Carousel Ad', descriptionZh: '多图轮播广告', descriptionEn: 'Carousel ad' },
+        { id: 'spark', value: 'spark', labelZh: 'Spark Ads', labelEn: 'Spark Ads', descriptionZh: '达人合作广告', descriptionEn: 'Creator ad' }
+      ]
+    }
+  ]
+};
+
+// 旧版 TikTok Quiz 配置（保留兼容）
 export const TIKTOK_QUIZ_CONFIG = {
   budget: {
     titleZh: '你的日均广告预算是多少？',

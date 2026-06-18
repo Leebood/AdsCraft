@@ -12,7 +12,6 @@ export default function HomePage() {
   const { t, locale } = useI18n();
   const router = useRouter();
   const { user, loading } = useAuth();
-  const [selectedPlatform, setSelectedPlatform] = useState<PlatformId | null>(null);
   const [selectedRoute, setSelectedRoute] = useState<{ platform: PlatformId; route: PlatformRoute } | null>(null);
   
   // TikTok Pixel: 页面浏览追踪
@@ -64,6 +63,14 @@ export default function HomePage() {
     return styles[color] || styles['#22D3EE'];
   };
 
+  // 四步流程数据
+  const engineSteps = [
+    { num: 1, title: locale === 'zh' ? '诊断分析' : 'Diagnosis', desc: locale === 'zh' ? '识别问题根因' : 'Identify root causes' },
+    { num: 2, title: locale === 'zh' ? '最优配置' : 'Optimal Config', desc: locale === 'zh' ? 'AI推荐配置' : 'AI recommended setup' },
+    { num: 3, title: locale === 'zh' ? '动态优化' : 'Dynamic Opt', desc: locale === 'zh' ? '7-14天调整路径' : '7-14 day adjustment' },
+    { num: 4, title: locale === 'zh' ? '持续进化' : 'Evolution', desc: locale === 'zh' ? '新数据再优化' : 'Re-optimize with data' },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900">
       {/* Animated Background Pattern */}
@@ -75,30 +82,40 @@ export default function HomePage() {
       </div>
 
       <div className="relative max-w-6xl mx-auto px-4 py-16">
-        {/* Hero Section */}
+        {/* 产品定位区 */}
         <div className="text-center mb-12">
-          <div className="inline-block mb-6 px-6 py-2 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full border border-cyan-400/30">
-            <span className="text-cyan-300 font-medium text-sm tracking-wide">
-              AI-Powered Decision Engine
-            </span>
-          </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
-            {t('home.title')}
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+            AdsCraft — {locale === 'zh' ? 'AI广告优化引擎' : 'AI Ad Optimization Engine'}
           </h1>
-          <h2 className="text-2xl md:text-3xl text-blue-200 mb-6 font-light">
-            {t('home.subtitle')}
+          <h2 className="text-xl md:text-2xl text-blue-200 mb-8 font-light">
+            {locale === 'zh' ? '给定条件，算出你的最优投放配置' : 'Given conditions, compute your optimal ad configuration'}
           </h2>
-          <p className="text-blue-300/80 max-w-2xl mx-auto text-lg leading-relaxed">
-            {t('home.description')}
-          </p>
+          
+          {/* 四步流程可视化 */}
+          <div className="flex flex-wrap justify-center items-center gap-3 md:gap-6 mb-8">
+            {engineSteps.map((step, idx) => (
+              <div key={step.num} className="flex items-center">
+                <div className="flex flex-col items-center">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-cyan-500/30 to-blue-500/30 border border-cyan-400/50 flex items-center justify-center text-cyan-300 font-bold text-lg md:text-xl">
+                    {step.num}
+                  </div>
+                  <div className="mt-2 text-center">
+                    <div className="text-white font-medium text-sm md:text-base">{step.title}</div>
+                    <div className="text-blue-300/60 text-xs md:text-sm">{step.desc}</div>
+                  </div>
+                </div>
+                {idx < engineSteps.length - 1 && (
+                  <svg className="w-6 h-6 md:w-8 md:h-8 text-cyan-400/50 mx-2 md:mx-4 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Dual Platform Section - 双平台分列 */}
         <div className="mb-16">
-          <h3 className="text-2xl font-semibold text-white mb-8 text-center">
-            {locale === 'zh' ? '选择你的广告平台和业务类型' : 'Select Your Platform & Business Type'}
-          </h3>
-          
           {/* 双平台分列布局 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {/* Facebook Platform Column */}
@@ -128,11 +145,7 @@ export default function HomePage() {
                       key={route.id}
                       onClick={() => handleRouteClick('facebook', route)}
                       disabled={loading}
-                      className={`group w-full p-4 rounded-xl border transition-all duration-300 flex items-center gap-4 ${
-                        selectedRoute?.route.id === route.id && selectedRoute?.platform === 'facebook'
-                          ? 'bg-white/15 border-cyan-400 shadow-lg shadow-cyan-500/20'
-                          : 'bg-white/5 border-white/10 hover:bg-white/10'
-                      } ${styles.hoverBorder} disabled:opacity-70 disabled:cursor-wait`}
+                      className={`group w-full p-4 rounded-xl border transition-all duration-300 flex items-center gap-4 bg-white/5 border-white/10 hover:bg-white/10 ${styles.hoverBorder} disabled:opacity-70 disabled:cursor-wait`}
                     >
                       {/* Icon - SVG */}
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${styles.bg} ${styles.border} group-hover:scale-105 transition-transform`}>
@@ -187,7 +200,7 @@ export default function HomePage() {
                     {PLATFORM_CONFIGS.tiktok.name}
                   </h4>
                   <p className="text-pink-200/70 text-sm">
-                    {locale === 'zh' ? 'TikTok 广告 & TikTok Shop' : 'TikTok Ads & TikTok Shop'}
+                    {locale === 'zh' ? 'TikTok 广告' : 'TikTok Ads'}
                   </p>
                 </div>
               </div>
@@ -204,11 +217,7 @@ export default function HomePage() {
                       key={route.id}
                       onClick={() => hasPaymentLink && handleRouteClick('tiktok', route)}
                       disabled={loading || isPaidButNoLink}
-                      className={`group w-full p-4 rounded-xl border transition-all duration-300 flex items-center gap-4 ${
-                        selectedRoute?.route.id === route.id && selectedRoute?.platform === 'tiktok'
-                          ? 'bg-white/15 border-cyan-400 shadow-lg shadow-cyan-500/20'
-                          : 'bg-white/5 border-white/10 hover:bg-white/10'
-                      } ${styles.hoverBorder} ${isPaidButNoLink ? 'opacity-60 cursor-not-allowed' : ''} disabled:opacity-70 disabled:cursor-wait`}
+                      className={`group w-full p-4 rounded-xl border transition-all duration-300 flex items-center gap-4 bg-white/5 border-white/10 hover:bg-white/10 ${styles.hoverBorder} ${isPaidButNoLink ? 'opacity-60 cursor-not-allowed' : ''} disabled:opacity-70 disabled:cursor-wait`}
                     >
                       {/* Icon - SVG */}
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${styles.bg} ${styles.border} group-hover:scale-105 transition-transform`}>
@@ -258,15 +267,15 @@ export default function HomePage() {
             </div>
           </div>
           
-          {/* 注释：各平台线路独立，不交叉映射 */}
+          {/* 注释 */}
           <p className="text-blue-300/50 text-sm text-center mt-6">
             {locale === 'zh' 
-              ? '💡 各平台线路独立配置，点击付费线路跳转 Creem 完成订阅'
-              : '💡 Each platform has independent routes. Click paid routes to subscribe via Creem'}
+              ? '💡 点击付费线路跳转 Creem 完成订阅'
+              : '💡 Click paid routes to subscribe via Creem'}
           </p>
         </div>
 
-        {/* Selected Route Action Button */}
+        {/* Selected Route Action Button - 仅用于暂无支付链接的付费线路 */}
         {selectedRoute && !selectedRoute.route.creemLink && (
           <div className="mb-8 flex justify-center">
             <button
@@ -293,65 +302,6 @@ export default function HomePage() {
             </button>
           </div>
         )}
-
-        {/* Value Proposition */}
-        <div className="mt-16">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {/* Configuration Recommendation */}
-            <div className="text-center group">
-              <div className="relative mb-8">
-                <div className="absolute inset-0 bg-cyan-400/10 blur-xl rounded-full group-hover:bg-cyan-400/20 transition-all duration-300" />
-                <div className="relative w-20 h-20 mx-auto bg-gradient-to-br from-cyan-500/30 to-cyan-400/20 rounded-2xl border border-cyan-400/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <svg className="w-10 h-10 text-cyan-400" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM7 7h2v2H7V7zm0 4h2v2H7v-2zm0 4h2v2H7v-2zm4-8h2v2h-2V7zm0 4h2v2h-2v-2zm0 4h2v2h-2v-2zm4-8h2v2h-2V7zm0 4h2v2h-2v-2zm0 4h2v2h-2v-2z"/>
-                  </svg>
-                </div>
-              </div>
-              <h4 className="text-xl font-semibold text-white mb-3 group-hover:text-cyan-300 transition-colors">
-                {t('home.value1.title')}
-              </h4>
-              <p className="text-blue-300/70 leading-relaxed">
-                {t('home.value1.desc')}
-              </p>
-            </div>
-
-            {/* Reason Analysis */}
-            <div className="text-center group">
-              <div className="relative mb-8">
-                <div className="absolute inset-0 bg-purple-400/10 blur-xl rounded-full group-hover:bg-purple-400/20 transition-all duration-300" />
-                <div className="relative w-20 h-20 mx-auto bg-gradient-to-br from-purple-500/30 to-purple-400/20 rounded-2xl border border-purple-400/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <svg className="w-10 h-10 text-purple-400" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7zm2.9 11.1l-.9.6V16h-4v-2.3l-.9-.6C7.8 12.2 7 10.6 7 9c0-2.8 2.2-5 5-5s5 2.2 5 5c0 1.6-.8 3.2-2.1 4.1z"/>
-                  </svg>
-                </div>
-              </div>
-              <h4 className="text-xl font-semibold text-white mb-3 group-hover:text-purple-300 transition-colors">
-                {t('home.value2.title')}
-              </h4>
-              <p className="text-blue-300/70 leading-relaxed">
-                {t('home.value2.desc')}
-              </p>
-            </div>
-
-            {/* Diagnosis & Optimization */}
-            <div className="text-center group">
-              <div className="relative mb-8">
-                <div className="absolute inset-0 bg-orange-400/10 blur-xl rounded-full group-hover:bg-orange-400/20 transition-all duration-300" />
-                <div className="relative w-20 h-20 mx-auto bg-gradient-to-br from-orange-500/30 to-orange-400/20 rounded-2xl border border-orange-400/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <svg className="w-10 h-10 text-orange-400" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.54 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.46 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
-                  </svg>
-                </div>
-              </div>
-              <h4 className="text-xl font-semibold text-white mb-3 group-hover:text-orange-300 transition-colors">
-                {t('home.value3.title')}
-              </h4>
-              <p className="text-blue-300/70 leading-relaxed">
-                {t('home.value3.desc')}
-              </p>
-            </div>
-          </div>
-        </div>
 
         {/* Footer */}
         <div className="mt-20 pt-8 border-t border-white/10 text-center">

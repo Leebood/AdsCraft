@@ -10,9 +10,22 @@ import { Label } from '@/components/ui/label';
 import { useI18n } from '@/lib/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 import { tiktokPixel } from '@/lib/tiktok-pixel';
-import { PLATFORM_CONFIGS, PlatformId, QuizStep, ComplianceItem } from '@/lib/platforms/registry';
+import { PLATFORM_CONFIGS, PlatformId, QuizStep, ComplianceItem, TIKTOK_ROUTE_QUIZ_CONFIGS, FACEBOOK_QUIZ_CONFIG, RouteQuizConfig } from '@/lib/platforms/registry';
 import { ComplianceChecklist } from '@/components/compliance-checklist';
 import { ACCOUNT_STAGE_QUIZ } from '@/lib/platforms/tiktok-account-diagnosis';
+
+// 线路 ID 映射到 Quiz 配置 key
+const TIKTOK_ROUTE_MAP: Record<string, string> = {
+  'rejection_check': 'rejection_check',
+  'local_service': 'local_service',
+  'website_conv': 'website_conv',
+  'brand_awareness': 'brand_awareness',
+  // 兼容旧名称
+  'free': 'rejection_check',
+  'local-service': 'local_service',
+  'website-conversion': 'website_conv',
+  'brand': 'brand_awareness'
+};
 
 function QuizContent() {
   const searchParams = useSearchParams();
@@ -22,10 +35,81 @@ function QuizContent() {
 
   // 获取平台配置
   const platformConfig = PLATFORM_CONFIGS[platform];
-  const quizFlow: QuizStep[] = platformConfig?.quizFlow || [];
   
-  // TikTok 颦号阶段问题
-  const accountStageQuiz = platform === 'tiktok' ? ACCOUNT_STAGE_QUIZ : null;
+  // 根据平台和线路获取 Quiz 配置
+  const getQuizFlow = (): QuizStep[] => {
+    if (platform === 'tiktok') {
+      // TikTok 使用线路专属配置
+      const routeKey = TIKTOK_ROUTE_MAP[route] || 'rejection_check';
+      const routeQuiz = TIKTOK_ROUTE_QUIZ_CONFIGS[routeKey as keyof typeof TIKTOK_ROUTE_QUIZ_CONFIGS];
+      // 转换 RouteQuizStep[] 为 QuizStep[]
+      if (routeQuiz) {
+        return routeQuiz.map((step): QuizStep => ({
+          id: step.id,
+          title: step.titleEn,
+          titleZh: step.titleZh,
+          description: '',
+          descriptionZh: '',
+          options: step.options.map(opt => ({
+            id: opt.id,
+            value: opt.value,
+            label: opt.labelEn,
+            labelZh: opt.labelZh,
+            description: opt.descriptionEn,
+            descriptionZh: opt.descriptionZh
+          }))
+        }));
+      }
+      return [];
+    }
+    // Facebook 使用通用配置
+    const fbQuiz = platformConfig?.quizFlow || [];
+    // 转换 FACEBOOK_QUIZ_CONFIG 格式为 QuizStep 格式
+    const convertedQuiz: QuizStep[] = [];
+    const budgetConfig = FACEBOOK_QUIZ_CONFIG.budget;
+    if (budgetConfig) {
+      convertedQuiz.push({
+        id: 'budget',
+        title: budgetConfig.titleEn,
+        titleZh: budgetConfig.titleZh,
+        description: '',
+        descriptionZh: '',
+        options: budgetConfig.options.map(opt => ({
+          id: opt.id,
+          value: opt.value,
+          label: opt.labelEn,
+          labelZh: opt.labelZh,
+          description: opt.descriptionEn,
+          descriptionZh: opt.descriptionZh
+        }))
+      });
+    }
+    const goalConfig = FACEBOOK_QUIZ_CONFIG.goal;
+    if (goalConfig) {
+      convertedQuiz.push({
+        id: 'goal',
+        title: goalConfig.titleEn,
+        titleZh: goalConfig.titleZh,
+        description: '',
+        descriptionZh: '',
+        options: goalConfig.options.map(opt => ({
+          id: opt.id,
+          value: opt.value,
+          label: opt.labelEn,
+          labelZh: opt.labelZh,
+          description: opt.descriptionEn,
+          descriptionZh: opt.descriptionZh
+        }))
+      });
+    }
+    return convertedQuiz.length > 0 ? convertedQuiz : fbQuiz;
+  };
+  
+  const quizFlow = getQuizFlow();
+  
+  // TikTok 账号阶段问题（仅付费线路需要）
+  const isPaidRoute = route !== 'free' && route !== 'rejection_check';
+  const accountStageQuiz = platform === 'tiktok' && isPaidRoute ? ACCOUNT_STAGE_QUIZ : null;
   const totalSteps = quizFlow.length + (accountStageQuiz ? 1 : 0);
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -120,6 +204,12 @@ function QuizContent() {
     ));
   };
 
+  // 获取线路名称
+  const getRouteName = () => {
+    const routeConfig = platformConfig?.routes?.find(r => r.id === route);
+    return locale === 'zh' ? routeConfig?.nameZh : routeConfig?.name;
+  };
+
   // 渲染合规检查弹窗
   if (showCompliance) {
     return (
@@ -157,18 +247,26 @@ function QuizContent() {
           {/* 标题 */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full mb-4">
-              <span className="text-lg">{platformConfig?.icon}</span>
+              <div 
+                className="w-5 h-5 flex items-center justify-center"
+                dangerouslySetInnerHTML={{ __html: platformConfig?.icon || '' }}
+              />
               <span className="text-blue-200 font-medium">
                 {locale === 'zh' ? platformConfig?.nameZh || platformConfig?.name : platformConfig?.name}
               </span>
+              {route && (
+                <span className="text-cyan-400 ml-2">
+                  · {getRouteName()}
+                </span>
+              )}
             </div>
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
               {locale === 'zh' ? '诊断配置' : 'Diagnostic Configuration'}
             </h1>
             <p className="text-lg text-blue-200">
               {locale === 'zh' 
-                ? '回答以下问题，获取个性化诊断方案' 
-                : 'Answer the following questions to get personalized diagnosis'}
+                ? `回答 ${totalSteps} 个问题，获取个性化诊断方案` 
+                : `Answer ${totalSteps} questions to get personalized diagnosis`}
             </p>
           </div>
 
