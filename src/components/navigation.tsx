@@ -4,34 +4,34 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useI18n } from '@/lib/i18n-context';
 import { useAuth } from '@/lib/auth-context';
-import { PLATFORM_CONFIGS, PlatformId } from '@/lib/platforms/registry';
 
 export function Navigation() {
   const { t, locale } = useI18n();
   const { user, loading, signOut } = useAuth();
   const pathname = usePathname();
 
-  // Tab 配置
+  // 判断是否在首页
+  const isHomePage = pathname === '/';
+  
+  // Tab 配置（仅非首页时显示）
   const tabs = [
     { 
       id: 'overview', 
       label: locale === 'zh' ? '概览' : 'Overview', 
       href: '/dashboard',
-      icon: null
+      icon: '📊'
     },
     { 
       id: 'facebook', 
       label: locale === 'zh' ? 'FB' : 'FB', 
       href: '/platform/facebook',
-      icon: PLATFORM_CONFIGS.facebook?.icon,
-      color: PLATFORM_CONFIGS.facebook?.color
+      icon: '📘'
     },
     { 
       id: 'tiktok', 
       label: locale === 'zh' ? 'TikTok' : 'TikTok', 
       href: '/platform/tiktok',
-      icon: PLATFORM_CONFIGS.tiktok?.icon,
-      color: PLATFORM_CONFIGS.tiktok?.color
+      icon: '🎵'
     },
     { 
       id: 'settings', 
@@ -62,6 +62,29 @@ export function Navigation() {
         <Link href="/login" className="text-blue-200/80 hover:text-cyan-300 transition-colors font-medium">
           {t('nav.login')}
         </Link>
+      </nav>
+    );
+  }
+
+  // 首页时显示简化导航（避免与首页线路选择重复）
+  if (isHomePage) {
+    return (
+      <nav className="flex items-center gap-4">
+        <Link 
+          href="/dashboard" 
+          className="text-blue-200/80 hover:text-cyan-300 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-white/5"
+        >
+          {locale === 'zh' ? '我的方案' : 'My Plans'}
+        </Link>
+        <div className="w-px h-6 bg-white/20" />
+        {!loading && (
+          <button 
+            onClick={signOut}
+            className="text-blue-200/60 hover:text-red-400 transition-colors font-medium px-3 py-2 rounded-lg hover:bg-red-500/10"
+          >
+            {t('nav.logout')}
+          </button>
+        )}
       </nav>
     );
   }
