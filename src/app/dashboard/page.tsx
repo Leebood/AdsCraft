@@ -155,6 +155,47 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
+          {/* 功能入口 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {/* 分析功能 */}
+            <Link href="/dashboard/analysis">
+              <Card className="bg-white/5 border-white/20 backdrop-blur-sm shadow-xl hover:border-cyan-400/50 hover:bg-white/10 transition-all cursor-pointer">
+                <CardContent className="py-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-cyan-500/30 to-blue-500/30 rounded-xl flex items-center justify-center border border-cyan-400/30">
+                      <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 002-2h2a2 2 0 002 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 002-2h2a2 2 0 002 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-white font-semibold">{locale === 'zh' ? '截图分析' : 'Screenshot Analysis'}</h3>
+                      <p className="text-blue-300 text-sm">{locale === 'zh' ? '上传广告截图，AI分析诊断' : 'Upload ad screenshots for AI analysis'}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* TikTok 连接 */}
+            <Link href="/dashboard/connections">
+              <Card className="bg-white/5 border-white/20 backdrop-blur-sm shadow-xl hover:border-purple-400/50 hover:bg-white/10 transition-all cursor-pointer">
+                <CardContent className="py-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-purple-500/30 to-pink-500/30 rounded-xl flex items-center justify-center border border-purple-400/30">
+                      <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-white font-semibold">{locale === 'zh' ? '平台连接' : 'Platform Connections'}</h3>
+                      <p className="text-blue-300 text-sm">{locale === 'zh' ? '连接TikTok广告账户' : 'Connect TikTok ad accounts'}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
+
           {/* Saved Plans */}
           <Card className="bg-white/5 border-white/20 backdrop-blur-sm shadow-xl mb-6">
             <CardHeader>
