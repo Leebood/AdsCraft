@@ -1,13 +1,13 @@
 /**
  * TikTok 全生命周期运营诊断 SOP 配置
- * 从"个性化诊断"调整为"运营SOP指引"
+ * 定位：运营SOP指引，标准化操作清单，不给个性化诊断
  * 仅 TikTok 出现，FB 不受影响
  */
 
 // 账号阶段类型
 export type AccountStage = 'new_account' | 'stable_account' | 'declining_account';
 
-// SOP 配置结构
+// SOP 配置结构（统一格式）
 export interface SOPConfig {
   id: AccountStage;
   name: string;
@@ -18,6 +18,7 @@ export interface SOPConfig {
   sop: {
     stage: string;
     stageZh: string;
+    stageDays: string; // 天数范围
     coreTasks: string[];
     coreTasksZh: string[];
     keyMetrics: string[];
@@ -32,7 +33,7 @@ export interface SOPConfig {
 }
 
 // ========================================
-// 新账号冷启动 SOP
+// 新账号（0-30天）冷启动 SOP
 // ========================================
 const NEW_ACCOUNT_SOP: SOPConfig = {
   id: 'new_account',
@@ -41,72 +42,73 @@ const NEW_ACCOUNT_SOP: SOPConfig = {
   icon: '🌱',
   color: '#22D3EE',
   sop: {
-    stage: 'Cold Start Phase (0-14 days)',
-    stageZh: '冷启动阶段（0-14天）',
+    stage: 'Cold Start Phase',
+    stageZh: '冷启动阶段',
+    stageDays: '0-30 days',
     coreTasks: [
-      'Complete learning phase: achieve 7 conversions in 7 days',
-      'Test 3-5 creative variations to identify best performers',
-      'Set up proper tracking (pixel, events, attribution)',
-      'Establish baseline metrics for future optimization'
+      'Set up Pixel events (≥50 conversions for learning)',
+      'Accumulate initial engagement data',
+      'Test creative variations to find best performers',
+      'Complete learning phase (7 conversions in 7 days)'
     ],
     coreTasksZh: [
-      '完成学习期：7天内获得7次转化',
-      '测试3-5个素材变体找出最佳表现',
-      '建立正确追踪（像素、事件、归因）',
-      '建立基准指标供后续优化参考'
+      '建立Pixel事件（≥50个转化完成学习期）',
+      '积累初始互动数据',
+      '测试素材变体找出最佳表现',
+      '完成学习期（7天内获得7次转化）'
     ],
     keyMetrics: [
-      'Learning phase completion rate',
-      'Video completion rate > 25%',
-      'CTR > 1.5%',
-      'CPA within 2x of target'
+      'Pixel events ≥ 50',
+      'CTR ≥ 1.2%',
+      'Ad approval rate',
+      'Learning phase completion'
     ],
     keyMetricsZh: [
-      '学习期完成率',
-      '视频完播率 > 25%',
-      '点击率 CTR > 1.5%',
-      'CPA 在目标2倍以内'
+      'Pixel事件 ≥ 50个',
+      '点击率 CTR ≥ 1.2%',
+      '广告通过率',
+      '学习期完成状态'
     ],
     commonPitfalls: [
-      'Overly narrow targeting limits learning',
-      'Too many ad sets compete for same budget',
-      'Low-quality creatives slow learning',
-      'Incorrect tracking setup'
+      'Too many ad sets competing',
+      'Not testing enough creatives',
+      'Switching to CBO too early',
+      'Scaling budget before learning completes'
     ],
     commonPitfallsZh: [
-      '定向过窄导致无法学习',
-      '广告组太多争夺同一预算',
-      '低质量素材拖慢学习进度',
-      '追踪设置不正确'
+      '定向太多广告组争夺预算',
+      '素材测试不够',
+      '过早切换CBO',
+      '学习期未完成就放大'
     ],
     recommendedActions: [
-      'Start with broad targeting +兴趣定向',
-      'Focus budget on 2-3 best creatives',
-      'Increase bid 10-20% to accelerate learning',
-      'Check pixel firing daily for first week'
+      'Start with ABO, $10-20/day per ad set',
+      'Test 3 ad sets with different creatives',
+      'Scale only after learning phase completes',
+      'Scale budget after creative stabilizes'
     ],
     recommendedActionsZh: [
-      '起步用宽定向+兴趣定向',
-      '预算集中到2-3个最佳素材',
-      '出价提高10-20%加速学习',
-      '首周每天检查像素触发情况'
+      'ABO起步，每组$10-20/天',
+      '测3个广告组用不同素材',
+      '学完再缩',
+      '素材稳定再放量'
     ]
   },
   diagnosisPrompt: `你是TikTok新账号冷启动专家。请基于以下SOP框架进行诊断：
 
 【冷启动SOP框架】
-阶段：冷启动期（0-14天）
-核心任务：完成学习期（7天7转化）、测试素材变体、建立追踪
-关键指标：学习期完成率、视频完播率>25%、CTR>1.5%、CPA在目标2倍内
-常见坑：定向过窄、广告组过多、低质量素材、追踪错误
-推荐动作：宽定向+兴趣、预算集中2-3素材、出价提高10-20%、首周每天检查像素
+阶段：冷启动期（0-30天）
+核心任务：建立Pixel事件≥50个、积累初始互动数据、测试素材变体、完成学习期
+关键指标：Pixel事件≥50、CTR≥1.2%、广告通过率、学习期完成
+常见坑：定向太多广告组、素材测试不够、过早切CBO、放大过快
+推荐动作：ABO起步$10-20/天→3组、学完再缩、素材稳定再放量
 
 【账号当前状态】
 投放天数：{days_running}
 日预算：{daily_budget}
-目标：{goal}
-当前CTR：{ctr}
-当前转化数：{conversions}
+Pixel事件数：{pixel_events}
+CTR：{ctr}
+转化数：{conversions}
 
 【诊断任务】
 1. 对照SOP核心任务，评估完成进度
@@ -127,7 +129,7 @@ const NEW_ACCOUNT_SOP: SOPConfig = {
 };
 
 // ========================================
-// 老号平平突破瓶颈 SOP
+// 老号平平（30-90天）突破瓶颈 SOP
 // ========================================
 const STABLE_ACCOUNT_SOP: SOPConfig = {
   id: 'stable_account',
@@ -136,72 +138,73 @@ const STABLE_ACCOUNT_SOP: SOPConfig = {
   icon: '📊',
   color: '#F59E0B',
   sop: {
-    stage: 'Stable but Flat Phase (15-60 days)',
-    stageZh: '稳定但平平阶段（15-60天）',
+    stage: 'Stable but Flat Phase',
+    stageZh: '稳定但平平阶段',
+    stageDays: '30-90 days',
     coreTasks: [
-      'Refresh creative library every 2 weeks',
-      'Expand audience testing incrementally',
-      'Test new ad formats (Spark Ads, Carousel)',
-      'Analyze competitor strategies for inspiration'
+      'Find winning creative + audience combination',
+      'Optimize conversion funnel',
+      'Refresh creatives regularly',
+      'Test new ad formats'
     ],
     coreTasksZh: [
-      '每2周更新素材库',
-      '渐进式拓展受众测试',
-      '测试新广告格式（Spark Ads、轮播）',
-      '分析竞品策略获取灵感'
+      '找到最佳素材+受众组合',
+      '优化转化链路',
+      '定期刷新素材',
+      '测试新广告格式'
     ],
     keyMetrics: [
-      'Creative freshness score > 70%',
-      'Audience reach expansion > 20%',
-      'CPA improvement potential 15-30%',
-      'ROAS baseline vs industry benchmark'
+      'CPA trend (stable or improving)',
+      'Campaign cycle duration',
+      'Frequency control (frequency < 3)',
+      'Creative freshness'
     ],
     keyMetricsZh: [
-      '素材新鲜度评分 > 70%',
-      '受众覆盖拓展 > 20%',
-      'CPA改善潜力 15-30%',
-      'ROAS基准 vs 行业标准'
+      'CPA趋势（稳定或改善）',
+      '投放周期',
+      '频次控制（频次<3）',
+      '素材新鲜度'
     ],
     commonPitfalls: [
-      'Running same creatives for >30 days',
-      'Targeting too narrow, audience fatigue',
-      'Not testing new ad formats',
-      'Ignoring competitor insights'
+      'Adding budget without testing',
+      'Frequency too high without action',
+      'Audience fatigue from narrow targeting',
+      'Not rotating creatives'
     ],
     commonPitfallsZh: [
-      '同一素材投放超过30天',
-      '定向过窄，受众疲劳',
-      '不测试新广告格式',
-      '忽视竞品洞察'
+      '持续加预算不测试',
+      '频次过高不处理',
+      '定向过窄导致受众疲劳',
+      '素材不轮换'
     ],
     recommendedActions: [
-      'Launch 2-3 new creatives per week',
-      'Add 10-15% new audience segments',
-      'Test Spark Ads with local creators',
-      'Audit competitor ads weekly'
+      'Run creative rotation tests',
+      'Switch to CBO after stable performance',
+      'Expand audience when frequency > 3',
+      'Add 10-15% new audience segments weekly'
     ],
     recommendedActionsZh: [
-      '每周上线2-3个新素材',
-      '增加10-15%新受众人群',
-      '与本地达人测试Spark Ads',
-      '每周审查竞品广告'
+      '素材轮测→CBO过渡',
+      '频次>3时扩受众',
+      '每周增加10-15%新受众',
+      '测试Spark Ads/轮播广告'
     ]
   },
   diagnosisPrompt: `你是TikTok广告优化专家。请基于以下突破瓶颈SOP框架进行诊断：
 
 【突破瓶颈SOP框架】
-阶段：稳定但平平期（15-60天）
-核心任务：每2周更新素材、渐进拓展受众、测试新格式、分析竞品
-关键指标：素材新鲜度>70%、受众拓展>20%、CPA改善潜力15-30%
-常见坑：素材老化>30天、定向过窄受众疲劳、不测试新格式、忽视竞品
-推荐动作：每周2-3新素材、增加10-15%受众、测试Spark Ads、每周审查竞品
+阶段：稳定但平平期（30-90天）
+核心任务：找到最佳组合、优化转化链路、定期刷新素材、测试新格式
+关键指标：CPA趋势、投放周期、频次控制<3、素材新鲜度
+常见坑：加预算不测试、频次过高不处理、受众疲劳、素材不轮换
+推荐动作：素材轮测→CBO过渡、频次>3扩受众、每周增加新受众
 
 【账号当前状态】
 投放天数：{days_running}
 日预算：{daily_budget}
 当前CTR：{ctr}
-当前CPC：{cpc}
-当前转化率：{conversion_rate}
+当前频次：{frequency}
+CPA趋势：{cpa_trend}
 素材使用天数：{creative_age}
 
 【诊断任务】
@@ -223,7 +226,7 @@ const STABLE_ACCOUNT_SOP: SOPConfig = {
 };
 
 // ========================================
-// 老号掉量恢复 SOP
+// 老号掉量（90天+）恢复 SOP
 // ========================================
 const DECLINING_ACCOUNT_SOP: SOPConfig = {
   id: 'declining_account',
@@ -232,73 +235,74 @@ const DECLINING_ACCOUNT_SOP: SOPConfig = {
   icon: '📉',
   color: '#EF4444',
   sop: {
-    stage: 'Declining Phase (Performance Drop)',
-    stageZh: '掉量阶段（效果下滑）',
+    stage: 'Declining Phase',
+    stageZh: '掉量阶段',
+    stageDays: '90+ days',
     coreTasks: [
-      'Identify decline trigger point (policy change/algorithm update)',
-      'Audit creative fatigue immediately',
-      'Check pixel/tracking integrity',
-      'Review account health status'
+      'Diagnose decline cause → Stop bleeding → Rebuild',
+      'Identify decline trigger point',
+      'Audit creative and audience fatigue',
+      'Check policy and account health'
     ],
     coreTasksZh: [
-      '识别掉量触发点（政策变化/算法更新）',
-      '立即审查素材疲劳情况',
-      '检查像素/追踪完整性',
-      '审查账号健康状态'
+      '诊断掉量原因→止血→重建',
+      '识别掉量触发点',
+      '审查素材和受众疲劳',
+      '检查政策和账号健康'
     ],
     keyMetrics: [
-      'Decline onset date identification',
-      'Creative fatigue score',
-      'Pixel firing rate > 95%',
+      'CPA spike magnitude',
+      'Impression volume change',
+      'Competitor activity changes',
       'Account restriction status'
     ],
     keyMetricsZh: [
-      '掉量起始日期识别',
-      '素材疲劳评分',
-      '像素触发率 > 95%',
+      'CPA飙升幅度',
+      '展示量变化',
+      '竞品变化',
       '账号限制状态'
     ],
     commonPitfalls: [
-      'Not identifying decline trigger quickly',
-      'Continuing same creatives during decline',
-      'Ignoring pixel/tracking issues',
-      'Not checking account restrictions'
+      'Adding budget to force performance',
+      'Major creative changes without testing',
+      'Ignoring policy changes',
+      'Not diagnosing root cause before action'
     ],
     commonPitfallsZh: [
-      '未快速识别掉量触发点',
-      '掉量期间继续使用原素材',
-      '忽视像素/追踪问题',
-      '未检查账号限制'
+      '加预算硬扛',
+      '素材大改不测试',
+      '忽略政策变化',
+      '不诊断根因就行动'
     ],
     recommendedActions: [
-      'Timeline analysis: When did decline start?',
-      'Pause top 50% fatigued creatives',
-      'Verify pixel events firing correctly',
-      'Check TikTok Ads Manager for restrictions',
-      'Launch 3-5 fresh creatives immediately'
+      'Diagnose first: creative fatigue / audience fatigue / competitor',
+      'Adjust based on diagnosis',
+      'Gradual recovery, not drastic changes',
+      'Pause 50% most fatigued creatives',
+      'Launch 3-5 fresh creatives'
     ],
     recommendedActionsZh: [
-      '时间线分析：何时开始掉量？',
-      '暂停50%最疲劳的素材',
-      '验证像素事件正确触发',
-      '检查TikTok Ads Manager限制',
-      '立即上线3-5个新素材'
+      '先诊断：素材疲劳/受众疲劳/竞品影响',
+      '根据诊断结果调整',
+      '逐步恢复不要大改',
+      '暂停50%最疲劳素材',
+      '上线3-5个新素材'
     ]
   },
   diagnosisPrompt: `你是TikTok广告诊断专家。请基于以下恢复SOP框架进行诊断：
 
 【恢复SOP框架】
-阶段：掉量期（效果下滑）
-核心任务：识别掉量触发点、审查素材疲劳、检查追踪完整性、审查账号健康
-关键指标：掉量起始日期、素材疲劳评分、像素触发率>95%、账号限制状态
-常见坑：未识别触发点、继续原素材、忽视追踪问题、未检查限制
-推荐动作：时间线分析、暂停50%疲劳素材、验证像素、检查限制、上线新素材
+阶段：掉量期（90天+）
+核心任务：诊断掉量原因→止血→重建、识别触发点、审查疲劳、检查政策
+关键指标：CPA飙升幅度、展示量变化、竞品变化、账号限制状态
+常见坑：加预算硬扛、素材大改不测试、忽略政策变化、不诊断就行动
+推荐动作：先诊断素材/受众/竞品→调整方向→逐步恢复不要大改
 
 【账号当前状态】
 投放天数：{days_running}
 日预算：{daily_budget}
 效果变化：CTR从{ctr_old}降至{ctr_new}
-转化率从{conv_old}降至{conv_new}
+CPA变化：从{cpa_old}升至{cpa_new}
 掉量开始时间：{decline_start}
 
 【诊断任务】
@@ -340,27 +344,27 @@ export const ACCOUNT_STAGE_QUIZ = {
   options: [
     {
       id: 'new_account',
-      label: 'New Account',
-      labelZh: '新账号',
+      label: 'New Account (0-30 days)',
+      labelZh: '新账号（0-30天）',
       value: 'new_account',
       description: 'Just started, in learning phase',
       descriptionZh: '刚创建账号，处于冷启动学习期'
     },
     {
       id: 'stable_account',
-      label: 'Stable but Flat',
-      labelZh: '老号平平',
+      label: 'Stable but Flat (30-90 days)',
+      labelZh: '老号平平（30-90天）',
       value: 'stable_account',
       description: 'Running stable but no growth',
       descriptionZh: '运行稳定但效果平平无突破'
     },
     {
       id: 'declining_account',
-      label: 'Declining Performance',
-      labelZh: '老号掉量',
+      label: 'Declining (90+ days)',
+      labelZh: '老号掉量（90天+）',
       value: 'declining_account',
       description: 'Performance dropping significantly',
-      descriptionZh: '效果明显下滑需要诊断'
+      descriptionZh: '效果明显下滑需要诊断恢复'
     }
   ]
 };
@@ -382,6 +386,7 @@ export function getAccountStageDiagnosisPrompt(stage: AccountStage): string {
 // 获取 SOP 概要（用于诊断结果页前置展示）
 export function getSOPSummary(stage: AccountStage, locale: 'zh' | 'en'): {
   stage: string;
+  stageDays: string;
   coreTasks: string[];
   keyMetrics: string[];
   commonPitfalls: string[];
@@ -391,6 +396,7 @@ export function getSOPSummary(stage: AccountStage, locale: 'zh' | 'en'): {
   const sop = config.sop;
   return {
     stage: locale === 'zh' ? sop.stageZh : sop.stage,
+    stageDays: sop.stageDays,
     coreTasks: locale === 'zh' ? sop.coreTasksZh : sop.coreTasks,
     keyMetrics: locale === 'zh' ? sop.keyMetricsZh : sop.keyMetrics,
     commonPitfalls: locale === 'zh' ? sop.commonPitfallsZh : sop.commonPitfalls,
@@ -404,14 +410,14 @@ export function getSOPSummary(stage: AccountStage, locale: 'zh' | 'en'): {
 // ========================================
 export const COMBINED_DIAGNOSIS_TEMPLATE = `【TikTok账号+广告综合诊断】
 
-## 前置：账号运营SOP指引
-阶段：{sop_stage}
+## 前置：账号运营SOP指引（你这个阶段应该做什么）
+阶段：{sop_stage}（{sop_stage_days}）
 核心任务：{sop_core_tasks}
 关键指标：{sop_key_metrics}
 常见坑：{sop_common_pitfalls}
 推荐动作：{sop_recommended_actions}
 
-## 重点：广告诊断分析
+## 重点：广告诊断分析（你的广告具体问题）
 {ad_diagnosis}
 
 ## 综合优化建议
