@@ -1,12 +1,18 @@
 /**
- * DeepSeek 智能体矩阵配置
- * 用于知识提取、深度归因分析等高级功能
+ * DeepSeek & OpenAI 智能体矩阵配置
+ * 用于知识提取、深度归因分析、语义检索等高级功能
  */
 
 export interface DeepSeekConfig {
   apiKey: string;
   baseUrl: string;
   model: string;
+}
+
+export interface OpenAIConfig {
+  apiKey: string;
+  baseUrl: string;
+  embeddingModel: string;
 }
 
 // DeepSeek 模型配置
@@ -25,6 +31,10 @@ export const DEEPSEEK_MODELS = {
   },
 };
 
+// OpenAI Embedding 模型配置
+export const OPENAI_EMBEDDING_MODEL = 'text-embedding-3-small';
+export const EMBEDDING_DIMENSION = 1536;
+
 // 获取 DeepSeek 配置
 export function getDeepSeekConfig(): DeepSeekConfig | null {
   const apiKey = process.env.DEEPSEEK_API_KEY;
@@ -39,6 +49,57 @@ export function getDeepSeekConfig(): DeepSeekConfig | null {
     baseUrl: 'https://api.deepseek.com/v1',
     model: 'deepseek-chat',
   };
+}
+
+// 获取 OpenAI 配置
+export function getOpenAIConfig(): OpenAIConfig | null {
+  const apiKey = process.env.OPENAI_API_KEY;
+  
+  if (!apiKey) {
+    console.warn('OpenAI API key not configured');
+    return null;
+  }
+  
+  return {
+    apiKey,
+    baseUrl: 'https://api.openai.com/v1',
+    embeddingModel: OPENAI_EMBEDDING_MODEL,
+  };
+}
+
+// 生成文本 Embedding 向量
+export async function generateEmbedding(text: string): Promise<number[] | null> {
+  const config = getOpenAIConfig();
+  
+  if (!config) {
+    return null;
+  }
+  
+  try {
+    const response = await fetch(`${config.baseUrl}/embeddings`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${config.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: config.embeddingModel,
+        input: text,
+      }),
+    });
+    
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('OpenAI embedding error:', error);
+      return null;
+    }
+    
+    const data = await response.json();
+    return data.data[0]?.embedding || null;
+  } catch (err) {
+    console.error('Generate embedding failed:', err);
+    return null;
+  }
 }
 
 // 知识提取 Prompt
@@ -87,23 +148,54 @@ export const DEEP_ANALYSIS_PROMPT = `
 }
 `;
 
-// 知识检索函数（使用关键词检索作为兜底）
+// 知识检索函数（语义检索 + 关键词兜底）
 export async function searchKnowledge(
   query: string,
   platform: string,
   limit: number = 5
-): Promise<Array<{ id: string; title: string; content: string; summary: string; similarity: number }>> {
+): Promise<Array<{ id: string; title: string; content: string; summary: string; similarity: number; matchedCount?: number }>> {
   try {
     // 动态导入 Supabase 客户端
     const { getSupabaseServerClientAsync } = await import('@/storage/database/supabase-client');
     const supabase = await getSupabaseServerClientAsync();
     
-    // 先获取该平台所有知识库数据（兜底方案）
+    // 生成查询向量
+    const queryEmbedding = await generateEmbedding(query);
+    
+    // 如果有向量，使用语义检索
+    if (queryEmbedding) {
+      try {
+        const { data: semanticResults, error: semanticError } = await supabase.rpc(
+          'match_knowledge_base',
+          {
+            query_embedding: queryEmbedding,
+            match_platform: platform,
+            match_limit: limit,
+            match_threshold: 0.3,
+          }
+        );
+        
+        if (!semanticError && semanticResults && semanticResults.length > 0) {
+          return semanticResults.map((item: { id: string; title: string; content: string; summary: string; similarity: number }) => ({
+            id: item.id,
+            title: item.title,
+            content: item.content,
+            summary: item.summary,
+            similarity: Math.round(item.similarity * 100) / 100,
+          }));
+        }
+      } catch (rpcError) {
+        // RPC 函数不存在，使用关键词检索兜底
+        console.log('Semantic search RPC not available, using keyword fallback');
+      }
+    }
+    
+    // 关键词检索兜底方案
     const { data, error } = await supabase
       .from('knowledge_base')
       .select('id, title, content, summary, tags')
       .eq('platform', platform)
-      .is('user_id', null) // 只获取公共知识
+      .is('user_id', null)
       .limit(20);
     
     if (error) {
@@ -169,4 +261,58 @@ export async function searchSimilarCases(
   
   console.log('Case search:', { input, platform, route, limit });
   return [];
+}
+
+// 为知识库生成并存储 Embedding
+export async function storeKnowledgeWithEmbedding(
+  knowledge: {
+    platform: string;
+    source_type: string;
+    title: string;
+    content: string;
+    summary?: string;
+    tags?: string[];
+    metadata?: Record<string, unknown>;
+    user_id?: string;
+  }
+): Promise<{ success: boolean; id?: string; error?: string }> {
+  try {
+    // 生成 embedding
+    const embedding = await generateEmbedding(`${knowledge.title}\n${knowledge.content}`);
+    
+    if (!embedding) {
+      return { success: false, error: 'Failed to generate embedding' };
+    }
+    
+    // 动态导入 Supabase 客户端
+    const { getSupabaseServerClientAsync } = await import('@/storage/database/supabase-client');
+    const supabase = await getSupabaseServerClientAsync();
+    
+    // 存储知识库条目
+    const { data, error } = await supabase
+      .from('knowledge_base')
+      .insert({
+        platform: knowledge.platform,
+        source_type: knowledge.source_type,
+        title: knowledge.title,
+        content: knowledge.content,
+        summary: knowledge.summary || '',
+        tags: knowledge.tags || [],
+        metadata: knowledge.metadata || {},
+        embedding: embedding,
+        user_id: knowledge.user_id || null,
+      })
+      .select('id')
+      .single();
+    
+    if (error) {
+      console.error('Store knowledge error:', error);
+      return { success: false, error: error.message };
+    }
+    
+    return { success: true, id: data?.id };
+  } catch (err) {
+    console.error('Store knowledge failed:', err);
+    return { success: false, error: String(err) };
+  }
 }
