@@ -139,4 +139,15 @@ export async function getSupabaseServerClientAsync(): Promise<SupabaseClient> {
   return getSupabaseClient();
 }
 
-export { loadEnv, getSupabaseCredentials, getSupabaseServiceRoleKey, getSupabaseClient };
+// TikTok 配置获取函数
+function getTikTokConfig(): { appId: string; appSecret: string } | null {
+  loadEnv();
+  const appId = process.env.TIKTOK_APP_ID;
+  const appSecret = process.env.TIKTOK_APP_SECRET;
+  if (!appId || !appSecret) {
+    return null;
+  }
+  return { appId, appSecret };
+}
+
+export { loadEnv, getSupabaseCredentials, getSupabaseServiceRoleKey, getSupabaseClient, getTikTokConfig };

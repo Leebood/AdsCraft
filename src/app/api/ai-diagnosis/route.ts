@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { formatDiagnosisPrompt, getDiagnosisTemplate } from '@/lib/platforms/diagnosis-templates';
 
 // Coze智能体配置
 const COZE_API_BASE = process.env.COZE_API_BASE_URL || 'https://api.coze.cn';
@@ -9,50 +10,67 @@ interface DiagnosisRequest {
   route: string;
   budget: string;
   goal: string;
+  platform?: string; // 新增平台参数
   language?: string;
+  metrics?: Record<string, unknown>; // 新增指标数据
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: DiagnosisRequest = await request.json();
-    const { route, budget, goal, language = 'zh' } = body;
+    const { route, budget, goal, platform = 'facebook', language = 'zh', metrics } = body;
 
-    // 构建诊断请求消息
+    // 获取平台诊断模板
+    const template = getDiagnosisTemplate(platform);
+    const platformName = language === 'zh' 
+      ? (platform === 'tiktok' ? 'TikTok' : 'Facebook')
+      : template.platformName;
+
+    // 构建诊断请求消息（使用平台专属模板）
     const systemPrompt = language === 'zh' 
-      ? `你是一位专业的Facebook广告诊断师。请根据用户提供的广告方案信息，给出专业的诊断分析。
+      ? `你是一位专业的${platformName}广告诊断师。请根据用户提供的广告方案信息，给出专业的诊断分析。
 
 请按以下JSON格式返回诊断结果（不要添加任何其他文字，只返回JSON）：
 {
   "score": <综合评分，0-100的整数>,
   "issues": [<潜在问题列表，每个问题详细说明>],
   "suggestions": [<优化建议列表，每条建议具体可操作>],
-  "strengths": [<当前方案优势列表>]
+  "strengths": [<当前方案优势列表>],
+  "platform_specific": {
+    "platform": "${platform}",
+    "key_metrics": [<该平台关键指标建议>],
+    "best_practices": [<该平台最佳实践建议>]
+  }
 }`
-      : `You are a professional Facebook Ads diagnostician. Please analyze the provided ad plan information.
+      : `You are a professional ${platformName} Ads diagnostician. Please analyze the provided ad plan information.
 
 Return the diagnosis result in JSON format only (no other text):
 {
   "score": <overall score, integer 0-100>,
   "issues": [<list of potential problems with detailed explanations>],
   "suggestions": [<list of actionable optimization suggestions>],
-  "strengths": [<list of current plan advantages>]
+  "strengths": [<list of current plan advantages>],
+  "platform_specific": {
+    "platform": "${platform}",
+    "key_metrics": [<key metrics suggestions for this platform>],
+    "best_practices": [<best practices for this platform>]
+  }
 }`;
 
+    // 使用平台专属prompt模板
+    const diagnosisPrompt = formatDiagnosisPrompt(platform, route, goal, budget, metrics);
+    
     const userMessage = language === 'zh'
-      ? `请诊断以下Facebook广告方案：
-
-路线类型：${route}
-预算范围：${budget}
-主要目标：${goal}
-
-请给出综合评分、潜在问题、优化建议和当前优势。`
-      : `Please diagnose this Facebook Ads plan:
+      ? diagnosisPrompt
+      : `Please diagnose this ${platformName} Ads plan:
 
 Route Type: ${route}
 Budget Range: ${budget}
 Main Goal: ${goal}
+Platform: ${platformName}
+${metrics ? `Metrics:\n${Object.entries(metrics).map(([k, v]) => `${k}: ${v}`).join('\n')}` : ''}
 
-Please provide overall score, potential issues, optimization suggestions and current strengths.`;
+Please provide overall score, potential issues, optimization suggestions and current strengths with platform-specific advice.`;
 
     // 调用Coze智能体流式API
     const response = await fetch(`${COZE_API_BASE}/v3/chat`, {
