@@ -105,7 +105,10 @@ export default function HomePage() {
             <div className="bg-gradient-to-br from-blue-900/40 to-indigo-900/40 rounded-2xl border border-blue-400/20 p-6">
               {/* Platform Header */}
               <div className="flex items-center gap-4 mb-6 pb-4 border-b border-blue-400/20">
-                <div className="text-4xl">{PLATFORM_CONFIGS.facebook.icon}</div>
+                <div 
+                  className="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-400"
+                  dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.facebook.icon }}
+                />
                 <div>
                   <h4 className="text-xl font-semibold text-white">
                     {PLATFORM_CONFIGS.facebook.name}
@@ -175,7 +178,10 @@ export default function HomePage() {
             <div className="bg-gradient-to-br from-slate-800/40 to-pink-900/40 rounded-2xl border border-pink-400/20 p-6">
               {/* Platform Header */}
               <div className="flex items-center gap-4 mb-6 pb-4 border-b border-pink-400/20">
-                <div className="text-4xl">{PLATFORM_CONFIGS.tiktok.icon}</div>
+                <div 
+                  className="w-12 h-12 rounded-xl bg-pink-500/20 border border-pink-400/30 flex items-center justify-center text-pink-400"
+                  dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.tiktok.icon }}
+                />
                 <div>
                   <h4 className="text-xl font-semibold text-white">
                     {PLATFORM_CONFIGS.tiktok.name}
