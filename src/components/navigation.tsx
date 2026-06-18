@@ -13,39 +13,25 @@ export function Navigation() {
   // 判断是否在首页
   const isHomePage = pathname === '/';
   
-  // Tab 配置（仅非首页时显示）
+  // Tab 配置（仅非首页时显示）- 只保留概览和设置
   const tabs = [
     { 
       id: 'overview', 
       label: locale === 'zh' ? '概览' : 'Overview', 
       href: '/dashboard',
-      icon: '📊'
-    },
-    { 
-      id: 'facebook', 
-      label: locale === 'zh' ? 'FB' : 'FB', 
-      href: '/platform/facebook',
-      icon: '📘'
-    },
-    { 
-      id: 'tiktok', 
-      label: locale === 'zh' ? 'TikTok' : 'TikTok', 
-      href: '/platform/tiktok',
-      icon: '🎵'
+      icon: `<svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>`
     },
     { 
       id: 'settings', 
       label: locale === 'zh' ? '设置' : 'Settings', 
       href: '/settings',
-      icon: '⚙️'
+      icon: `<svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>`
     },
   ];
 
   // 判断当前激活的 Tab
   const getActiveTab = () => {
     if (pathname === '/' || pathname === '/dashboard') return 'overview';
-    if (pathname.startsWith('/platform/facebook') || pathname.startsWith('/questions') || pathname.startsWith('/plan')) return 'facebook';
-    if (pathname.startsWith('/platform/tiktok') || pathname.startsWith('/rejection-check')) return 'tiktok';
     if (pathname.startsWith('/settings')) return 'settings';
     return 'overview';
   };
@@ -74,7 +60,7 @@ export function Navigation() {
           href="/dashboard" 
           className="text-blue-200/80 hover:text-cyan-300 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-white/5"
         >
-          {locale === 'zh' ? '我的方案' : 'My Plans'}
+          {locale === 'zh' ? '概览' : 'Overview'}
         </Link>
         <div className="w-px h-6 bg-white/20" />
         {!loading && (
@@ -105,9 +91,10 @@ export function Navigation() {
             }`}
           >
             {tab.icon && (
-              <span className={`text-sm ${isActive ? '' : 'opacity-70'}`}>
-                {tab.icon}
-              </span>
+              <span 
+                className={`text-sm ${isActive ? 'text-cyan-300' : 'text-blue-200/70'}`}
+                dangerouslySetInnerHTML={{ __html: tab.icon }}
+              />
             )}
             <span className="font-medium">{tab.label}</span>
             {isActive && (
