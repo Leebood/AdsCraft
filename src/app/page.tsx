@@ -56,7 +56,7 @@ export default function HomePage() {
   }, [user]);
   
   // 检查用户是否已订阅某线路
-  const isRouteSubscribed = (routeId: string): boolean => {
+  const isRouteSubscribed = (platform: PlatformId, routeId: string): boolean => {
     // 线路 ID 映射到数据库中的 route 字段
     // Facebook 线路：数据库使用原 route.id（local_service, retailer, manufacturer, brand）
     // TikTok 线路：数据库使用 tiktok_routeId 格式
@@ -68,9 +68,17 @@ export default function HomePage() {
       'tiktok_local_service': 'tiktok_local_service',
       'tiktok_website_conv': 'tiktok_website_conv',
       'tiktok_brand_awareness': 'tiktok_brand_awareness',
+      // 也支持直接传入 route.id（不带平台前缀）
+      'local_service': 'local_service',
+      'retailer': 'retailer',
+      'manufacturer': 'manufacturer',
+      'brand': 'brand',
     };
     
-    const dbRoute = routeMapping[routeId] || routeId;
+    // 生成 platform_routeId 格式的 key
+    const routeKey = `${platform}_${routeId}`;
+    // 尝试两种格式匹配
+    const dbRoute = routeMapping[routeKey] || routeMapping[routeId] || routeId;
     return subscriptions.some(s => s.route === dbRoute && s.status === 'active');
   };
   
@@ -97,7 +105,7 @@ export default function HomePage() {
     // 如果是付费线路，检查是否已订阅
     if (!route.isFree) {
       // 如果用户已订阅该线路，直接进入答题流程
-      if (isRouteSubscribed(route.id)) {
+      if (isRouteSubscribed(platform, route.id)) {
         handleAuthRequiredAction(`/questions?route=${route.id}&platform=${platform}`);
         return;
       }
