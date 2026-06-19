@@ -19,6 +19,7 @@ interface ReviewFormData {
   countries: string[];
   objective: 'purchase' | 'leads' | 'app_install' | 'website_traffic' | 'dm' | 'live';
   industry: string;
+  subCategory?: string;  // 二级子类
   category: string;
   avgOrderValue?: number;
   marginRate?: number;

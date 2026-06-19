@@ -15,6 +15,7 @@ interface FormData {
   countries: string[];
   objective: 'purchase' | 'leads' | 'app_install' | 'website_traffic' | 'dm' | 'live' | '';
   industry: string;
+  subCategory?: string;  // 二级子类
   category: string;
   avgOrderValue?: number;
   marginRate?: number;
@@ -95,18 +96,26 @@ interface ReviewResult {
 
 // ========== 行业选项 ==========
 
+// 一级行业分类（对齐TikTok官方）
 const INDUSTRIES = [
-  { id: 'ecommerce', labelZh: '电商/零售', labelEn: 'E-commerce/Retail' },
-  { id: 'app', labelZh: 'App/软件', labelEn: 'App/Software' },
-  { id: 'service', labelZh: '本地服务', labelEn: 'Local Service' },
-  { id: 'manufacturing', labelZh: '制造/B2B', labelEn: 'Manufacturing/B2B' },
-  { id: 'education', labelZh: '教育', labelEn: 'Education' },
-  { id: 'finance', labelZh: '金融', labelEn: 'Finance' },
-  { id: 'health', labelZh: '健康/医疗', labelEn: 'Health/Medical' },
-  { id: 'beauty', labelZh: '美容/护肤', labelEn: 'Beauty/Skincare' },
-  { id: 'fitness', labelZh: '健身/减肥', labelEn: 'Fitness/Weight Loss' },
-  { id: 'entertainment', labelZh: '娱乐', labelEn: 'Entertainment' },
-  { id: 'other', labelZh: '其他', labelEn: 'Other' }
+  { id: 'retail_ecommerce', labelZh: '电商/零售', labelEn: 'Retail & E-commerce', restricted: false, subCategories: ['实体商品', '虚拟商品', '平台型'] },
+  { id: 'clothing_accessories', labelZh: '服装/配饰', labelEn: 'Clothing & Accessories', restricted: false, subCategories: ['服饰', '鞋包', '珠宝饰品'] },
+  { id: 'beauty_personal', labelZh: '美容/个护', labelEn: 'Beauty & Personal Care', restricted: 'partial', subCategories: ['护肤彩妆', '美发美甲', '工具仪器'] },
+  { id: 'food_beverage', labelZh: '餐饮/食品饮料', labelEn: 'Food & Beverage', restricted: false, subCategories: [] },
+  { id: 'consumer_electronics', labelZh: '科技/消费电子', labelEn: 'Consumer Electronics', restricted: false, subCategories: ['3C数码', '智能家居', '配件'] },
+  { id: 'utility_software', labelZh: '工具软件/App', labelEn: 'Utility Software', restricted: false, subCategories: [] },
+  { id: 'education_training', labelZh: '教育/培训', labelEn: 'Education & Training', restricted: false, subCategories: [] },
+  { id: 'healthcare_pharma', labelZh: '健康/医疗', labelEn: 'Healthcare & Pharmaceutical', restricted: true, subCategories: ['保健品', '医疗器械', '诊所服务'] },
+  { id: 'finance_business', labelZh: '金融/商业服务', labelEn: 'Finance & Business', restricted: true, subCategories: ['银行保险', '投资加密', 'B2B服务'] },
+  { id: 'real_estate', labelZh: '房地产', labelEn: 'Real Estate', restricted: false, subCategories: [] },
+  { id: 'travel', labelZh: '旅游', labelEn: 'Travel', restricted: false, subCategories: [] },
+  { id: 'automotive', labelZh: '汽车', labelEn: 'Automotive', restricted: false, subCategories: [] },
+  { id: 'gaming', labelZh: '游戏', labelEn: 'Gaming', restricted: false, subCategories: [] },
+  { id: 'entertainment_media', labelZh: '娱乐/媒体', labelEn: 'Entertainment & Media', restricted: false, subCategories: [] },
+  { id: 'sports_fitness', labelZh: '运动/健身', labelEn: 'Sports & Fitness', restricted: 'partial', subCategories: [] },
+  { id: 'home_garden', labelZh: '家居/园艺', labelEn: 'Home & Garden', restricted: false, subCategories: [] },
+  { id: 'local_services', labelZh: '本地服务', labelEn: 'Local Services', restricted: false, subCategories: ['到店型', '上门型', '线上预约'] },
+  { id: 'other', labelZh: '其他', labelEn: 'Other', restricted: false, subCategories: [] }
 ];
 
 const SENSITIVE_CATEGORIES = [
@@ -214,6 +223,7 @@ export default function TikTokReviewPage() {
     countries: [],
     objective: '',
     industry: '',
+    subCategory: undefined,
     category: '',
     accountType: '',
     hasHistoryData: '',
@@ -384,15 +394,51 @@ export default function TikTokReviewPage() {
         <label className="text-blue-200 mb-2 block">{t('产品行业', 'Industry')}</label>
         <select
           value={formData.industry}
-          onChange={(e) => setFormData(prev => ({ ...prev, industry: e.target.value }))}
+          onChange={(e) => setFormData(prev => ({ ...prev, industry: e.target.value, subCategory: undefined }))}
           className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-blue-200"
         >
           <option value="">{t('请选择', 'Please select')}</option>
           {INDUSTRIES.map(i => (
-            <option key={i.id} value={i.id}>{locale === 'zh' ? i.labelZh : i.labelEn}</option>
+            <option key={i.id} value={i.id}>
+              {locale === 'zh' ? i.labelZh : i.labelEn}
+              {i.restricted === true && ' 🔴'}
+              {i.restricted === 'partial' && ' ⚠️'}
+            </option>
           ))}
         </select>
+        {formData.industry && INDUSTRIES.find(i => i.id === formData.industry)?.restricted && (
+          <p className="text-yellow-400 text-xs mt-1">
+            {INDUSTRIES.find(i => i.id === formData.industry)?.restricted === true 
+              ? t('🔴 受限行业：需完整合规审查', '🔴 Restricted: Full compliance review required')
+              : t('⚠️ 部分受限：需审查效果承诺', '⚠️ Partially restricted: Effect claims review required')
+            }
+          </p>
+        )}
       </div>
+
+      {/* 二级子类 */}
+      {formData.industry && (() => {
+        const selectedIndustry = INDUSTRIES.find(i => i.id === formData.industry);
+        if (!selectedIndustry || !selectedIndustry.subCategories || selectedIndustry.subCategories.length === 0) {
+          return null;
+        }
+        return (
+          <div>
+            <label className="text-blue-200 mb-2 block">{t('具体品类', 'Sub-category')}</label>
+            <div className="flex gap-2 flex-wrap">
+              {selectedIndustry.subCategories.map(sub => (
+                <button
+                  key={sub}
+                  onClick={() => setFormData(prev => ({ ...prev, subCategory: sub }))}
+                  className={`px-3 py-1.5 rounded-lg border text-sm ${formData.subCategory === sub ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+                >
+                  {sub}
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* 账户类型 */}
       <div>
