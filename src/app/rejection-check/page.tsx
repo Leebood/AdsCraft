@@ -119,56 +119,86 @@ const SENSITIVE_CATEGORIES = [
   { id: 'none', labelZh: '都不涉及', labelEn: 'None of the above' }
 ];
 
-const COUNTRIES = [
-  // 北美
-  { id: 'us', labelZh: '美国', labelEn: 'United States' },
-  { id: 'ca', labelZh: '加拿大', labelEn: 'Canada' },
-  { id: 'mx', labelZh: '墨西哥', labelEn: 'Mexico' },
-  // 欧洲
-  { id: 'uk', labelZh: '英国', labelEn: 'United Kingdom' },
-  { id: 'de', labelZh: '德国', labelEn: 'Germany' },
-  { id: 'fr', labelZh: '法国', labelEn: 'France' },
-  { id: 'it', labelZh: '意大利', labelEn: 'Italy' },
-  { id: 'es', labelZh: '西班牙', labelEn: 'Spain' },
-  { id: 'nl', labelZh: '荷兰', labelEn: 'Netherlands' },
-  { id: 'pl', labelZh: '波兰', labelEn: 'Poland' },
-  { id: 'se', labelZh: '瑞典', labelEn: 'Sweden' },
-  { id: 'no', labelZh: '挪威', labelEn: 'Norway' },
-  { id: 'be', labelZh: '比利时', labelEn: 'Belgium' },
-  { id: 'at', labelZh: '奥地利', labelEn: 'Austria' },
-  { id: 'ch', labelZh: '瑞士', labelEn: 'Switzerland' },
-  { id: 'pt', labelZh: '葡萄牙', labelEn: 'Portugal' },
-  { id: 'ie', labelZh: '爱尔兰', labelEn: 'Ireland' },
-  { id: 'tr', labelZh: '土耳其', labelEn: 'Turkey' },
-  { id: 'ru', labelZh: '俄罗斯', labelEn: 'Russia' },
-  // 亚洲
-  { id: 'jp', labelZh: '日本', labelEn: 'Japan' },
-  { id: 'kr', labelZh: '韩国', labelEn: 'South Korea' },
-  { id: 'id', labelZh: '印尼', labelEn: 'Indonesia' },
-  { id: 'th', labelZh: '泰国', labelEn: 'Thailand' },
-  { id: 'vn', labelZh: '越南', labelEn: 'Vietnam' },
-  { id: 'ph', labelZh: '菲律宾', labelEn: 'Philippines' },
-  { id: 'my', labelZh: '马来西亚', labelEn: 'Malaysia' },
-  { id: 'sg', labelZh: '新加坡', labelEn: 'Singapore' },
-  { id: 'tw', labelZh: '台湾', labelEn: 'Taiwan' },
-  { id: 'hk', labelZh: '香港', labelEn: 'Hong Kong' },
-  { id: 'in', labelZh: '印度', labelEn: 'India' },
-  { id: 'pk', labelZh: '巴基斯坦', labelEn: 'Pakistan' },
-  { id: 'sa', labelZh: '沙特阿拉伯', labelEn: 'Saudi Arabia' },
-  { id: 'ae', labelZh: '阿联酋', labelEn: 'United Arab Emirates' },
-  { id: 'il', labelZh: '以色列', labelEn: 'Israel' },
-  // 南美
-  { id: 'br', labelZh: '巴西', labelEn: 'Brazil' },
-  { id: 'ar', labelZh: '阿根廷', labelEn: 'Argentina' },
-  { id: 'cl', labelZh: '智利', labelEn: 'Chile' },
-  { id: 'co', labelZh: '哥伦比亚', labelEn: 'Colombia' },
-  // 大洋洲
-  { id: 'au', labelZh: '澳大利亚', labelEn: 'Australia' },
-  { id: 'nz', labelZh: '新西兰', labelEn: 'New Zealand' },
-  // 非洲
-  { id: 'za', labelZh: '南非', labelEn: 'South Africa' },
-  { id: 'ng', labelZh: '尼日利亚', labelEn: 'Nigeria' },
-  { id: 'eg', labelZh: '埃及', labelEn: 'Egypt' }
+// 按地区分组的国家列表
+const REGIONS = [
+  {
+    id: 'asia',
+    labelZh: '亚太地区',
+    labelEn: 'Asia Pacific',
+    countries: [
+      { id: 'jp', labelZh: '日本', labelEn: 'Japan' },
+      { id: 'kr', labelZh: '韩国', labelEn: 'South Korea' },
+      { id: 'tw', labelZh: '台湾', labelEn: 'Taiwan' },
+      { id: 'hk', labelZh: '香港', labelEn: 'Hong Kong' },
+      { id: 'sg', labelZh: '新加坡', labelEn: 'Singapore' },
+      { id: 'my', labelZh: '马来西亚', labelEn: 'Malaysia' },
+      { id: 'th', labelZh: '泰国', labelEn: 'Thailand' },
+      { id: 'vn', labelZh: '越南', labelEn: 'Vietnam' },
+      { id: 'id', labelZh: '印尼', labelEn: 'Indonesia' },
+      { id: 'ph', labelZh: '菲律宾', labelEn: 'Philippines' },
+      { id: 'in', labelZh: '印度', labelEn: 'India' },
+      { id: 'pk', labelZh: '巴基斯坦', labelEn: 'Pakistan' },
+      { id: 'sa', labelZh: '沙特阿拉伯', labelEn: 'Saudi Arabia' },
+      { id: 'ae', labelZh: '阿联酋', labelEn: 'United Arab Emirates' },
+      { id: 'il', labelZh: '以色列', labelEn: 'Israel' },
+      { id: 'au', labelZh: '澳大利亚', labelEn: 'Australia' },
+      { id: 'nz', labelZh: '新西兰', labelEn: 'New Zealand' }
+    ]
+  },
+  {
+    id: 'europe',
+    labelZh: '欧洲',
+    labelEn: 'Europe',
+    countries: [
+      { id: 'uk', labelZh: '英国', labelEn: 'United Kingdom' },
+      { id: 'de', labelZh: '德国', labelEn: 'Germany' },
+      { id: 'fr', labelZh: '法国', labelEn: 'France' },
+      { id: 'it', labelZh: '意大利', labelEn: 'Italy' },
+      { id: 'es', labelZh: '西班牙', labelEn: 'Spain' },
+      { id: 'nl', labelZh: '荷兰', labelEn: 'Netherlands' },
+      { id: 'be', labelZh: '比利时', labelEn: 'Belgium' },
+      { id: 'at', labelZh: '奥地利', labelEn: 'Austria' },
+      { id: 'ch', labelZh: '瑞士', labelEn: 'Switzerland' },
+      { id: 'pl', labelZh: '波兰', labelEn: 'Poland' },
+      { id: 'se', labelZh: '瑞典', labelEn: 'Sweden' },
+      { id: 'no', labelZh: '挪威', labelEn: 'Norway' },
+      { id: 'pt', labelZh: '葡萄牙', labelEn: 'Portugal' },
+      { id: 'ie', labelZh: '爱尔兰', labelEn: 'Ireland' },
+      { id: 'tr', labelZh: '土耳其', labelEn: 'Turkey' },
+      { id: 'ru', labelZh: '俄罗斯', labelEn: 'Russia' }
+    ]
+  },
+  {
+    id: 'north_america',
+    labelZh: '北美',
+    labelEn: 'North America',
+    countries: [
+      { id: 'us', labelZh: '美国', labelEn: 'United States' },
+      { id: 'ca', labelZh: '加拿大', labelEn: 'Canada' },
+      { id: 'mx', labelZh: '墨西哥', labelEn: 'Mexico' }
+    ]
+  },
+  {
+    id: 'south_america',
+    labelZh: '南美',
+    labelEn: 'South America',
+    countries: [
+      { id: 'br', labelZh: '巴西', labelEn: 'Brazil' },
+      { id: 'ar', labelZh: '阿根廷', labelEn: 'Argentina' },
+      { id: 'cl', labelZh: '智利', labelEn: 'Chile' },
+      { id: 'co', labelZh: '哥伦比亚', labelEn: 'Colombia' }
+    ]
+  },
+  {
+    id: 'africa',
+    labelZh: '非洲',
+    labelEn: 'Africa',
+    countries: [
+      { id: 'za', labelZh: '南非', labelEn: 'South Africa' },
+      { id: 'ng', labelZh: '尼日利亚', labelEn: 'Nigeria' },
+      { id: 'eg', labelZh: '埃及', labelEn: 'Egypt' }
+    ]
+  }
 ];
 
 export default function TikTokReviewPage() {
@@ -177,6 +207,7 @@ export default function TikTokReviewPage() {
   const { user } = useAuth();
 
   const [expandedSection, setExpandedSection] = useState<number>(1);
+  const [expandedRegion, setExpandedRegion] = useState<string>(''); // 地区折叠状态
   const [formData, setFormData] = useState<FormData>({
     platform: '',
     countries: [],
@@ -290,20 +321,39 @@ export default function TikTokReviewPage() {
       {/* 投放国家 */}
       <div>
         <label className="text-blue-200 mb-2 block">{t('投放国家或地区', 'Target Countries')}</label>
-        <div className="grid grid-cols-4 gap-2">
-          {COUNTRIES.map(c => (
-            <button
-              key={c.id}
-              onClick={() => {
-                const newCountries = formData.countries.includes(c.id)
-                  ? formData.countries.filter(id => id !== c.id)
-                  : [...formData.countries, c.id];
-                setFormData(prev => ({ ...prev, countries: newCountries }));
-              }}
-              className={`px-3 py-1.5 rounded-lg border text-sm ${formData.countries.includes(c.id) ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
-            >
-              {locale === 'zh' ? c.labelZh : c.labelEn}
-            </button>
+        <div className="space-y-2">
+          {REGIONS.map(region => (
+            <div key={region.id} className="border border-white/10 rounded-lg">
+              <button
+                onClick={() => setExpandedRegion(expandedRegion === region.id ? '' : region.id)}
+                className="w-full px-4 py-2 flex items-center justify-between text-blue-200 hover:bg-white/5"
+              >
+                <span className="font-medium">{locale === 'zh' ? region.labelZh : region.labelEn}</span>
+                <span className="text-sm text-blue-300/50">
+                  {formData.countries.filter(c => region.countries.some(rc => rc.id === c)).length > 0 
+                    ? `(${formData.countries.filter(c => region.countries.some(rc => rc.id === c)).length})` 
+                    : ''}
+                </span>
+              </button>
+              {expandedRegion === region.id && (
+                <div className="px-4 pb-3 grid grid-cols-3 gap-2">
+                  {region.countries.map(c => (
+                    <button
+                      key={c.id}
+                      onClick={() => {
+                        const newCountries = formData.countries.includes(c.id)
+                          ? formData.countries.filter(id => id !== c.id)
+                          : [...formData.countries, c.id];
+                        setFormData(prev => ({ ...prev, countries: newCountries }));
+                      }}
+                      className={`px-2 py-1 rounded border text-sm ${formData.countries.includes(c.id) ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+                    >
+                      {locale === 'zh' ? c.labelZh : c.labelEn}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
         </div>
       </div>
