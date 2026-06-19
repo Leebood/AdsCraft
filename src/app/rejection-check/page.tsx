@@ -966,67 +966,124 @@ export default function TikTokReviewPage() {
     </div>
   );
 
-  const renderSection5 = () => (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-white mb-4">{t('落地页与转化路径', 'Landing Page & Conversion')}</h3>
+  const renderSection5 = () => {
+    const landingPageVisibility = getFieldVisibility(formData.objective, 'landing_page_url');
+    const appStoreVisibility = getFieldVisibility(formData.objective, 'app_store_url');
+    const formTypeVisibility = getFieldVisibility(formData.objective, 'form_type');
+    
+    // 表单类型为站外时需要落地页
+    const showLandingPageForLeadGen = formData.formType === 'external' && landingPageVisibility === 'conditional';
+    const landingPageRequired = landingPageVisibility === 'required' || showLandingPageForLeadGen;
+    
+    return (
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-white mb-4">{t('落地页与转化路径', 'Landing Page & Conversion')}</h3>
 
-      {/* 落地页 URL */}
-      <div>
-        <label className="text-blue-200 mb-2 block">{t('落地页URL（必填）', 'Landing Page URL (Required)')}</label>
-        <input
-          type="url"
-          value={formData.landingPageUrl}
-          onChange={(e) => { setFormData(prev => ({ ...prev, landingPageUrl: e.target.value })); }}
-          className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-blue-200"
-          placeholder="https://example.com/product"
-        />
-      </div>
+        {/* 表单类型 - 仅线索目标显示 */}
+        {formTypeVisibility !== 'hidden' && (
+          <div>
+            <label className="text-blue-200 mb-2 block">
+              {t('表单类型', 'Form Type')}
+              {formTypeVisibility === 'required' && <span className="text-red-400 ml-1">*</span>}
+            </label>
+            <div className="flex gap-3">
+              {[
+                { id: 'native', zh: '原生表单（TikTok内）', en: 'Native Form (In-App)' },
+                { id: 'external', zh: '站外表单（独立页）', en: 'External Form (Web)' }
+              ].map(opt => (
+                <button
+                  key={opt.id}
+                  onClick={() => setFormData(prev => ({ ...prev, formType: opt.id as any }))}
+                  className={`px-3 py-2 rounded-lg border text-sm ${formData.formType === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+                >
+                  {locale === 'zh' ? opt.zh : opt.en}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
-      {/* 点击目的地 */}
-      <div>
-        <label className="text-blue-200 mb-2 block">{t('点击后进入什么', 'Click Destination')}</label>
-        <div className="flex gap-3">
-          {[
-            { id: 'product', zh: '商品页', en: 'Product Page' },
-            { id: 'form', zh: '表单', en: 'Form' },
-            { id: 'profile', zh: '主页', en: 'Profile' },
-            { id: 'app', zh: 'App下载页', en: 'App Download' }
-          ].map(opt => (
-            <button
-              key={opt.id}
-              onClick={() => setFormData(prev => ({ ...prev, clickDestination: opt.id }))}
-              className={`px-3 py-2 rounded-lg border text-sm ${formData.clickDestination === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
-            >
-              {locale === 'zh' ? opt.zh : opt.en}
-            </button>
-          ))}
+        {/* 落地页 URL - 根据目标/表单类型显示 */}
+        {landingPageVisibility !== 'hidden' && (
+          <div>
+            <label className="text-blue-200 mb-2 block">
+              {t('落地页URL', 'Landing Page URL')}
+              {landingPageRequired && <span className="text-red-400 ml-1">*</span>}
+            </label>
+            <input
+              type="url"
+              value={formData.landingPageUrl}
+              onChange={(e) => { setFormData(prev => ({ ...prev, landingPageUrl: e.target.value })); }}
+              className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-blue-200"
+              placeholder="https://example.com/product"
+            />
+          </div>
+        )}
+
+        {/* 应用商店链接 - 仅App安装目标显示 */}
+        {appStoreVisibility !== 'hidden' && (
+          <div>
+            <label className="text-blue-200 mb-2 block">
+              {t('应用商店链接', 'App Store Link')}
+              {appStoreVisibility === 'required' && <span className="text-red-400 ml-1">*</span>}
+            </label>
+            <input
+              type="url"
+              value={formData.appStoreUrl || ''}
+              onChange={(e) => setFormData(prev => ({ ...prev, appStoreUrl: e.target.value }))}
+              className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-blue-200"
+              placeholder={t('App Store或Google Play链接', 'App Store or Google Play URL')}
+            />
+          </div>
+        )}
+
+        {/* 点击目的地 */}
+        <div>
+          <label className="text-blue-200 mb-2 block">{t('点击后进入什么', 'Click Destination')}</label>
+          <div className="flex gap-3">
+            {[
+              { id: 'product', zh: '商品页', en: 'Product Page' },
+              { id: 'form', zh: '表单', en: 'Form' },
+              { id: 'profile', zh: '主页', en: 'Profile' },
+              { id: 'app', zh: 'App下载页', en: 'App Download' }
+            ].map(opt => (
+              <button
+                key={opt.id}
+                onClick={() => setFormData(prev => ({ ...prev, clickDestination: opt.id }))}
+                className={`px-3 py-2 rounded-lg border text-sm ${formData.clickDestination === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+              >
+                {locale === 'zh' ? opt.zh : opt.en}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 首屏产品可见 */}
+        <div>
+          <label className="text-blue-200 mb-2 block">{t('首屏能否看到广告中的产品和优惠', 'Product Visible on First Screen')}</label>
+          <div className="flex gap-3">
+            {[
+              { id: 'yes', zh: '能', en: 'Yes' },
+              { id: 'no', zh: '不能', en: 'No' },
+              { id: 'unknown', zh: '不确定', en: 'Unknown' }
+            ].map(opt => (
+              <button
+                key={opt.id}
+                onClick={() => setFormData(prev => ({ ...prev, firstScreenProductVisible: opt.id as any }))}
+                className={`px-3 py-2 rounded-lg border text-sm ${formData.firstScreenProductVisible === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+              >
+                {locale === 'zh' ? opt.zh : opt.en}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
+    );
+  };
 
-      {/* 首屏产品可见 */}
-      <div>
-        <label className="text-blue-200 mb-2 block">{t('首屏能否看到广告中的产品和优惠', 'Product Visible on First Screen')}</label>
-        <div className="flex gap-3">
-          {[
-            { id: 'yes', zh: '能', en: 'Yes' },
-            { id: 'no', zh: '不能', en: 'No' },
-            { id: 'unknown', zh: '不确定', en: 'Unknown' }
-          ].map(opt => (
-            <button
-              key={opt.id}
-              onClick={() => setFormData(prev => ({ ...prev, firstScreenProductVisible: opt.id as any }))}
-              className={`px-3 py-2 rounded-lg border text-sm ${formData.firstScreenProductVisible === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
-            >
-              {locale === 'zh' ? opt.zh : opt.en}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderSection6 = () => (
-    <div className="space-y-4">
+  const renderSection6 = () => {
+    return (
+      <div className="space-y-4">
       <h3 className="text-lg font-semibold text-white mb-4">{t('数据与投放设置', 'Data & Delivery Settings')}</h3>
 
       {/* Pixel */}
@@ -1102,6 +1159,7 @@ export default function TikTokReviewPage() {
       </div>
     </div>
   );
+  };
 
   const renderResult = () => {
     if (!result) return null;
