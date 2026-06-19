@@ -536,7 +536,7 @@ export default function HomePage() {
           </div>
           
           <h2 className="text-2xl font-semibold text-white text-center mb-4">
-            {locale === 'zh' ? '专为小商家和个人运营者打造' : 'Built for Small Businesses'}
+            {locale === 'zh' ? '专为商家和运营者打造' : 'Built for Businesses & Operators'}
           </h2>
           <p className="text-slate-400 text-center mb-8 max-w-2xl mx-auto">
             {locale === 'zh'
@@ -553,10 +553,10 @@ export default function HomePage() {
                 <div className="mb-2 text-cyan-400">
                   <AbstractIcon type={item.iconType} className="w-7 h-7" />
                 </div>
-                <h3 className="text-white font-semibold text-sm mb-1">
+                <h3 className="text-white font-semibold text-base mb-1">
                   {locale === 'zh' ? item.titleZh : item.titleEn}
                 </h3>
-                <p className="text-slate-500 text-xs">
+                <p className="text-slate-400 text-sm">
                   {locale === 'zh' ? item.descZh : item.descEn}
                 </p>
               </div>
