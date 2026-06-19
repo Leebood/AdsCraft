@@ -4,417 +4,1034 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/i18n-context';
 import { useAuth } from '@/lib/auth-context';
-import { PLATFORM_CONFIGS, PlatformId } from '@/lib/platforms/registry';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
-export default function RejectionCheckPage() {
+// ========== 类型定义 ==========
+
+interface FormData {
+  // Section 1: 基础信息
+  platform: 'tiktok_ads' | 'tiktok_shop' | '';
+  countries: string[];
+  objective: 'purchase' | 'leads' | 'app_install' | 'dm' | 'live' | '';
+  industry: string;
+  category: string;
+  avgOrderValue?: number;
+  marginRate?: number;
+  targetCPA?: number;
+  accountType: 'new' | 'mature' | '';
+  hasHistoryData: 'yes' | 'no' | '';
+
+  // Section 2: 合规风险
+  sensitiveCategories: string[];
+  needLicense: 'yes' | 'no' | 'unknown' | '';
+  hasEffectPromise: 'yes' | 'no' | '';
+  hasBeforeAfter: string[];
+  urgencyTypes: string[];
+  landingPageConsistent: 'yes' | 'no' | 'unknown' | '';
+  mediaRights: string[];
+
+  // Section 3: 用户需求
+  targetAudience: string[];
+  painPoints: string[];
+  solutionType: string;
+  purchaseReason: string[];
+  competitiveAdvantage: string[];
+  socialProof: string[];
+  objections: string[];
+
+  // Section 4: 素材审查
+  hookType: string;
+  productAppearTime: string;
+  creativeType: string[];
+  hasCTA: 'yes' | 'no' | '';
+  isVertical: 'yes' | 'no' | 'unknown' | '';
+  hasSubtitleAndSound: string;
+  creativeCount: number;
+  creativeDiffSource: string[];
+  adCopy: string;
+  subtitleText: string;
+
+  // Section 5: 落地页
+  landingPageUrl: string;
+  clickDestination: string;
+  firstScreenProductVisible: 'yes' | 'no' | 'unknown' | '';
+
+  // Section 6: 数据设置
+  pixelInstalled: 'yes' | 'no' | 'unknown' | '';
+  eventsApiConfigured: 'yes' | 'no' | 'unknown' | '';
+  keyEventTested: 'yes' | 'no' | 'unknown' | '';
+  attributionWindow: string;
+  dailyBudget?: number;
+  adGroupCount?: number;
+  audienceSize: 'broad' | 'medium' | 'narrow' | '';
+  bidStrategy: string;
+}
+
+interface ReviewResult {
+  canSubmit: 'yes' | 'modify_first' | 'no';
+  passProbability: 'high' | 'medium' | 'low';
+  readinessScore: number;
+  profitability: 'feasible' | 'pending' | 'not_feasible' | 'not_evaluated';
+  layer1Result: {
+    status: 'blocked' | 'high_risk' | 'passed';
+    blockers: Array<{ item: string; source: string }>;
+    highRisks: Array<{ item: string; source: string }>;
+  };
+  layer2Result: {
+    scores: Record<string, number>;
+    totalScore: number;
+    riskLevel: string;
+  };
+  layer3Result: Array<{
+    riskLevel: string;
+    finding: string;
+    position: string;
+    confidence: number;
+    suggestion: string;
+  }>;
+  actionOrder: string[];
+}
+
+// ========== 行业选项 ==========
+
+const INDUSTRIES = [
+  { id: 'ecommerce', labelZh: '电商/零售', labelEn: 'E-commerce/Retail' },
+  { id: 'app', labelZh: 'App/软件', labelEn: 'App/Software' },
+  { id: 'service', labelZh: '本地服务', labelEn: 'Local Service' },
+  { id: 'manufacturing', labelZh: '制造/B2B', labelEn: 'Manufacturing/B2B' },
+  { id: 'education', labelZh: '教育', labelEn: 'Education' },
+  { id: 'finance', labelZh: '金融', labelEn: 'Finance' },
+  { id: 'health', labelZh: '健康/医疗', labelEn: 'Health/Medical' },
+  { id: 'beauty', labelZh: '美容/护肤', labelEn: 'Beauty/Skincare' },
+  { id: 'fitness', labelZh: '健身/减肥', labelEn: 'Fitness/Weight Loss' },
+  { id: 'entertainment', labelZh: '娱乐', labelEn: 'Entertainment' },
+  { id: 'other', labelZh: '其他', labelEn: 'Other' }
+];
+
+const SENSITIVE_CATEGORIES = [
+  { id: 'medical', labelZh: '医疗相关', labelEn: 'Medical' },
+  { id: 'weight_loss', labelZh: '减肥产品', labelEn: 'Weight Loss' },
+  { id: 'financial', labelZh: '金融服务', labelEn: 'Financial Services' },
+  { id: 'adult', labelZh: '成人内容', labelEn: 'Adult Content' },
+  { id: 'fake_brand', labelZh: '仿牌产品', labelEn: 'Fake/Replica Brand' },
+  { id: 'gambling', labelZh: '博彩', labelEn: 'Gambling' },
+  { id: 'none', labelZh: '都不涉及', labelEn: 'None of the above' }
+];
+
+const COUNTRIES = [
+  { id: 'us', labelZh: '美国', labelEn: 'United States' },
+  { id: 'uk', labelZh: '英国', labelEn: 'United Kingdom' },
+  { id: 'jp', labelZh: '日本', labelEn: 'Japan' },
+  { id: 'kr', labelZh: '韩国', labelEn: 'South Korea' },
+  { id: 'de', labelZh: '德国', labelEn: 'Germany' },
+  { id: 'fr', labelZh: '法国', labelEn: 'France' },
+  { id: 'br', labelZh: '巴西', labelEn: 'Brazil' },
+  { id: 'id', labelZh: '印尼', labelEn: 'Indonesia' },
+  { id: 'th', labelZh: '泰国', labelEn: 'Thailand' },
+  { id: 'vn', labelZh: '越南', labelEn: 'Vietnam' },
+  { id: 'ph', labelZh: '菲律宾', labelEn: 'Philippines' },
+  { id: 'mx', labelZh: '墨西哥', labelEn: 'Mexico' }
+];
+
+export default function TikTokReviewPage() {
   const { locale } = useI18n();
   const router = useRouter();
   const { user } = useAuth();
-  
-  const [step, setStep] = useState<'platform' | 'input' | 'analyzing' | 'result'>('platform');
-  const [selectedPlatform, setSelectedPlatform] = useState<PlatformId | null>(null);
-  const [inputType, setInputType] = useState<'text' | 'image'>('text');
-  const [rejectionText, setRejectionText] = useState('');
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  const [analysisResult, setAnalysisResult] = useState<{
-    mostLikely: Array<{ reason: string; confidence: number }>;
-    possible: string[];
-    suggestions: string[];
-    checklist: string[];
-  } | null>(null);
-  
-  // 处理平台选择
-  const handlePlatformSelect = (platform: PlatformId) => {
-    setSelectedPlatform(platform);
-    setStep('input');
+
+  const [expandedSection, setExpandedSection] = useState<number>(1);
+  const [formData, setFormData] = useState<FormData>({
+    platform: '',
+    countries: [],
+    objective: '',
+    industry: '',
+    category: '',
+    accountType: '',
+    hasHistoryData: '',
+    sensitiveCategories: [],
+    needLicense: '',
+    hasEffectPromise: '',
+    hasBeforeAfter: [],
+    urgencyTypes: [],
+    landingPageConsistent: '',
+    mediaRights: [],
+    targetAudience: [],
+    painPoints: [],
+    solutionType: '',
+    purchaseReason: [],
+    competitiveAdvantage: [],
+    socialProof: [],
+    objections: [],
+    hookType: '',
+    productAppearTime: '',
+    creativeType: [],
+    hasCTA: '',
+    isVertical: '',
+    hasSubtitleAndSound: '',
+    creativeCount: 0,
+    creativeDiffSource: [],
+    adCopy: '',
+    subtitleText: '',
+    landingPageUrl: '',
+    clickDestination: '',
+    firstScreenProductVisible: '',
+    pixelInstalled: '',
+    eventsApiConfigured: '',
+    keyEventTested: '',
+    attributionWindow: '',
+    audienceSize: '',
+    bidStrategy: ''
+  });
+
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [result, setResult] = useState<ReviewResult | null>(null);
+
+  const t = (zh: string, en: string) => locale === 'zh' ? zh : en;
+
+  // 检查 Section 是否可以展开
+  const canExpandSection = (sectionNum: number): boolean => {
+    if (sectionNum === 1) return true;
+    if (sectionNum === 2) return formData.platform !== '' && formData.objective !== '';
+    if (sectionNum === 3) return formData.sensitiveCategories.length > 0 || formData.sensitiveCategories.includes('none');
+    if (sectionNum === 4) return formData.targetAudience.length > 0;
+    if (sectionNum === 5) return formData.hookType !== '';
+    if (sectionNum === 6) return formData.landingPageUrl.length > 5;
+    return false;
   };
-  
-  // 处理图片上传
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setUploadedImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+
+  // 展开下一个 Section
+  const expandNextSection = () => {
+    for (let i = expandedSection + 1; i <= 6; i++) {
+      if (canExpandSection(i)) {
+        setExpandedSection(i);
+        break;
+      }
     }
   };
-  
-  // 执行拒审分析
-  const handleAnalyze = async () => {
-    if (!selectedPlatform) return;
-    
-    setStep('analyzing');
-    
+
+  // 提交审查
+  const handleSubmit = async () => {
+    setIsAnalyzing(true);
     try {
-      const response = await fetch('/api/rejection-analysis', {
+      const response = await fetch('/api/tiktok-review', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          platform: selectedPlatform,
-          rejectionText: inputType === 'text' ? rejectionText : null,
-          rejectionImage: inputType === 'image' ? uploadedImage : null
-        })
+        body: JSON.stringify(formData)
       });
-      
-      if (!response.ok) {
-        throw new Error('Analysis failed');
-      }
-      
-      const result = await response.json();
-      setAnalysisResult(result);
-      setStep('result');
+      const data = await response.json();
+      setResult(data);
+      setExpandedSection(7); // 展开结果 Section
     } catch (error) {
-      console.error('Rejection analysis error:', error);
-      setStep('input');
-      alert(locale === 'zh' ? '分析失败，请重试' : 'Analysis failed, please try again');
+      console.error('Review error:', error);
+      alert(t('审查失败，请重试', 'Review failed, please try again'));
     }
+    setIsAnalyzing(false);
   };
-  
-  // 返回首页
-  const handleBackToHome = () => {
-    router.push('/');
-  };
-  
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900">
-      {/* Background Pattern */}
-      <div className="fixed inset-0 opacity-10 pointer-events-none z-0">
-        <div className="absolute inset-0" style={{
-          backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)',
-          backgroundSize: '40px 40px'
-        }} />
-      </div>
-      
-      <div className="relative max-w-3xl mx-auto px-4 py-12">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            {locale === 'zh' ? '广告拒审诊断' : 'Ad Rejection Diagnosis'}
-          </h1>
-          <p className="text-blue-200/70">
-            {locale === 'zh' 
-              ? '上传拒审通知或粘贴拒审原因，AI帮您排查问题'
-              : 'Upload rejection notice or paste rejection reason, AI will diagnose for you'}
-          </p>
+
+  // ========== Section 渲染 ==========
+
+  const renderSection1 = () => (
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold text-white mb-4">{t('基础信息', 'Basic Information')}</h3>
+
+      {/* 投放平台 */}
+      <div>
+        <label className="text-blue-200 mb-2 block">{t('投放平台', 'Ad Platform')}</label>
+        <div className="flex gap-3">
+          {['tiktok_ads', 'tiktok_shop'].map(opt => (
+            <button
+              key={opt}
+              onClick={() => { setFormData(prev => ({ ...prev, platform: opt as any })); expandNextSection(); }}
+              className={`px-4 py-2 rounded-lg border ${formData.platform === opt ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+            >
+              {opt === 'tiktok_ads' ? t('TikTok Ads', 'TikTok Ads') : t('TikTok Shop', 'TikTok Shop')}
+            </button>
+          ))}
         </div>
-        
-        {/* Step 1: Platform Selection */}
-        {step === 'platform' && (
-          <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-6">
-            <h2 className="text-xl font-semibold text-white mb-6 text-center">
-              {locale === 'zh' ? '选择被拒审的广告平台' : 'Select the platform where your ad was rejected'}
-            </h2>
-            
-            <div className="flex justify-center gap-6">
-              {(['facebook', 'tiktok'] as PlatformId[]).map((platform) => {
-                const config = PLATFORM_CONFIGS[platform];
-                return (
-                  <button
-                    key={platform}
-                    onClick={() => handlePlatformSelect(platform)}
-                    className="group p-8 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-cyan-400/50 transition-all duration-300 min-w-[180px]"
-                  >
-                    <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">
-                      {config.icon}
-                    </div>
-                    <h3 className="text-lg font-semibold text-white group-hover:text-cyan-300 transition-colors">
-                      {config.name}
-                    </h3>
-                    <p className="text-sm text-blue-200/60 mt-2">
-                      {locale === 'zh' ? config.nameZh + '广告' : config.name + ' Ads'}
-                    </p>
-                  </button>
-                );
-              })}
-            </div>
-            
-            {/* Back Button */}
-            <div className="mt-8 flex justify-center">
-              <button
-                onClick={handleBackToHome}
-                className="text-blue-300/60 hover:text-blue-300 transition-colors flex items-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                {locale === 'zh' ? '返回首页' : 'Back to Home'}
-              </button>
-            </div>
+      </div>
+
+      {/* 投放国家 */}
+      <div>
+        <label className="text-blue-200 mb-2 block">{t('投放国家或地区', 'Target Countries')}</label>
+        <div className="grid grid-cols-4 gap-2">
+          {COUNTRIES.map(c => (
+            <button
+              key={c.id}
+              onClick={() => {
+                const newCountries = formData.countries.includes(c.id)
+                  ? formData.countries.filter(id => id !== c.id)
+                  : [...formData.countries, c.id];
+                setFormData(prev => ({ ...prev, countries: newCountries }));
+              }}
+              className={`px-3 py-1.5 rounded-lg border text-sm ${formData.countries.includes(c.id) ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+            >
+              {locale === 'zh' ? c.labelZh : c.labelEn}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 广告目标 */}
+      <div>
+        <label className="text-blue-200 mb-2 block">{t('广告目标', 'Campaign Objective')}</label>
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            { id: 'purchase', zh: '购买/销售', en: 'Purchase/Sales' },
+            { id: 'leads', zh: '线索/留资', en: 'Leads' },
+            { id: 'app_install', zh: 'App安装', en: 'App Install' },
+            { id: 'dm', zh: '私信', en: 'Direct Message' },
+            { id: 'live', zh: '直播引流', en: 'Live Stream' }
+          ].map(opt => (
+            <button
+              key={opt.id}
+              onClick={() => { setFormData(prev => ({ ...prev, objective: opt.id as any })); expandNextSection(); }}
+              className={`px-3 py-2 rounded-lg border text-sm ${formData.objective === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+            >
+              {locale === 'zh' ? opt.zh : opt.en}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 行业 */}
+      <div>
+        <label className="text-blue-200 mb-2 block">{t('产品行业', 'Industry')}</label>
+        <select
+          value={formData.industry}
+          onChange={(e) => setFormData(prev => ({ ...prev, industry: e.target.value }))}
+          className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-blue-200"
+        >
+          <option value="">{t('请选择', 'Please select')}</option>
+          {INDUSTRIES.map(i => (
+            <option key={i.id} value={i.id}>{locale === 'zh' ? i.labelZh : i.labelEn}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* 账户类型 */}
+      <div>
+        <label className="text-blue-200 mb-2 block">{t('账户类型', 'Account Type')}</label>
+        <div className="flex gap-3">
+          {[
+            { id: 'new', zh: '新账户', en: 'New Account' },
+            { id: 'mature', zh: '成熟账户', en: 'Mature Account' }
+          ].map(opt => (
+            <button
+              key={opt.id}
+              onClick={() => setFormData(prev => ({ ...prev, accountType: opt.id as any }))}
+              className={`px-4 py-2 rounded-lg border ${formData.accountType === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+            >
+              {locale === 'zh' ? opt.zh : opt.en}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 财务数据（可选） */}
+      <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+        <p className="text-blue-300 text-sm mb-3">{t('财务数据（可选，填了可评估盈利可行性）', 'Financial Data (Optional, helps evaluate profitability)')}</p>
+        <div className="grid grid-cols-3 gap-3">
+          <div>
+            <label className="text-blue-200/70 text-sm block mb-1">{t('客单价 ($)', 'AOV ($)')}</label>
+            <input
+              type="number"
+              value={formData.avgOrderValue || ''}
+              onChange={(e) => setFormData(prev => ({ ...prev, avgOrderValue: parseFloat(e.target.value) || undefined }))}
+              className="w-full bg-white/5 border border-white/20 rounded px-3 py-1.5 text-blue-200"
+              placeholder={t('如 50', 'e.g. 50')}
+            />
           </div>
-        )}
-        
-        {/* Step 2: Input Rejection Info */}
-        {step === 'input' && selectedPlatform && (
-          <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-6">
-            {/* Platform Header */}
-            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
-              <div className="text-3xl">{PLATFORM_CONFIGS[selectedPlatform].icon}</div>
-              <div>
-                <h2 className="text-xl font-semibold text-white">
-                  {PLATFORM_CONFIGS[selectedPlatform].name}
-                </h2>
-                <p className="text-sm text-blue-200/60">
-                  {locale === 'zh' ? '拒审诊断' : 'Rejection Diagnosis'}
-                </p>
-              </div>
-            </div>
-            
-            {/* Input Type Selection */}
-            <div className="mb-6">
-              <h3 className="text-base font-medium text-white mb-3">
-                {locale === 'zh' ? '选择输入方式' : 'Select input method'}
-              </h3>
-              <div className="flex gap-4">
-                <button
-                  onClick={() => setInputType('text')}
-                  className={`flex-1 p-4 rounded-xl border transition-all ${
-                    inputType === 'text'
-                      ? 'bg-cyan-500/20 border-cyan-400'
-                      : 'bg-white/5 border-white/10 hover:bg-white/10'
-                  }`}
-                >
-                  <div className="flex items-center justify-center gap-3">
-                    <span className="text-2xl">📝</span>
-                    <span className={`font-medium ${inputType === 'text' ? 'text-cyan-300' : 'text-white'}`}>
-                      {locale === 'zh' ? '粘贴拒审文字' : 'Paste Rejection Text'}
-                    </span>
-                  </div>
-                </button>
-                <button
-                  onClick={() => setInputType('image')}
-                  className={`flex-1 p-4 rounded-xl border transition-all ${
-                    inputType === 'image'
-                      ? 'bg-cyan-500/20 border-cyan-400'
-                      : 'bg-white/5 border-white/10 hover:bg-white/10'
-                  }`}
-                >
-                  <div className="flex items-center justify-center gap-3">
-                    <span className="text-2xl">🖼️</span>
-                    <span className={`font-medium ${inputType === 'image' ? 'text-cyan-300' : 'text-white'}`}>
-                      {locale === 'zh' ? '上传拒审截图' : 'Upload Rejection Screenshot'}
-                    </span>
-                  </div>
-                </button>
-              </div>
-            </div>
-            
-            {/* Text Input */}
-            {inputType === 'text' && (
-              <div className="mb-6">
-                <label className="block text-sm text-blue-200 mb-2">
-                  {locale === 'zh' ? '拒审通知内容' : 'Rejection Notice Content'}
-                </label>
-                <textarea
-                  value={rejectionText}
-                  onChange={(e) => setRejectionText(e.target.value)}
-                  placeholder={locale === 'zh' 
-                    ? '请粘贴平台发送的拒审通知内容...'
-                    : 'Paste the rejection notice content from the platform...'
-                  }
-                  className="w-full h-32 p-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-blue-300/40 focus:border-cyan-400 focus:outline-none resize-none"
-                />
-              </div>
-            )}
-            
-            {/* Image Upload */}
-            {inputType === 'image' && (
-              <div className="mb-6">
-                <label className="block text-sm text-blue-200 mb-2">
-                  {locale === 'zh' ? '拒审通知截图' : 'Rejection Notice Screenshot'}
-                </label>
-                <div className="relative">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                    id="rejection-image"
-                  />
-                  {uploadedImage ? (
-                    <div className="relative">
-                      <img 
-                        src={uploadedImage} 
-                        alt="Rejection notice" 
-                        className="w-full max-h-64 object-contain rounded-xl border border-white/10"
-                      />
-                      <button
-                        onClick={() => setUploadedImage(null)}
-                        className="absolute top-2 right-2 p-2 rounded-lg bg-slate-900/80 text-white hover:bg-slate-900 transition-colors"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  ) : (
-                    <label
-                      htmlFor="rejection-image"
-                      className="block w-full h-32 p-4 rounded-xl bg-white/5 border border-white/10 text-blue-300/60 cursor-pointer hover:bg-white/10 hover:border-cyan-400/30 transition-all flex items-center justify-center gap-3"
-                    >
-                      <span className="text-2xl">📷</span>
-                      <span>{locale === 'zh' ? '点击上传截图' : 'Click to upload screenshot'}</span>
-                    </label>
-                  )}
-                </div>
-              </div>
-            )}
-            
-            {/* Action Buttons */}
-            <div className="flex items-center justify-between gap-4">
-              <button
-                onClick={() => setStep('platform')}
-                className="px-4 py-2 rounded-xl border border-white/20 text-blue-200 hover:bg-white/5 transition-colors flex items-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                {locale === 'zh' ? '返回' : 'Back'}
-              </button>
-              
-              <button
-                onClick={handleAnalyze}
-                disabled={inputType === 'text' ? !rejectionText.trim() : !uploadedImage}
-                className={`px-8 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${
-                  (inputType === 'text' && rejectionText.trim()) || (inputType === 'image' && uploadedImage)
-                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-400 hover:to-blue-500 shadow-lg shadow-cyan-500/30'
-                    : 'bg-white/10 text-blue-300/50 cursor-not-allowed'
-                }`}
-              >
-                {locale === 'zh' ? '开始分析' : 'Start Analysis'}
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </button>
-            </div>
+          <div>
+            <label className="text-blue-200/70 text-sm block mb-1">{t('毛利率 (%)', 'Margin (%)')}</label>
+            <input
+              type="number"
+              value={formData.marginRate || ''}
+              onChange={(e) => setFormData(prev => ({ ...prev, marginRate: parseFloat(e.target.value) || undefined }))}
+              className="w-full bg-white/5 border border-white/20 rounded px-3 py-1.5 text-blue-200"
+              placeholder={t('如 30', 'e.g. 30')}
+            />
           </div>
-        )}
-        
-        {/* Step 3: Analyzing */}
-        {step === 'analyzing' && (
-          <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-12 text-center">
-            <div className="mb-6">
-              <div className="w-16 h-16 mx-auto rounded-full bg-cyan-500/20 flex items-center justify-center animate-pulse">
-                <svg className="w-8 h-8 text-cyan-400 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                </svg>
-              </div>
-            </div>
-            <h2 className="text-xl font-semibold text-white mb-2">
-              {locale === 'zh' ? '正在分析拒审原因...' : 'Analyzing rejection reasons...'}
-            </h2>
-            <p className="text-blue-200/60">
-              {locale === 'zh' 
-                ? 'AI正在对照平台广告政策逐条排查'
-                : 'AI is checking against platform advertising policies'}
-            </p>
+          <div>
+            <label className="text-blue-200/70 text-sm block mb-1">{t('目标CPA ($)', 'Target CPA ($)')}</label>
+            <input
+              type="number"
+              value={formData.targetCPA || ''}
+              onChange={(e) => setFormData(prev => ({ ...prev, targetCPA: parseFloat(e.target.value) || undefined }))}
+              className="w-full bg-white/5 border border-white/20 rounded px-3 py-1.5 text-blue-200"
+              placeholder={t('如 10', 'e.g. 10')}
+            />
           </div>
-        )}
-        
-        {/* Step 4: Analysis Result */}
-        {step === 'result' && analysisResult && (
-          <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-6">
-            {/* Header */}
-            <div className="mb-6 pb-4 border-b border-white/10">
-              <h2 className="text-xl font-semibold text-white">
-                {locale === 'zh' ? '拒审诊断结果' : 'Rejection Diagnosis Result'}
-              </h2>
-              <p className="text-sm text-blue-200/60 mt-1">
-                {selectedPlatform && PLATFORM_CONFIGS[selectedPlatform].name}
-              </p>
-            </div>
-            
-            {/* Most Likely Reasons */}
-            <div className="mb-6">
-              <h3 className="flex items-center gap-2 text-lg font-medium text-red-400 mb-3">
-                <span>🔴</span>
-                {locale === 'zh' ? '最可能原因' : 'Most Likely Reasons'}
-              </h3>
-              <div className="space-y-2">
-                {analysisResult.mostLikely.map((item, index) => (
-                  <div key={index} className="p-4 rounded-xl bg-red-500/10 border border-red-400/30">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-white font-medium">{item.reason}</span>
-                      <span className="text-sm text-red-300/70">
-                        {locale === 'zh' ? `置信度 ${Math.round(item.confidence * 100)}%` : `${Math.round(item.confidence * 100)}% confidence`}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            {/* Possible Reasons */}
-            {analysisResult.possible.length > 0 && (
-              <div className="mb-6">
-                <h3 className="flex items-center gap-2 text-lg font-medium text-yellow-400 mb-3">
-                  <span>🟡</span>
-                  {locale === 'zh' ? '可能原因' : 'Possible Reasons'}
-                </h3>
-                <ul className="space-y-2">
-                  {analysisResult.possible.map((reason, index) => (
-                    <li key={index} className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-400/30 text-yellow-200">
-                      {reason}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            
-            {/* Suggestions */}
-            <div className="mb-6">
-              <h3 className="flex items-center gap-2 text-lg font-medium text-green-400 mb-3">
-                <span>✅</span>
-                {locale === 'zh' ? '修改建议' : 'Modification Suggestions'}
-              </h3>
-              <ul className="space-y-2">
-                {analysisResult.suggestions.map((suggestion, index) => (
-                  <li key={index} className="p-3 rounded-lg bg-green-500/10 border border-green-400/30 text-green-200 flex items-start gap-2">
-                    <span className="text-green-400 mt-0.5">•</span>
-                    <span>{suggestion}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            
-            {/* Resubmit Checklist */}
-            <div className="mb-6">
-              <h3 className="flex items-center gap-2 text-lg font-medium text-cyan-400 mb-3">
-                <span>📋</span>
-                {locale === 'zh' ? '重新提交前检查清单' : 'Checklist Before Resubmitting'}
-              </h3>
-              <div className="p-4 rounded-xl bg-cyan-500/10 border border-cyan-400/30">
-                <ul className="space-y-2">
-                  {analysisResult.checklist.map((item, index) => (
-                    <li key={index} className="flex items-center gap-2 text-cyan-200">
-                      <div className="w-4 h-4 rounded border border-cyan-400/50" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-            
-            {/* Actions */}
-            <div className="flex items-center justify-between gap-4 pt-4 border-t border-white/10">
-              <button
-                onClick={() => setStep('input')}
-                className="px-4 py-2 rounded-xl border border-white/20 text-blue-200 hover:bg-white/5 transition-colors"
-              >
-                {locale === 'zh' ? '重新分析' : 'Re-analyze'}
-              </button>
-              <button
-                onClick={handleBackToHome}
-                className="px-6 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-medium hover:from-cyan-400 hover:to-blue-500 shadow-lg shadow-cyan-500/30 transition-all"
-              >
-                {locale === 'zh' ? '返回首页' : 'Back to Home'}
-              </button>
-            </div>
-          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderSection2 = () => (
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold text-white mb-4">{t('产品与合规风险', 'Product & Compliance Risk')}</h3>
+
+      {/* 敏感类别 */}
+      <div>
+        <label className="text-blue-200 mb-2 block">{t('是否涉及敏感类别', 'Sensitive Categories')}</label>
+        <div className="grid grid-cols-3 gap-2">
+          {SENSITIVE_CATEGORIES.map(c => (
+            <button
+              key={c.id}
+              onClick={() => {
+                const newCategories = c.id === 'none'
+                  ? ['none']
+                  : formData.sensitiveCategories.includes('none')
+                    ? [c.id]
+                    : formData.sensitiveCategories.includes(c.id)
+                      ? formData.sensitiveCategories.filter(id => id !== c.id)
+                      : [...formData.sensitiveCategories, c.id];
+                setFormData(prev => ({ ...prev, sensitiveCategories: newCategories }));
+                expandNextSection();
+              }}
+              className={`px-3 py-2 rounded-lg border text-sm ${formData.sensitiveCategories.includes(c.id) ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+            >
+              {locale === 'zh' ? c.labelZh : c.labelEn}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 效果承诺 */}
+      <div>
+        <label className="text-blue-200 mb-2 block">{t('是否包含效果承诺', 'Contains Effect Promise')}</label>
+        <div className="flex gap-3">
+          {[
+            { id: 'yes', zh: '是', en: 'Yes' },
+            { id: 'no', zh: '否', en: 'No' }
+          ].map(opt => (
+            <button
+              key={opt.id}
+              onClick={() => setFormData(prev => ({ ...prev, hasEffectPromise: opt.id as any }))}
+              className={`px-4 py-2 rounded-lg border ${formData.hasEffectPromise === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+            >
+              {locale === 'zh' ? opt.zh : opt.en}
+            </button>
+          ))}
+        </div>
+        {formData.hasEffectPromise === 'yes' && (
+          <input
+            type="text"
+            placeholder={t('举例：Guaranteed results', 'Example: Guaranteed results')}
+            className="mt-2 w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-blue-200"
+          />
         )}
       </div>
+
+      {/* 前后对比 */}
+      <div>
+        <label className="text-blue-200 mb-2 block">{t('是否使用前后对比', 'Uses Before/After')}</label>
+        <div className="flex gap-3">
+          {[
+            { id: 'before_after', zh: '前后对比图', en: 'Before/After' },
+            { id: 'body_part', zh: '身体局部特写', en: 'Body Part Focus' },
+            { id: 'none', zh: '都没有', en: 'None' }
+          ].map(opt => (
+            <button
+              key={opt.id}
+              onClick={() => setFormData(prev => ({ ...prev, hasBeforeAfter: [opt.id] }))}
+              className={`px-4 py-2 rounded-lg border ${formData.hasBeforeAfter.includes(opt.id) ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+            >
+              {locale === 'zh' ? opt.zh : opt.en}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 素材版权 */}
+      <div>
+        <label className="text-blue-200 mb-2 block">{t('是否拥有素材版权', 'Media Rights')}</label>
+        <div className="flex gap-3">
+          {[
+            { id: 'music', zh: '音乐', en: 'Music' },
+            { id: 'portrait', zh: '人物肖像', en: 'Portrait' },
+            { id: 'brand', zh: '商标', en: 'Trademark' },
+            { id: 'all', zh: '都有', en: 'All Owned' },
+            { id: 'unknown', zh: '都不确定', en: 'Unknown' }
+          ].map(opt => (
+            <button
+              key={opt.id}
+              onClick={() => setFormData(prev => ({ ...prev, mediaRights: [opt.id] }))}
+              className={`px-3 py-2 rounded-lg border text-sm ${formData.mediaRights.includes(opt.id) ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+            >
+              {locale === 'zh' ? opt.zh : opt.en}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderSection3 = () => (
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold text-white mb-4">{t('用户与需求判断', 'User & Needs Analysis')}</h3>
+
+      {/* 核心受众 */}
+      <div>
+        <label className="text-blue-200 mb-2 block">{t('核心受众', 'Target Audience')}</label>
+        <div className="flex gap-3">
+          {[
+            { id: 'age_18_34', zh: '18-34岁', en: '18-34 years' },
+            { id: 'age_35_55', zh: '35-55岁', en: '35-55 years' },
+            { id: 'female', zh: '女性', en: 'Female' },
+            { id: 'male', zh: '男性', en: 'Male' }
+          ].map(opt => (
+            <button
+              key={opt.id}
+              onClick={() => {
+                const newAudience = formData.targetAudience.includes(opt.id)
+                  ? formData.targetAudience.filter(id => id !== opt.id)
+                  : [...formData.targetAudience, opt.id];
+                setFormData(prev => ({ ...prev, targetAudience: newAudience }));
+                expandNextSection();
+              }}
+              className={`px-3 py-2 rounded-lg border text-sm ${formData.targetAudience.includes(opt.id) ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+            >
+              {locale === 'zh' ? opt.zh : opt.en}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 痛点 */}
+      <div>
+        <label className="text-blue-200 mb-2 block">{t('用户最强烈痛点', 'Strongest Pain Points')}</label>
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            { id: 'price', zh: '价格', en: 'Price' },
+            { id: 'convenience', zh: '便利性', en: 'Convenience' },
+            { id: 'quality', zh: '品质', en: 'Quality' },
+            { id: 'social', zh: '社交', en: 'Social' },
+            { id: 'health', zh: '健康', en: 'Health' }
+          ].map(opt => (
+            <button
+              key={opt.id}
+              onClick={() => {
+                const newPoints = formData.painPoints.includes(opt.id)
+                  ? formData.painPoints.filter(id => id !== opt.id)
+                  : [...formData.painPoints, opt.id];
+                setFormData(prev => ({ ...prev, painPoints: newPoints }));
+              }}
+              className={`px-3 py-2 rounded-lg border text-sm ${formData.painPoints.includes(opt.id) ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+            >
+              {locale === 'zh' ? opt.zh : opt.en}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 社会证明 */}
+      <div>
+        <label className="text-blue-200 mb-2 block">{t('是否有社会证明', 'Social Proof')}</label>
+        <div className="flex gap-3">
+          {[
+            { id: 'reviews', zh: '用户评论', en: 'Reviews' },
+            { id: 'sales', zh: '销量数据', en: 'Sales Data' },
+            { id: 'cases', zh: '案例', en: 'Cases' },
+            { id: 'none', zh: '都没有', en: 'None' }
+          ].map(opt => (
+            <button
+              key={opt.id}
+              onClick={() => setFormData(prev => ({ ...prev, socialProof: [opt.id] }))}
+              className={`px-3 py-2 rounded-lg border text-sm ${formData.socialProof.includes(opt.id) ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+            >
+              {locale === 'zh' ? opt.zh : opt.en}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderSection4 = () => (
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold text-white mb-4">{t('素材审查', 'Creative Review')}</h3>
+
+      {/* 钩子类型 */}
+      <div>
+        <label className="text-blue-200 mb-2 block">{t('前三秒钩子类型', 'First 3-Second Hook')}</label>
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            { id: 'pain_point', zh: '痛点', en: 'Pain Point' },
+            { id: 'suspense', zh: '悬念', en: 'Suspense' },
+            { id: 'visual', zh: '视觉冲击', en: 'Visual Impact' },
+            { id: 'speaking', zh: '口播', en: 'Speaking' },
+            { id: 'demo', zh: '展示', en: 'Demo' }
+          ].map(opt => (
+            <button
+              key={opt.id}
+              onClick={() => { setFormData(prev => ({ ...prev, hookType: opt.id })); expandNextSection(); }}
+              className={`px-3 py-2 rounded-lg border text-sm ${formData.hookType === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+            >
+              {locale === 'zh' ? opt.zh : opt.en}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 产品出现时间 */}
+      <div>
+        <label className="text-blue-200 mb-2 block">{t('产品首次出现时间', 'Product Appearance')}</label>
+        <div className="flex gap-3">
+          {[
+            { id: 'first_3s', zh: '前3秒', en: 'First 3s' },
+            { id: '3_5s', zh: '3-5秒', en: '3-5s' },
+            { id: '5_10s', zh: '5-10秒', en: '5-10s' },
+            { id: 'after_10s', zh: '10秒后', en: 'After 10s' }
+          ].map(opt => (
+            <button
+              key={opt.id}
+              onClick={() => setFormData(prev => ({ ...prev, productAppearTime: opt.id }))}
+              className={`px-3 py-2 rounded-lg border text-sm ${formData.productAppearTime === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+            >
+              {locale === 'zh' ? opt.zh : opt.en}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 素材类型 */}
+      <div>
+        <label className="text-blue-200 mb-2 block">{t('素材类型', 'Creative Type')}</label>
+        <div className="flex gap-3">
+          {[
+            { id: 'ugc', zh: 'UGC', en: 'UGC' },
+            { id: 'demo', zh: '产品演示', en: 'Demo' },
+            { id: 'review', zh: '测评', en: 'Review' },
+            { id: 'story', zh: '剧情', en: 'Story' }
+          ].map(opt => (
+            <button
+              key={opt.id}
+              onClick={() => {
+                const newTypes = formData.creativeType.includes(opt.id)
+                  ? formData.creativeType.filter(id => id !== opt.id)
+                  : [...formData.creativeType, opt.id];
+                setFormData(prev => ({ ...prev, creativeType: newTypes }));
+              }}
+              className={`px-3 py-2 rounded-lg border text-sm ${formData.creativeType.includes(opt.id) ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+            >
+              {locale === 'zh' ? opt.zh : opt.en}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div>
+        <label className="text-blue-200 mb-2 block">{t('是否包含明确CTA', 'Has Clear CTA')}</label>
+        <div className="flex gap-3">
+          {[
+            { id: 'yes', zh: '是', en: 'Yes' },
+            { id: 'no', zh: '否', en: 'No' }
+          ].map(opt => (
+            <button
+              key={opt.id}
+              onClick={() => setFormData(prev => ({ ...prev, hasCTA: opt.id as any }))}
+              className={`px-4 py-2 rounded-lg border ${formData.hasCTA === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+            >
+              {locale === 'zh' ? opt.zh : opt.en}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 素材数量 */}
+      <div>
+        <label className="text-blue-200 mb-2 block">{t('同广告组差异化素材数量', 'Different Creatives Count')}</label>
+        <input
+          type="number"
+          value={formData.creativeCount || ''}
+          onChange={(e) => setFormData(prev => ({ ...prev, creativeCount: parseInt(e.target.value) || 0 }))}
+          className="w-32 bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-blue-200"
+          placeholder="3"
+        />
+      </div>
+
+      {/* 文案 */}
+      <div>
+        <label className="text-blue-200 mb-2 block">{t('广告文案（可选）', 'Ad Copy (Optional)')}</label>
+        <textarea
+          value={formData.adCopy}
+          onChange={(e) => setFormData(prev => ({ ...prev, adCopy: e.target.value }))}
+          className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-3 text-blue-200 min-h-[100px]"
+          placeholder={t('粘贴广告文案...', 'Paste ad copy...')}
+        />
+      </div>
+    </div>
+  );
+
+  const renderSection5 = () => (
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold text-white mb-4">{t('落地页与转化路径', 'Landing Page & Conversion')}</h3>
+
+      {/* 落地页 URL */}
+      <div>
+        <label className="text-blue-200 mb-2 block">{t('落地页URL（必填）', 'Landing Page URL (Required)')}</label>
+        <input
+          type="url"
+          value={formData.landingPageUrl}
+          onChange={(e) => { setFormData(prev => ({ ...prev, landingPageUrl: e.target.value })); expandNextSection(); }}
+          className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-blue-200"
+          placeholder="https://example.com/product"
+        />
+      </div>
+
+      {/* 点击目的地 */}
+      <div>
+        <label className="text-blue-200 mb-2 block">{t('点击后进入什么', 'Click Destination')}</label>
+        <div className="flex gap-3">
+          {[
+            { id: 'product', zh: '商品页', en: 'Product Page' },
+            { id: 'form', zh: '表单', en: 'Form' },
+            { id: 'profile', zh: '主页', en: 'Profile' },
+            { id: 'app', zh: 'App下载页', en: 'App Download' }
+          ].map(opt => (
+            <button
+              key={opt.id}
+              onClick={() => setFormData(prev => ({ ...prev, clickDestination: opt.id }))}
+              className={`px-3 py-2 rounded-lg border text-sm ${formData.clickDestination === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+            >
+              {locale === 'zh' ? opt.zh : opt.en}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 首屏产品可见 */}
+      <div>
+        <label className="text-blue-200 mb-2 block">{t('首屏能否看到广告中的产品和优惠', 'Product Visible on First Screen')}</label>
+        <div className="flex gap-3">
+          {[
+            { id: 'yes', zh: '能', en: 'Yes' },
+            { id: 'no', zh: '不能', en: 'No' },
+            { id: 'unknown', zh: '不确定', en: 'Unknown' }
+          ].map(opt => (
+            <button
+              key={opt.id}
+              onClick={() => setFormData(prev => ({ ...prev, firstScreenProductVisible: opt.id as any }))}
+              className={`px-3 py-2 rounded-lg border text-sm ${formData.firstScreenProductVisible === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+            >
+              {locale === 'zh' ? opt.zh : opt.en}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderSection6 = () => (
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold text-white mb-4">{t('数据与投放设置', 'Data & Delivery Settings')}</h3>
+
+      {/* Pixel */}
+      <div>
+        <label className="text-blue-200 mb-2 block">{t('TikTok Pixel 是否安装', 'TikTok Pixel Installed')}</label>
+        <div className="flex gap-3">
+          {[
+            { id: 'yes', zh: '是', en: 'Yes' },
+            { id: 'no', zh: '否', en: 'No' },
+            { id: 'unknown', zh: '不确定', en: 'Unknown' }
+          ].map(opt => (
+            <button
+              key={opt.id}
+              onClick={() => setFormData(prev => ({ ...prev, pixelInstalled: opt.id as any }))}
+              className={`px-3 py-2 rounded-lg border text-sm ${formData.pixelInstalled === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+            >
+              {locale === 'zh' ? opt.zh : opt.en}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 日预算 */}
+      <div>
+        <label className="text-blue-200 mb-2 block">{t('日预算 ($)', 'Daily Budget ($)')}</label>
+        <input
+          type="number"
+          value={formData.dailyBudget || ''}
+          onChange={(e) => setFormData(prev => ({ ...prev, dailyBudget: parseFloat(e.target.value) || undefined }))}
+          className="w-32 bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-blue-200"
+          placeholder="50"
+        />
+      </div>
+
+      {/* 受众规模 */}
+      <div>
+        <label className="text-blue-200 mb-2 block">{t('受众规模', 'Audience Size')}</label>
+        <div className="flex gap-3">
+          {[
+            { id: 'broad', zh: '宽泛', en: 'Broad' },
+            { id: 'medium', zh: '适中', en: 'Medium' },
+            { id: 'narrow', zh: '窄', en: 'Narrow' }
+          ].map(opt => (
+            <button
+              key={opt.id}
+              onClick={() => setFormData(prev => ({ ...prev, audienceSize: opt.id as any }))}
+              className={`px-3 py-2 rounded-lg border text-sm ${formData.audienceSize === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+            >
+              {locale === 'zh' ? opt.zh : opt.en}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 出价策略 */}
+      <div>
+        <label className="text-blue-200 mb-2 block">{t('出价策略', 'Bid Strategy')}</label>
+        <div className="flex gap-3">
+          {[
+            { id: 'lowest_cost', zh: '最低成本', en: 'Lowest Cost' },
+            { id: 'cost_cap', zh: '成本上限', en: 'Cost Cap' },
+            { id: 'roas_target', zh: 'ROAS控制', en: 'ROAS Target' }
+          ].map(opt => (
+            <button
+              key={opt.id}
+              onClick={() => setFormData(prev => ({ ...prev, bidStrategy: opt.id }))}
+              className={`px-3 py-2 rounded-lg border text-sm ${formData.bidStrategy === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+            >
+              {locale === 'zh' ? opt.zh : opt.en}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderResult = () => {
+    if (!result) return null;
+
+    const getCanSubmitText = () => {
+      switch (result.canSubmit) {
+        case 'yes': return { text: t('可以提交', 'Can Submit'), color: 'text-green-400' };
+        case 'modify_first': return { text: t('修改后提交', 'Submit After Fix'), color: 'text-yellow-400' };
+        case 'no': return { text: t('不建议提交', 'Do Not Submit'), color: 'text-red-400' };
+      }
+    };
+
+    const getProbabilityText = () => {
+      switch (result.passProbability) {
+        case 'high': return { text: t('高 (>80%)', 'High (>80%)'), color: 'text-green-400' };
+        case 'medium': return { text: t('中 (50-80%)', 'Medium (50-80%)'), color: 'text-yellow-400' };
+        case 'low': return { text: t('低 (<50%)', 'Low (<50%)'), color: 'text-red-400' };
+      }
+    };
+
+    const getProfitabilityText = () => {
+      switch (result.profitability) {
+        case 'feasible': return { text: t('可行', 'Feasible'), color: 'text-green-400' };
+        case 'pending': return { text: t('待验证', 'Pending'), color: 'text-yellow-400' };
+        case 'not_feasible': return { text: t('不可行', 'Not Feasible'), color: 'text-red-400' };
+        case 'not_evaluated': return { text: t('未评估（未提供财务数据）', 'Not Evaluated'), color: 'text-blue-300/60' };
+      }
+    };
+
+    return (
+      <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-6">
+        <div className="text-center mb-6 border-b border-white/10 pb-4">
+          <h2 className="text-2xl font-bold text-white mb-2">{t('投放诊断报告', 'Ad Review Report')}</h2>
+          <p className="text-blue-200/60 text-sm">AdsCraft</p>
+        </div>
+
+        {/* 四维结论 */}
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="bg-white/5 rounded-lg p-4">
+            <div className="text-blue-200/60 text-sm mb-1">{t('能否提交', 'Can Submit')}</div>
+            <div className={`text-lg font-semibold ${getCanSubmitText().color}`}>{getCanSubmitText().text}</div>
+          </div>
+          <div className="bg-white/5 rounded-lg p-4">
+            <div className="text-blue-200/60 text-sm mb-1">{t('通过概率', 'Pass Probability')}</div>
+            <div className={`text-lg font-semibold ${getProbabilityText().color}`}>{getProbabilityText().text}</div>
+          </div>
+          <div className="bg-white/5 rounded-lg p-4">
+            <div className="text-blue-200/60 text-sm mb-1">{t('跑量准备度', 'Readiness Score')}</div>
+            <div className="text-lg font-semibold text-white">{result.readinessScore}/100</div>
+          </div>
+          <div className="bg-white/5 rounded-lg p-4">
+            <div className="text-blue-200/60 text-sm mb-1">{t('盈利可行性', 'Profitability')}</div>
+            <div className={`text-lg font-semibold ${getProfitabilityText().color}`}>{getProfitabilityText().text}</div>
+          </div>
+        </div>
+
+        {/* 阻断项 */}
+        {result.layer1Result.blockers.length > 0 && (
+          <div className="mb-4">
+            <h3 className="text-red-400 font-semibold mb-2">🔴 {t('阻断项', 'Blockers')}</h3>
+            {result.layer1Result.blockers.map((b, i) => (
+              <div key={i} className="bg-red-500/10 rounded-lg p-3 mb-2 border border-red-400/30">
+                <div className="text-red-300">• {b.item}</div>
+                <div className="text-red-300/60 text-sm">{t('来源：', 'Source: ')}{b.source}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 高风险项 */}
+        {result.layer1Result.highRisks.length > 0 && (
+          <div className="mb-4">
+            <h3 className="text-yellow-400 font-semibold mb-2">🟡 {t('高风险项', 'High Risks')}</h3>
+            {result.layer1Result.highRisks.map((r, i) => (
+              <div key={i} className="bg-yellow-500/10 rounded-lg p-3 mb-2 border border-yellow-400/30">
+                <div className="text-yellow-300">• {r.item}</div>
+                <div className="text-yellow-300/60 text-sm">{t('来源：', 'Source: ')}{r.source}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* AI 审查发现 */}
+        {result.layer3Result.length > 0 && (
+          <div className="mb-4">
+            <h3 className="text-orange-400 font-semibold mb-2">🟠 {t('AI审查发现', 'AI Findings')}</h3>
+            {result.layer3Result.map((f, i) => (
+              <div key={i} className="bg-orange-500/10 rounded-lg p-3 mb-2 border border-orange-400/30">
+                <div className={`font-medium ${f.riskLevel === 'high' ? 'text-red-300' : f.riskLevel === 'medium' ? 'text-yellow-300' : 'text-blue-300'}`}>
+                  • {f.finding}
+                </div>
+                <div className="text-blue-200/60 text-sm">{t('位置：', 'Position: ')}{f.position} · {t('置信度', 'Confidence')}: {f.confidence}%</div>
+                <div className="text-cyan-300 text-sm mt-1">{t('建议：', 'Suggestion: ')}{f.suggestion}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 建议执行顺序 */}
+        <div className="mb-4">
+          <h3 className="text-cyan-400 font-semibold mb-2">📋 {t('建议执行顺序', 'Action Order')}</h3>
+          <div className="bg-cyan-500/10 rounded-lg p-4 border border-cyan-400/30">
+            {result.actionOrder.map((action, i) => (
+              <div key={i} className="text-cyan-300 mb-2">{i + 1}. {action}</div>
+            ))}
+          </div>
+        </div>
+
+        {/* 付费提示 */}
+        <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-lg p-4 border border-purple-400/30 text-center">
+          <p className="text-purple-300">{t('💡 深度优化与持续追踪 → 订阅付费方案', '💡 Deep optimization & tracking → Subscribe to premium')}</p>
+        </div>
+
+        {/* 返回按钮 */}
+        <div className="mt-6 flex justify-center gap-4">
+          <Button
+            onClick={() => { setResult(null); setExpandedSection(1); setFormData({ ...formData, landingPageUrl: '' }); }}
+            className="bg-white/10 hover:bg-white/20 text-blue-200"
+          >
+            {t('重新诊断', 'Re-review')}
+          </Button>
+          <Button
+            onClick={() => router.push('/')}
+            className="bg-gradient-to-r from-cyan-500 to-blue-600"
+          >
+            {t('返回首页', 'Back to Home')}
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
+  // ========== 主渲染 ==========
+
+  const sections = [
+    { num: 1, title: t('Section 1：基础信息', 'Section 1: Basic Info'), render: renderSection1 },
+    { num: 2, title: t('Section 2：产品与合规风险', 'Section 2: Compliance'), render: renderSection2 },
+    { num: 3, title: t('Section 3：用户与需求判断', 'Section 3: User Needs'), render: renderSection3 },
+    { num: 4, title: t('Section 4：素材审查', 'Section 4: Creative'), render: renderSection4 },
+    { num: 5, title: t('Section 5：落地页与转化路径', 'Section 5: Landing Page'), render: renderSection5 },
+    { num: 6, title: t('Section 6：数据与投放设置', 'Section 6: Settings'), render: renderSection6 },
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10 pointer-events-none"></div>
+
+      <main className="container mx-auto px-4 py-12 relative z-10">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full mb-4">
+              <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-cyan-400">
+                <rect x="3" y="3" width="18" height="18" rx="3"/>
+              </svg>
+              <span className="text-sm text-cyan-300">TikTok · {t('免费诊断+拒审排查', 'Free Diagnosis')}</span>
+            </div>
+            <h1 className="text-3xl font-bold text-white mb-2">{t('投放前四层审查', '4-Layer Pre-Launch Review')}</h1>
+            <p className="text-blue-200/70">{t('填写以下信息，获取能否提交、通过概率、跑量准备度、盈利可行性四维结论', 'Fill in the form to get can-submit, pass probability, readiness score, and profitability assessment')}</p>
+          </div>
+
+          {/* 动态表单 */}
+          {expandedSection < 7 && (
+            <div className="space-y-3">
+              {sections.map((section) => (
+                <Card
+                  key={section.num}
+                  className={`bg-white/5 backdrop-blur-sm border-white/20 transition-all duration-300 ${
+                    expandedSection === section.num ? 'border-cyan-400/50' : ''
+                  } ${!canExpandSection(section.num) ? 'opacity-50' : ''}`}
+                >
+                  <CardContent className="p-4">
+                    {/* Section Header */}
+                    <button
+                      onClick={() => canExpandSection(section.num) && setExpandedSection(section.num)}
+                      className="w-full flex items-center justify-between"
+                      disabled={!canExpandSection(section.num)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                          expandedSection === section.num ? 'bg-cyan-500 text-white' : 'bg-white/10 text-blue-200'
+                        }`}>
+                          {section.num}
+                        </div>
+                        <span className={`font-medium ${expandedSection === section.num ? 'text-cyan-300' : 'text-blue-200'}`}>
+                          {section.title}
+                        </span>
+                      </div>
+                      <svg
+                        className={`w-5 h-5 transition-transform ${expandedSection === section.num ? 'rotate-180 text-cyan-400' : 'text-blue-200/60'}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    {/* Section Content */}
+                    {expandedSection === section.num && (
+                      <div className="mt-4 pt-4 border-t border-white/10">
+                        {section.render()}
+                        {section.num < 6 && (
+                          <Button
+                            onClick={expandNextSection}
+                            className="mt-4 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 text-cyan-300"
+                          >
+                            {t('继续下一步', 'Next Step')} →
+                          </Button>
+                        )}
+                        {section.num === 6 && (
+                          <Button
+                            onClick={handleSubmit}
+                            disabled={isAnalyzing || formData.landingPageUrl.length < 5}
+                            className="mt-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500"
+                          >
+                            {isAnalyzing ? t('正在审查...', 'Reviewing...') : t('开始审查', 'Start Review')}
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {/* 结果显示 */}
+          {expandedSection === 7 && renderResult()}
+        </div>
+      </main>
     </div>
   );
 }
