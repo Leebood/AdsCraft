@@ -134,6 +134,7 @@ const REGIONS = [
       { id: 'my', labelZh: '马来西亚', labelEn: 'Malaysia' },
       { id: 'th', labelZh: '泰国', labelEn: 'Thailand' },
       { id: 'vn', labelZh: '越南', labelEn: 'Vietnam' },
+      { id: 'kh', labelZh: '柬埔寨', labelEn: 'Cambodia' },
       { id: 'id', labelZh: '印尼', labelEn: 'Indonesia' },
       { id: 'ph', labelZh: '菲律宾', labelEn: 'Philippines' },
       { id: 'in', labelZh: '印度', labelEn: 'India' },
