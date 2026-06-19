@@ -121,6 +121,32 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  /* AdsCraft 层级色系统 */
+  --bg-main: #080C16;
+  --bg-section: #0D1424;
+  --bg-section-alt: #101827;
+  --bg-section-deep: #050812;
+
+  --bg-card: rgba(255, 255, 255, 0.045);
+  --bg-card-hover: rgba(255, 255, 255, 0.075);
+  --bg-card-active: rgba(255, 255, 255, 0.10);
+
+  --border-soft: rgba(255, 255, 255, 0.10);
+  --border-medium: rgba(255, 255, 255, 0.18);
+  --border-strong: rgba(255, 255, 255, 0.25);
+
+  --text-main: #FFFFFF;
+  --text-body: #CBD5E1;
+  --text-muted: #94A3B8;
+  --text-faint: #64748B;
+
+  --brand-primary: #7C3AED;
+  --brand-secondary: #22D3EE;
+
+  --facebook-accent: #3B82F6;
+  --tiktok-accent: #22D3EE;
+  --accent-warm: #F59E0B;
 }
 
 @layer base {
