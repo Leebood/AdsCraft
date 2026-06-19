@@ -15,7 +15,7 @@ import { LLMClient, Config, HeaderUtils } from 'coze-coding-dev-sdk';
 
 interface ReviewFormData {
   // Section 1: 基础信息
-  platform: 'tiktok_ads' | 'tiktok_shop';
+  platform: 'tiktok_ads';
   countries: string[];
   objective: 'purchase' | 'leads' | 'app_install' | 'dm' | 'live';
   industry: string;

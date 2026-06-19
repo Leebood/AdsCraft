@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 
 interface FormData {
   // Section 1: 基础信息
-  platform: 'tiktok_ads' | 'tiktok_shop' | '';
+  platform: 'tiktok_ads' | '';
   countries: string[];
   objective: 'purchase' | 'leads' | 'app_install' | 'dm' | 'live' | '';
   industry: string;
@@ -307,15 +307,12 @@ export default function TikTokReviewPage() {
       <div>
         <label className="text-blue-200 mb-2 block">{t('投放平台', 'Ad Platform')}</label>
         <div className="flex gap-3">
-          {['tiktok_ads', 'tiktok_shop'].map(opt => (
-            <button
-              key={opt}
-              onClick={() => { setFormData(prev => ({ ...prev, platform: opt as any })); expandNextSection(); }}
-              className={`px-4 py-2 rounded-lg border ${formData.platform === opt ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
-            >
-              {opt === 'tiktok_ads' ? t('TikTok Ads', 'TikTok Ads') : t('TikTok Shop', 'TikTok Shop')}
-            </button>
-          ))}
+          <button
+            onClick={() => { setFormData(prev => ({ ...prev, platform: 'tiktok_ads' })); expandNextSection(); }}
+            className={`px-4 py-2 rounded-lg border ${formData.platform === 'tiktok_ads' ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+          >
+            {t('TikTok Ads', 'TikTok Ads')}
+          </button>
         </div>
       </div>
 

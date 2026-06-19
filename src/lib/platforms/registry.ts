@@ -346,7 +346,6 @@ export const tiktokConfig: PlatformConfig = {
       description: 'How do customers reach you?',
       descriptionZh: '客户如何找到你？',
       options: [
-        { id: 'tiktok_shop', label: 'TikTok Shop', labelZh: 'TikTok Shop', value: 'tiktok_shop' },
         { id: 'website', label: 'Website', labelZh: '网站', value: 'website' },
         { id: 'app', label: 'App Download', labelZh: 'App下载', value: 'app' },
         { id: 'lead', label: 'Lead Form', labelZh: '表单留资', value: 'lead' }
@@ -787,7 +786,6 @@ export const TIKTOK_QUIZ_CONFIG = {
     titleEn: 'What is your conversion path?',
     options: [
       { id: 'shopify', value: 'shopify', labelZh: 'Shopify 独立站', labelEn: 'Shopify Store', descriptionZh: '独立站成交', descriptionEn: 'Store sales' },
-      { id: 'tiktok_shop', value: 'tiktok_shop', labelZh: 'TikTok Shop', labelEn: 'TikTok Shop', descriptionZh: '小店成交', descriptionEn: 'Shop sales' },
       { id: 'app', value: 'app', labelZh: 'App 安装', labelEn: 'App Install', descriptionZh: '应用下载', descriptionEn: 'App download' },
       { id: 'lead', value: 'lead', labelZh: '线索收集', labelEn: 'Lead Gen', descriptionZh: '收集客户', descriptionEn: 'Collect leads' }
     ]
