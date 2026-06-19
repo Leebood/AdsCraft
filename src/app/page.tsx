@@ -152,22 +152,102 @@ export default function HomePage() {
     }
   };
 
+  // 简洁抽象图标组件
+  const AbstractIcon = ({ type, className = 'w-5 h-5' }: { type: string; className?: string }) => {
+    const iconMap: Record<string, React.ReactNode> = {
+      // Sample Output 图标
+      diagnosis: (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+      ),
+      target: (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <circle cx="12" cy="12" r="10" />
+          <circle cx="12" cy="12" r="6" />
+          <circle cx="12" cy="12" r="2" fill="currentColor" />
+        </svg>
+      ),
+      budget: (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <rect x="3" y="6" width="18" height="12" rx="2" />
+          <line x1="7" y1="12" x2="17" y2="12" />
+          <circle cx="12" cy="12" r="2" fill="currentColor" />
+        </svg>
+      ),
+      creative: (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <rect x="3" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="3" width="7" height="7" rx="1" />
+          <rect x="3" y="14" width="7" height="7" rx="1" />
+          <rect x="14" y="14" width="7" height="7" rx="1" fill="currentColor" opacity="0.3" />
+        </svg>
+      ),
+      plan: (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <rect x="4" y="4" width="16" height="16" rx="2" />
+          <line x1="8" y1="9" x2="16" y2="9" />
+          <line x1="8" y1="12" x2="16" y2="12" />
+          <line x1="8" y1="15" x2="12" y2="15" />
+        </svg>
+      ),
+      // Use Cases 图标
+      store: (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M3 9l9-6 9 6" />
+          <rect x="3" y="9" width="18" height="12" />
+          <rect x="8" y="14" width="8" height="7" />
+        </svg>
+      ),
+      shopify: (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <circle cx="9" cy="21" r="1" fill="currentColor" />
+          <circle cx="20" cy="21" r="1" fill="currentColor" />
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+        </svg>
+      ),
+      factory: (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <rect x="2" y="10" width="20" height="10" />
+          <polygon points="6,10 6,4 10,4 10,10" />
+          <circle cx="8" cy="15" r="1" fill="currentColor" />
+          <circle cx="14" cy="15" r="1" fill="currentColor" />
+        </svg>
+      ),
+      launch: (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <polygon points="12,2 15,10 12,8 9,10" fill="currentColor" opacity="0.3" />
+          <line x1="12" y1="22" x2="12" y2="8" />
+          <line x1="8" y1="22" x2="16" y2="22" />
+        </svg>
+      ),
+      person: (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <circle cx="12" cy="7" r="4" />
+          <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" />
+        </svg>
+      ),
+    };
+    return iconMap[type] || null;
+  };
+
   // 示例诊断报告内容
   const sampleOutputs = [
-    { icon: '🔍', titleEn: 'Campaign Problem Diagnosis', titleZh: '广告问题诊断', descEn: 'Identify why your ads are not converting', descZh: '识别广告为什么不转化' },
-    { icon: '🎯', titleEn: 'Audience Targeting Recommendation', titleZh: '受众定向推荐', descEn: 'Find your ideal customer segments', descZh: '找到你的理想客户群体' },
-    { icon: '💰', titleEn: 'Budget Allocation', titleZh: '预算分配建议', descEn: 'Optimize spend across campaigns', descZh: '优化各广告系列的预算' },
-    { icon: '🎨', titleEn: 'Creative Angle Suggestions', titleZh: '创意角度建议', descEn: 'Improve ad visuals and copy', descZh: '改进广告视觉和文案' },
-    { icon: '📅', titleEn: '7-Day Optimization Plan', titleZh: '7天优化计划', descEn: 'Step-by-step improvement roadmap', descZh: '逐步改进路线图' },
+    { iconType: 'diagnosis', titleEn: 'Campaign Problem Diagnosis', titleZh: '广告问题诊断', descEn: 'Identify why your ads are not converting', descZh: '识别广告为什么不转化' },
+    { iconType: 'target', titleEn: 'Audience Targeting Recommendation', titleZh: '受众定向推荐', descEn: 'Find your ideal customer segments', descZh: '找到你的理想客户群体' },
+    { iconType: 'budget', titleEn: 'Budget Allocation', titleZh: '预算分配建议', descEn: 'Optimize spend across campaigns', descZh: '优化各广告系列的预算' },
+    { iconType: 'creative', titleEn: 'Creative Angle Suggestions', titleZh: '创意角度建议', descEn: 'Improve ad visuals and copy', descZh: '改进广告视觉和文案' },
+    { iconType: 'plan', titleEn: '7-Day Optimization Plan', titleZh: '7天优化计划', descEn: 'Step-by-step improvement roadmap', descZh: '逐步改进路线图' },
   ];
 
   // 适合谁使用
   const useCases = [
-    { icon: '🏪', titleEn: 'Local Stores', titleZh: '本地门店', descEn: 'Offline businesses targeting nearby customers', descZh: '面向附近顾客的线下商家' },
-    { icon: '🛒', titleEn: 'Shopify Sellers', titleZh: 'Shopify卖家', descEn: 'E-commerce stores needing better ROAS', descZh: '需要更好ROAS的电商店铺' },
-    { icon: '🏭', titleEn: 'B2B Manufacturers', titleZh: 'B2B制造商', descEn: 'Factory/wholesale generating leads', descZh: '获取询盘的工厂/批发商' },
-    { icon: '🚀', titleEn: 'New Product Launches', titleZh: '新品上市', descEn: 'Brands launching new products', descZh: '推广新品的品牌方' },
-    { icon: '👤', titleEn: 'Solo Operators', titleZh: '个人运营者', descEn: 'Small brands without a media buyer', descZh: '没有专业投手的小品牌' },
+    { iconType: 'store', titleEn: 'Local Stores', titleZh: '本地门店', descEn: 'Offline businesses targeting nearby customers', descZh: '面向附近顾客的线下商家' },
+    { iconType: 'shopify', titleEn: 'Shopify Sellers', titleZh: 'Shopify卖家', descEn: 'E-commerce stores needing better ROAS', descZh: '需要更好ROAS的电商店铺' },
+    { iconType: 'factory', titleEn: 'B2B Manufacturers', titleZh: 'B2B制造商', descEn: 'Factory/wholesale generating leads', descZh: '获取询盘的工厂/批发商' },
+    { iconType: 'launch', titleEn: 'New Product Launches', titleZh: '新品上市', descEn: 'Brands launching new products', descZh: '推广新品的品牌方' },
+    { iconType: 'person', titleEn: 'Solo Operators', titleZh: '个人运营者', descEn: 'Small brands without a media buyer', descZh: '没有专业投手的小品牌' },
   ];
 
   // FAQ 内容
@@ -432,7 +512,9 @@ export default function HomePage() {
                 key={idx}
                 className="bg-white/[0.04] border border-white/10 rounded-xl p-4 hover:bg-white/[0.07] hover:border-cyan-400/30 transition-all duration-300"
               >
-                <div className="text-2xl mb-2">{item.icon}</div>
+                <div className="mb-2 text-cyan-400">
+                  <AbstractIcon type={item.iconType} className="w-6 h-6" />
+                </div>
                 <h3 className="text-white font-semibold mb-1">
                   {locale === 'zh' ? item.titleZh : item.titleEn}
                 </h3>
@@ -468,7 +550,9 @@ export default function HomePage() {
                 key={idx}
                 className="bg-white/[0.04] border border-white/10 rounded-xl p-4 text-center hover:bg-white/[0.07] transition-all duration-300"
               >
-                <div className="text-3xl mb-2">{item.icon}</div>
+                <div className="mb-2 text-cyan-400">
+                  <AbstractIcon type={item.iconType} className="w-7 h-7" />
+                </div>
                 <h3 className="text-white font-semibold text-sm mb-1">
                   {locale === 'zh' ? item.titleZh : item.titleEn}
                 </h3>
@@ -749,9 +833,9 @@ export default function HomePage() {
           
           {/* 注释 */}
           <p className="text-blue-300/50 text-sm text-center mt-6">
-            {locale === 'zh' 
-              ? '💡 点击免费方案立即开始，付费方案支持微信或 Creem 安全支付'
-              : '💡 Start free diagnosis instantly, or subscribe securely via Creem'}
+            {locale === 'zh'
+              ? '免费方案点击即开始，付费方案支持微信或 Creem 安全支付'
+              : 'Free plan starts instantly, subscribe securely via Creem'}
           </p>
         </div>
 
