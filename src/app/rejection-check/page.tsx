@@ -277,24 +277,10 @@ export default function TikTokReviewPage() {
     if (sectionNum === 6) return formData.landingPageUrl.length > 5;
     return false;
   };
-
-  // 自动展开下一个符合条件的 Section（延迟触发避免立即收起）
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      // 检查是否有下一个符合条件的 Section
-      for (let i = 1; i <= 6; i++) {
-        if (i > expandedSection && canExpandSection(i)) {
-          setExpandedSection(i);
-          break;
-        }
-      }
-    }, 500); // 延迟500ms，让用户有时间继续选择同一 Section 的其他选项
-    return () => clearTimeout(timer);
-  }, [formData, expandedSection]);
-
-  // 手动展开下一个 Section（用于"继续"按钮）
-  const expandNextSection = () => {
-    for (let i = expandedSection + 1; i <= 6; i++) {
+  // 手动展开下一个 Section（点击"继续下一步"按钮时调用）
+  const goToNextSection = (currentSection: number) => {
+    // 找到下一个符合条件的 Section 并展开
+    for (let i = currentSection + 1; i <= 6; i++) {
       if (canExpandSection(i)) {
         setExpandedSection(i);
         break;
@@ -1149,7 +1135,7 @@ export default function TikTokReviewPage() {
                         {section.render()}
                         {section.num < 6 && (
                           <Button
-                            onClick={expandNextSection}
+                            onClick={() => goToNextSection(section.num)}
                             className="mt-4 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 text-cyan-300"
                           >
                             {t('继续下一步', 'Next Step')} →
