@@ -12,8 +12,8 @@ export function Footer() {
         {/* 标语 */}
         <p className="text-blue-300/70 text-sm mb-2">
           {locale === 'zh'
-            ? 'AI Ad Decision Engine for Facebook, Instagram & TikTok'
-            : 'AI Ad Decision Engine for Facebook, Instagram & TikTok'}
+            ? 'AI Ad Decision Engine for Facebook & TikTok'
+            : 'AI Ad Decision Engine for Facebook & TikTok'}
         </p>
         
         {/* 版权 */}

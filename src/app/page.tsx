@@ -312,8 +312,8 @@ export default function HomePage() {
           {/* 主标题 */}
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
             {locale === 'zh' 
-              ? 'Facebook、Instagram 和 TikTok 广告的 AI 诊断工具' 
-              : 'AI Ad Diagnosis for Facebook, Instagram & TikTok Ads'}
+              ? 'Facebook 和 TikTok 广告的 AI 诊断工具' 
+              : 'AI Ad Diagnosis for Facebook & TikTok Ads'}
           </h1>
           
           {/* 副标题 */}
@@ -411,7 +411,7 @@ export default function HomePage() {
             <div className="border border-white/10 rounded-xl p-4">
               {/* Platform Header - 简洁 */}
               <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
-                <span className="text-blue-400 text-sm font-medium">Facebook/Instagram</span>
+                <span className="text-blue-400 text-sm font-medium">Facebook</span>
               </div>
               
               {/* Route Cards - 简洁 */}
@@ -549,7 +549,7 @@ export default function HomePage() {
         {/* Footer - 简洁 */}
         <div className="mt-6 pt-4 border-t border-white/10 text-center">
           <p className="text-slate-500 text-xs">
-            AI Ad Decision Engine for Facebook, Instagram & TikTok
+            AI Ad Decision Engine for Facebook & TikTok
           </p>
           <p className="text-slate-400 text-xs mt-1">
             {t('footer.support')}: <a href="mailto:leo.tikboost@gmail.com" className="text-cyan-400 hover:text-cyan-300">leo.tikboost@gmail.com</a>
