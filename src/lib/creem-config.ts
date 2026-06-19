@@ -1,7 +1,8 @@
 // Creem支付配置 - Facebook + TikTok 付费线路的产品链接
+// 使用 platform_routeId 格式作为 key，区分不同平台的同名线路
 export const CREEM_PRODUCTS = {
   // Facebook 零售商路线
-  retailer: {
+  fb_retailer: {
     productId: 'prod_77H9iTdPoURp4C2Le1xhE8',
     url: 'https://www.creem.io/payment/prod_77H9iTdPoURp4C2Le1xhE8',
     price: '$19.9',
@@ -9,7 +10,7 @@ export const CREEM_PRODUCTS = {
     priceCn: '¥143',
   },
   // Facebook 制造商路线
-  manufacturer: {
+  fb_manufacturer: {
     productId: 'prod_2jkEL15rXCjBQxkEGpXR5v',
     url: 'https://www.creem.io/payment/prod_2jkEL15rXCjBQxkEGpXR5v',
     price: '$29.9',
@@ -17,7 +18,7 @@ export const CREEM_PRODUCTS = {
     priceCn: '¥215',
   },
   // Facebook 品牌方路线
-  brand: {
+  fb_brand: {
     productId: 'prod_2B7hXzysLFhXYvP8bmTa9c',
     url: 'https://www.creem.io/payment/prod_2B7hXzysLFhXYvP8bmTa9c',
     price: '$29.9',
@@ -25,7 +26,7 @@ export const CREEM_PRODUCTS = {
     priceCn: '¥215',
   },
   // Facebook 本地服务商路线
-  local_service: {
+  fb_local_service: {
     productId: 'prod_4iIOpYQLDR8tlnxu6Ziwz6',
     url: 'https://www.creem.io/payment/prod_4iIOpYQLDR8tlnxu6Ziwz6',
     price: '$9.9',

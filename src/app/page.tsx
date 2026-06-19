@@ -57,8 +57,14 @@ export default function HomePage() {
   
   // 检查用户是否已订阅某线路
   const isRouteSubscribed = (routeId: string): boolean => {
-    // TikTok 线路 ID 映射到数据库中的 route 字段
+    // 线路 ID 映射到数据库中的 route 字段
+    // Facebook 线路：数据库使用原 route.id（local_service, retailer, manufacturer, brand）
+    // TikTok 线路：数据库使用 tiktok_routeId 格式
     const routeMapping: Record<string, string> = {
+      'fb_local_service': 'local_service',
+      'fb_retailer': 'retailer',
+      'fb_manufacturer': 'manufacturer',
+      'fb_brand': 'brand',
       'tiktok_local_service': 'tiktok_local_service',
       'tiktok_website_conv': 'tiktok_website_conv',
       'tiktok_brand_awareness': 'tiktok_brand_awareness',
@@ -99,7 +105,9 @@ export default function HomePage() {
       // 未订阅：中文模式跳转pricing页面选择支付方式，英文模式直接跳转Creem
       if (locale === 'zh') {
         // 中文模式：跳转到pricing页面让用户选择支付方式（Creem或微信）
-        handleAuthRequiredAction(`/pricing?route=${route.id}`);
+        // 使用 platform_routeId 格式来区分 Facebook 和 TikTok 的同名线路
+        const routeKey = `${platform}_${route.id}`;
+        handleAuthRequiredAction(`/pricing?route=${routeKey}`);
       } else if (route.creemLink) {
         // 英文模式：直接跳转Creem支付
         window.open(route.creemLink, '_blank');
