@@ -33,6 +33,12 @@ export default function HomePage() {
   const handleRouteClick = (platform: PlatformId, route: PlatformRoute) => {
     tiktokPixel.addToCart();
     
+    // TikTok 免费诊断入口直接跳转到四层审查页面
+    if (platform === 'tiktok' && route.id === 'rejection_check') {
+      handleAuthRequiredAction('/rejection-check');
+      return;
+    }
+    
     // 如果是付费线路且有支付链接，跳转到 Creem
     if (!route.isFree && route.creemLink) {
       window.open(route.creemLink, '_blank');
