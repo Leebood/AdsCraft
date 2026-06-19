@@ -87,6 +87,14 @@ export default function HomePage() {
     }
   };
 
+  // 处理付费线路支付（英文模式下直接跳转 Creem）
+  const handlePayment = (route: PlatformRoute) => {
+    tiktokPixel.clickSubscribe();
+    if (route.creemLink) {
+      window.open(route.creemLink, '_blank');
+    }
+  };
+
   // 处理线路卡片点击
   const handleRouteClick = (platform: PlatformId, route: PlatformRoute) => {
     tiktokPixel.addToCart();
@@ -534,8 +542,8 @@ export default function HomePage() {
                         ))}
                       </div>
                       
-                      {/* Action Buttons */}
-                      <div className="mt-3 ml-14 flex flex-wrap gap-2">
+                      {/* Action Area */}
+                      <div className="mt-3 ml-14">
                         {route.isFree ? (
                           <button
                             onClick={(e) => {
@@ -548,38 +556,25 @@ export default function HomePage() {
                             {locale === 'zh' ? '开始免费诊断' : 'Start Free Diagnosis'}
                           </button>
                         ) : (
-                          <>
-                            {locale === 'zh' && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  router.push(`/pricing?route=${route.id}`);
-                                }}
-                                disabled={loading}
-                                className="px-3 py-2 rounded-lg text-sm font-medium transition-all bg-green-500/20 text-green-400 hover:bg-green-500/30 disabled:opacity-50 flex items-center gap-1"
-                              >
-                                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                                  <path d="M8.5 12.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm9 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
-                                  <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"/>
-                                </svg>
-                                微信支付
-                              </button>
-                            )}
+                          locale === 'zh' ? (
+                            <div className="flex items-center gap-2 text-xs text-blue-300/60">
+                              <span className="px-2 py-1 rounded bg-green-500/10 text-green-400">微信支付</span>
+                              <span className="text-blue-300/40">/</span>
+                              <span className="px-2 py-1 rounded bg-white/5 text-blue-300">Creem订阅</span>
+                              <span className="ml-2 text-blue-300/50">→ 点击查看详情</span>
+                            </div>
+                          ) : (
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                if (route.creemLink) {
-                                  window.open(route.creemLink, '_blank');
-                                } else {
-                                  handleRouteClick('facebook', route);
-                                }
+                                handlePayment(route);
                               }}
                               disabled={loading}
-                              className="px-3 py-2 rounded-lg text-sm font-medium transition-all bg-white/10 text-white hover:bg-white/20 disabled:opacity-50"
+                              className="px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white/10 text-white hover:bg-white/20 disabled:opacity-50"
                             >
-                              {locale === 'zh' ? 'Creem 订阅' : 'Subscribe via Creem'}
+                              Subscribe via Creem
                             </button>
-                          </>
+                          )
                         )}
                       </div>
                     </div>
@@ -670,8 +665,8 @@ export default function HomePage() {
                         ))}
                       </div>
                       
-                      {/* Action Buttons */}
-                      <div className="mt-3 ml-14 flex flex-wrap gap-2">
+                      {/* Action Area */}
+                      <div className="mt-3 ml-14">
                         {route.isFree ? (
                           <button
                             onClick={(e) => {
@@ -691,38 +686,25 @@ export default function HomePage() {
                             {locale === 'zh' ? '即将上线' : 'Coming Soon'}
                           </button>
                         ) : (
-                          <>
-                            {locale === 'zh' && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  router.push(`/pricing?route=tiktok_${route.id}`);
-                                }}
-                                disabled={loading}
-                                className="px-3 py-2 rounded-lg text-sm font-medium transition-all bg-green-500/20 text-green-400 hover:bg-green-500/30 disabled:opacity-50 flex items-center gap-1"
-                              >
-                                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                                  <path d="M8.5 12.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm9 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
-                                  <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"/>
-                                </svg>
-                                微信支付
-                              </button>
-                            )}
+                          locale === 'zh' ? (
+                            <div className="flex items-center gap-2 text-xs text-blue-300/60">
+                              <span className="px-2 py-1 rounded bg-green-500/10 text-green-400">微信支付</span>
+                              <span className="text-blue-300/40">/</span>
+                              <span className="px-2 py-1 rounded bg-white/5 text-blue-300">Creem订阅</span>
+                              <span className="ml-2 text-blue-300/50">→ 点击查看详情</span>
+                            </div>
+                          ) : (
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                if (route.creemLink) {
-                                  window.open(route.creemLink, '_blank');
-                                } else {
-                                  handleRouteClick('tiktok', route);
-                                }
+                                handlePayment(route);
                               }}
                               disabled={loading}
-                              className="px-3 py-2 rounded-lg text-sm font-medium transition-all bg-white/10 text-white hover:bg-white/20 disabled:opacity-50"
+                              className="px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white/10 text-white hover:bg-white/20 disabled:opacity-50"
                             >
-                              {locale === 'zh' ? 'Creem 订阅' : 'Subscribe via Creem'}
+                              Subscribe via Creem
                             </button>
-                          </>
+                          )
                         )}
                       </div>
                     </div>
