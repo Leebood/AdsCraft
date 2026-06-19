@@ -96,14 +96,17 @@ export default function HomePage() {
         return;
       }
       
-      // 如果未订阅且有支付链接，跳转到 Creem
-      if (route.creemLink) {
+      // 未订阅：中文模式跳转pricing页面选择支付方式，英文模式直接跳转Creem
+      if (locale === 'zh') {
+        // 中文模式：跳转到pricing页面让用户选择支付方式（Creem或微信）
+        handleAuthRequiredAction(`/pricing?route=${route.id}`);
+      } else if (route.creemLink) {
+        // 英文模式：直接跳转Creem支付
         window.open(route.creemLink, '_blank');
-        return;
+      } else {
+        // 付费线路但暂无支付链接
+        setSelectedRoute({ platform, route });
       }
-      
-      // 付费线路但暂无支付链接
-      setSelectedRoute({ platform, route });
       return;
     }
     
