@@ -8,16 +8,65 @@ import { useAuth } from '@/lib/auth-context';
 import { tiktokPixel } from '@/lib/tiktok-pixel';
 import { PLATFORM_CONFIGS, PlatformId, PlatformRoute } from '@/lib/platforms/registry';
 
+// 订阅状态类型
+interface SubscriptionStatus {
+  route: string;
+  status: string;
+}
+
 export default function HomePage() {
   const { t, locale } = useI18n();
   const router = useRouter();
   const { user, loading } = useAuth();
   const [selectedRoute, setSelectedRoute] = useState<{ platform: PlatformId; route: PlatformRoute } | null>(null);
+  const [subscriptions, setSubscriptions] = useState<SubscriptionStatus[]>([]);
   
   // TikTok Pixel: 页面浏览追踪
   useEffect(() => {
     tiktokPixel.viewContent();
   }, []);
+  
+  // 获取用户订阅状态
+  useEffect(() => {
+    if (!user) return;
+    
+    const fetchSubscriptions = async () => {
+      try {
+        const session = localStorage.getItem('supabase_session');
+        if (!session) return;
+        
+        const sessionData = JSON.parse(session);
+        const token = sessionData?.access_token;
+        if (!token) return;
+        
+        const res = await fetch('/api/subscription/all', {
+          headers: { 'x-session': token }
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          setSubscriptions(data.subscriptions || []);
+        }
+      } catch (e) {
+        console.error('获取订阅状态失败:', e);
+      }
+    };
+    
+    fetchSubscriptions();
+  }, [user]);
+  
+  // 检查用户是否已订阅某线路
+  const isRouteSubscribed = (routeId: string): boolean => {
+    // TikTok 线路 ID 映射到数据库中的 route 字段
+    const routeMapping: Record<string, string> = {
+      'tiktok_local_service': 'tiktok_local_service',
+      'tiktok_website_conv': 'tiktok_website_conv',
+      'tiktok_brand_awareness': 'tiktok_brand_awareness',
+    };
+    
+    const dbRoute = routeMapping[routeId] || routeId;
+    return subscriptions.some(s => s.route === dbRoute && s.status === 'active');
+  };
   
   // 处理需要登录的操作
   const handleAuthRequiredAction = (targetPath: string) => {
@@ -39,19 +88,27 @@ export default function HomePage() {
       return;
     }
     
-    // 如果是付费线路且有支付链接，跳转到 Creem
-    if (!route.isFree && route.creemLink) {
-      window.open(route.creemLink, '_blank');
+    // 如果是付费线路，检查是否已订阅
+    if (!route.isFree) {
+      // 如果用户已订阅该线路，直接进入答题流程
+      if (isRouteSubscribed(route.id)) {
+        handleAuthRequiredAction(`/questions?route=${route.id}&platform=${platform}`);
+        return;
+      }
+      
+      // 如果未订阅且有支付链接，跳转到 Creem
+      if (route.creemLink) {
+        window.open(route.creemLink, '_blank');
+        return;
+      }
+      
+      // 付费线路但暂无支付链接
+      setSelectedRoute({ platform, route });
       return;
     }
     
-    // 否则进入答题流程
-    if (route.isFree) {
-      handleAuthRequiredAction(`/questions?route=${route.id}&platform=${platform}`);
-    } else {
-      // 付费线路但暂无支付链接（如 TikTok 新产品）
-      setSelectedRoute({ platform, route });
-    }
+    // 免费线路直接进入答题流程
+    handleAuthRequiredAction(`/questions?route=${route.id}&platform=${platform}`);
   };
 
   // 获取线路图标颜色对应的 Tailwind 样式
