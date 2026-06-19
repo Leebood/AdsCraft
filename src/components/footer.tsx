@@ -4,20 +4,37 @@ import Link from 'next/link';
 import { useI18n } from '@/lib/i18n-context';
 
 export function Footer() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   
   return (
-    <footer className="border-t border-gray-200 bg-white py-8">
-      <div className="max-w-7xl mx-auto px-4 text-center text-gray-500">
-        <p>&copy; 2026 AdsCraft. {t('footer.rights')}</p>
-        <div className="mt-2 flex justify-center gap-4">
-          <Link href="/terms" className="text-sm hover:text-gray-700">
+    <footer className="border-t border-white/10 bg-gradient-to-br from-slate-900 to-blue-900 py-8">
+      <div className="max-w-7xl mx-auto px-4 text-center">
+        {/* 标语 */}
+        <p className="text-blue-300/70 text-sm mb-2">
+          {locale === 'zh'
+            ? 'AI Ad Decision Engine for Facebook, Instagram & TikTok'
+            : 'AI Ad Decision Engine for Facebook, Instagram & TikTok'}
+        </p>
+        
+        {/* 版权 */}
+        <p className="text-blue-300/50 text-sm mb-4">
+          &copy; 2026 AdsCraft. {t('footer.rights')}
+        </p>
+        
+        {/* 链接 */}
+        <div className="flex justify-center gap-4">
+          <Link href="/terms" className="text-sm text-blue-300/70 hover:text-cyan-400 transition-colors">
             {t('nav.terms')}
           </Link>
-          <Link href="/privacy" className="text-sm hover:text-gray-700">
+          <Link href="/privacy" className="text-sm text-blue-300/70 hover:text-cyan-400 transition-colors">
             {t('nav.privacy')}
           </Link>
         </div>
+        
+        {/* 联系 */}
+        <p className="text-blue-300/50 text-sm mt-4">
+          {t('footer.support')}: <a href="mailto:leo.tikboost@gmail.com" className="text-cyan-400 hover:text-cyan-300 transition-colors">leo.tikboost@gmail.com</a>
+        </p>
       </div>
     </footer>
   );

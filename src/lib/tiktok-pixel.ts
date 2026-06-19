@@ -41,4 +41,11 @@ export const tiktokPixel = {
       });
     }
   },
+
+  // 通用事件追踪
+  track: (event: string, params?: Record<string, unknown>) => {
+    if (typeof window !== 'undefined' && window.ttq) {
+      window.ttq.track(event, params);
+    }
+  },
 };

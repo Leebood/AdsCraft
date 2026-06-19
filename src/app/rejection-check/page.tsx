@@ -1159,7 +1159,7 @@ export default function TikTokReviewPage() {
       </div>
     </div>
   );
-  };
+};
 
   const renderResult = () => {
     if (!result) return null;

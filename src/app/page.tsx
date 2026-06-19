@@ -57,9 +57,6 @@ export default function HomePage() {
   
   // 检查用户是否已订阅某线路
   const isRouteSubscribed = (platform: PlatformId, routeId: string): boolean => {
-    // 线路 ID 映射到数据库中的 route 字段
-    // Facebook 线路：数据库使用原 route.id（local_service, retailer, manufacturer, brand）
-    // TikTok 线路：数据库使用 tiktok_routeId 格式
     const routeMapping: Record<string, string> = {
       'fb_local_service': 'local_service',
       'fb_retailer': 'retailer',
@@ -68,17 +65,14 @@ export default function HomePage() {
       'tiktok_local_service': 'tiktok_local_service',
       'tiktok_website_conv': 'tiktok_website_conv',
       'tiktok_brand_awareness': 'tiktok_brand_awareness',
-      // 也支持直接传入 route.id（不带平台前缀）
       'local_service': 'local_service',
       'retailer': 'retailer',
       'manufacturer': 'manufacturer',
       'brand': 'brand',
     };
     
-    // 生成 platform_routeId 格式的 key（需要将 facebook 转为 fb）
     const platformPrefix = platform === 'facebook' ? 'fb' : 'tiktok';
     const routeKey = `${platformPrefix}_${routeId}`;
-    // 尝试两种格式匹配
     const dbRoute = routeMapping[routeKey] || routeMapping[routeId] || routeId;
     return subscriptions.some(s => s.route === dbRoute && s.status === 'active');
   };
@@ -105,31 +99,23 @@ export default function HomePage() {
     
     // 如果是付费线路，检查是否已订阅
     if (!route.isFree) {
-      // 如果用户已订阅该线路，直接进入答题流程
       if (isRouteSubscribed(platform, route.id)) {
         handleAuthRequiredAction(`/questions?route=${route.id}&platform=${platform}`);
         return;
       }
       
-      // 未订阅：中文模式跳转pricing页面选择支付方式，英文模式直接跳转Creem
       if (locale === 'zh') {
-        // 中文模式：跳转到pricing页面让用户选择支付方式（Creem或微信）
-        // 使用 platform_routeId 格式来区分 Facebook 和 TikTok 的同名线路
-        // 需要将 facebook 转为 fb，以匹配 creem-config.ts 中的 key
         const platformPrefix = platform === 'facebook' ? 'fb' : 'tiktok';
         const routeKey = `${platformPrefix}_${route.id}`;
         handleAuthRequiredAction(`/pricing?route=${routeKey}`);
       } else if (route.creemLink) {
-        // 英文模式：直接跳转Creem支付
         window.open(route.creemLink, '_blank');
       } else {
-        // 付费线路但暂无支付链接
         setSelectedRoute({ platform, route });
       }
       return;
     }
     
-    // 免费线路直接进入答题流程
     handleAuthRequiredAction(`/questions?route=${route.id}&platform=${platform}`);
   };
 
@@ -148,7 +134,63 @@ export default function HomePage() {
     return styles[color] || styles['#22D3EE'];
   };
 
-  // 四步流程数据
+  // 处理免费诊断按钮点击
+  const handleFreeDiagnosis = (platform: 'facebook' | 'tiktok') => {
+    tiktokPixel.track('StartFreeDiagnosis');
+    if (platform === 'tiktok') {
+      handleAuthRequiredAction('/rejection-check');
+    } else {
+      handleAuthRequiredAction('/questions?route=free&platform=facebook');
+    }
+  };
+
+  // 示例诊断报告内容
+  const sampleOutputs = [
+    { icon: '🔍', titleEn: 'Campaign Problem Diagnosis', titleZh: '广告问题诊断', descEn: 'Identify why your ads are not converting', descZh: '识别广告为什么不转化' },
+    { icon: '🎯', titleEn: 'Audience Targeting Recommendation', titleZh: '受众定向推荐', descEn: 'Find your ideal customer segments', descZh: '找到你的理想客户群体' },
+    { icon: '💰', titleEn: 'Budget Allocation', titleZh: '预算分配建议', descEn: 'Optimize spend across campaigns', descZh: '优化各广告系列的预算' },
+    { icon: '🎨', titleEn: 'Creative Angle Suggestions', titleZh: '创意角度建议', descEn: 'Improve ad visuals and copy', descZh: '改进广告视觉和文案' },
+    { icon: '📅', titleEn: '7-Day Optimization Plan', titleZh: '7天优化计划', descEn: 'Step-by-step improvement roadmap', descZh: '逐步改进路线图' },
+  ];
+
+  // 适合谁使用
+  const useCases = [
+    { icon: '🏪', titleEn: 'Local Stores', titleZh: '本地门店', descEn: 'Offline businesses targeting nearby customers', descZh: '面向附近顾客的线下商家' },
+    { icon: '🛒', titleEn: 'Shopify Sellers', titleZh: 'Shopify卖家', descEn: 'E-commerce stores needing better ROAS', descZh: '需要更好ROAS的电商店铺' },
+    { icon: '🏭', titleEn: 'B2B Manufacturers', titleZh: 'B2B制造商', descEn: 'Factory/wholesale generating leads', descZh: '获取询盘的工厂/批发商' },
+    { icon: '🚀', titleEn: 'New Product Launches', titleZh: '新品上市', descEn: 'Brands launching new products', descZh: '推广新品的品牌方' },
+    { icon: '👤', titleEn: 'Solo Operators', titleZh: '个人运营者', descEn: 'Small brands without a media buyer', descZh: '没有专业投手的小品牌' },
+  ];
+
+  // FAQ 内容
+  const faqs = [
+    {
+      qEn: 'Is this a tutorial or a decision tool?',
+      qZh: '这是教程还是决策工具？',
+      aEn: 'AdsCraft does not teach you generic ad theory. It gives campaign-level decisions based on your business type, goal, budget, and platform.',
+      aZh: 'AdsCraft不教泛泛的广告理论，而是根据你的业务类型、目标、预算和平台，给出广告系列级别的决策建议。',
+    },
+    {
+      qEn: 'What do I get from the free diagnosis?',
+      qZh: '免费诊断能得到什么？',
+      aEn: 'You get a basic diagnosis of your current campaign issues and a preview of recommended settings.',
+      aZh: '你会得到当前广告问题的基础诊断和推荐配置预览。',
+    },
+    {
+      qEn: 'How does the paid plan differ?',
+      qZh: '付费方案有什么不同？',
+      aEn: 'Paid plans include full optimization plan, audience structure, budget split, retargeting setup, and 7-day checklist.',
+      aZh: '付费方案包含完整优化计划、受众结构、预算分配、再营销设置和7天检查清单。',
+    },
+    {
+      qEn: 'Do I need to share my ad account data?',
+      qZh: '需要分享广告账户数据吗？',
+      aEn: 'No. You answer questions about your business and goals, and we provide recommendations based on that.',
+      aZh: '不需要。你只需回答关于业务和目标的问题，我们据此提供推荐。',
+    },
+  ];
+
+  // 四步流程数据（保留）
   const engineSteps = [
     { num: 1, title: locale === 'zh' ? '诊断分析' : 'Diagnosis', desc: locale === 'zh' ? '识别问题根因' : 'Identify root causes' },
     { num: 2, title: locale === 'zh' ? '最优配置' : 'Optimal Config', desc: locale === 'zh' ? 'AI推荐配置' : 'AI recommended setup' },
@@ -167,17 +209,84 @@ export default function HomePage() {
       </div>
 
       <div className="relative max-w-6xl mx-auto px-4 py-16">
-        {/* 产品定位区 */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
-            AdsCraft — {locale === 'zh' ? 'AI广告优化引擎' : 'AI Ad Optimization Engine'}
-          </h1>
-          <h2 className="text-xl md:text-2xl text-blue-200 mb-8 font-light">
-            {locale === 'zh' ? '让你的 Facebook & TikTok 广告更精准' : 'Make your Facebook & TikTok ads more precise'}
-          </h2>
+        {/* ========== Hero 首屏 ========== */}
+        <div className="text-center mb-16">
+          {/* AI 标签 */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/20 border border-cyan-400/30 mb-6">
+            <span className="text-cyan-400 font-medium text-sm">AI-Powered</span>
+          </div>
           
-          {/* 四步流程可视化 */}
-          <div className="flex flex-wrap justify-center items-center gap-3 md:gap-6 mb-8">
+          {/* 主标题 */}
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+            {locale === 'zh' 
+              ? 'Facebook、Instagram 和 TikTok 广告的 AI 诊断工具' 
+              : 'AI Ad Diagnosis for Facebook, Instagram & TikTok Ads'}
+          </h1>
+          
+          {/* 副标题 */}
+          <p className="text-xl md:text-2xl text-blue-200 mb-6 font-light max-w-3xl mx-auto">
+            {locale === 'zh'
+              ? '找出广告为什么不转化，获取 AI 推荐的广告配置，在 7-14 天内优化你的预算。'
+              : 'Find why your ads are not converting, get AI-recommended campaign settings, and optimize your budget in 7-14 days.'}
+          </p>
+          
+          {/* CTA 按钮 */}
+          <div className="flex flex-wrap justify-center gap-4 mb-8">
+            {/* Facebook 免费诊断 */}
+            <button
+              onClick={() => handleFreeDiagnosis('facebook')}
+              disabled={loading}
+              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl text-white font-semibold shadow-lg shadow-blue-500/30 hover:from-blue-400 hover:to-blue-500 hover:scale-105 transition-all duration-300 flex items-center gap-2 disabled:opacity-70"
+            >
+              <div className="w-5 h-5 text-white" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.facebook.icon }} />
+              {locale === 'zh' ? 'Facebook 免费诊断' : 'Facebook Free Diagnosis'}
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </button>
+            
+            {/* TikTok 免费诊断 */}
+            <button
+              onClick={() => handleFreeDiagnosis('tiktok')}
+              disabled={loading}
+              className="px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-600 rounded-xl text-white font-semibold shadow-lg shadow-pink-500/30 hover:from-pink-400 hover:to-rose-500 hover:scale-105 transition-all duration-300 flex items-center gap-2 disabled:opacity-70"
+            >
+              <div className="w-5 h-5 text-white" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.tiktok.icon }} />
+              {locale === 'zh' ? 'TikTok 免费诊断' : 'TikTok Free Diagnosis'}
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </button>
+            
+            {/* 查看示例报告 */}
+            <button
+              onClick={() => {
+                const sampleSection = document.getElementById('sample-output');
+                sampleSection?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="px-6 py-3 bg-white/10 border border-white/20 rounded-xl text-white font-semibold hover:bg-white/15 hover:border-cyan-400/50 transition-all duration-300 flex items-center gap-2"
+            >
+              {locale === 'zh' ? '查看示例报告' : 'View Sample Report'}
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+          
+          {/* 结果承诺 */}
+          <p className="text-blue-300/70 text-sm max-w-2xl mx-auto">
+            {locale === 'zh'
+              ? '获取广告诊断、受众建议、预算分配、创意方向和下一步优化计划。'
+              : 'Get a campaign diagnosis, audience suggestion, budget split, creative direction, and next-step optimization plan.'}
+          </p>
+        </div>
+
+        {/* ========== How It Works ========== */}
+        <div className="mb-16">
+          <h2 className="text-2xl font-semibold text-white text-center mb-8">
+            {locale === 'zh' ? '工作流程' : 'How It Works'}
+          </h2>
+          <div className="flex flex-wrap justify-center items-center gap-3 md:gap-6">
             {engineSteps.map((step, idx) => (
               <div key={step.num} className="flex items-center">
                 <div className="flex flex-col items-center">
@@ -199,8 +308,70 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Dual Platform Section - 双平台分列 */}
+        {/* ========== Sample Diagnosis Output ========== */}
+        <div id="sample-output" className="mb-16">
+          <h2 className="text-2xl font-semibold text-white text-center mb-4">
+            {locale === 'zh' ? '示例诊断报告' : 'Sample Diagnosis Report'}
+          </h2>
+          <p className="text-blue-300/70 text-center mb-8 max-w-2xl mx-auto">
+            {locale === 'zh'
+              ? '提交广告信息后，你会得到以下诊断结果'
+              : 'After submitting your ad info, you will receive the following diagnosis results'}
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
+            {sampleOutputs.map((item, idx) => (
+              <div 
+                key={idx}
+                className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 hover:border-cyan-400/30 transition-all duration-300"
+              >
+                <div className="text-2xl mb-2">{item.icon}</div>
+                <h3 className="text-white font-semibold mb-1">
+                  {locale === 'zh' ? item.titleZh : item.titleEn}
+                </h3>
+                <p className="text-blue-300/60 text-sm">
+                  {locale === 'zh' ? item.descZh : item.descEn}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ========== Use Cases ========== */}
         <div className="mb-16">
+          <h2 className="text-2xl font-semibold text-white text-center mb-4">
+            {locale === 'zh' ? '适合谁使用' : 'Who Should Use AdsCraft'}
+          </h2>
+          <p className="text-blue-300/70 text-center mb-8 max-w-2xl mx-auto">
+            {locale === 'zh'
+              ? '专为没有专业营销团队的小商家和个人运营者打造'
+              : 'Built for small businesses and solo operators running paid ads without a full marketing team.'}
+          </p>
+          
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-4xl mx-auto">
+            {useCases.map((item, idx) => (
+              <div 
+                key={idx}
+                className="bg-white/5 border border-white/10 rounded-xl p-4 text-center hover:bg-white/10 hover:border-cyan-400/30 transition-all duration-300"
+              >
+                <div className="text-3xl mb-2">{item.icon}</div>
+                <h3 className="text-white font-semibold text-sm mb-1">
+                  {locale === 'zh' ? item.titleZh : item.titleEn}
+                </h3>
+                <p className="text-blue-300/60 text-xs">
+                  {locale === 'zh' ? item.descZh : item.descEn}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ========== Pricing（保留原有双平台线路展示） ========== */}
+        <div className="mb-16">
+          <h2 className="text-2xl font-semibold text-white text-center mb-8">
+            {locale === 'zh' ? '选择你的方案' : 'Choose Your Plan'}
+          </h2>
+          
           {/* 双平台分列布局 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {/* Facebook Platform Column */}
@@ -216,7 +387,7 @@ export default function HomePage() {
                     {PLATFORM_CONFIGS.facebook.name}
                   </h4>
                   <p className="text-blue-200/70 text-sm">
-                    {locale === 'zh' ? 'Facebook & Instagram 广告' : 'Facebook & Instagram Ads'}
+                    {locale === 'zh' ? '转化导向、受众定向、预算结构' : 'Conversion-focused, audience targeting, budget structure'}
                   </p>
                 </div>
               </div>
@@ -232,7 +403,7 @@ export default function HomePage() {
                       disabled={loading}
                       className={`group w-full p-4 rounded-xl border transition-all duration-300 flex items-center gap-4 bg-white/5 border-white/10 hover:bg-white/10 ${styles.hoverBorder} disabled:opacity-70 disabled:cursor-wait`}
                     >
-                      {/* Icon - SVG */}
+                      {/* Icon */}
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${styles.bg} ${styles.border} group-hover:scale-105 transition-transform`}>
                         <div 
                           className={`w-6 h-6 ${styles.text}`}
@@ -285,7 +456,7 @@ export default function HomePage() {
                     {PLATFORM_CONFIGS.tiktok.name}
                   </h4>
                   <p className="text-pink-200/70 text-sm">
-                    {locale === 'zh' ? 'TikTok 广告' : 'TikTok Ads'}
+                    {locale === 'zh' ? '内容角度、拒审检查、素材方向' : 'Content angles, rejection check, creative direction'}
                   </p>
                 </div>
               </div>
@@ -304,7 +475,7 @@ export default function HomePage() {
                       disabled={loading || isPaidButNoLink}
                       className={`group w-full p-4 rounded-xl border transition-all duration-300 flex items-center gap-4 bg-white/5 border-white/10 hover:bg-white/10 ${styles.hoverBorder} ${isPaidButNoLink ? 'opacity-60 cursor-not-allowed' : ''} disabled:opacity-70 disabled:cursor-wait`}
                     >
-                      {/* Icon - SVG */}
+                      {/* Icon */}
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${styles.bg} ${styles.border} group-hover:scale-105 transition-transform`}>
                         <div 
                           className={`w-6 h-6 ${styles.text}`}
@@ -355,12 +526,12 @@ export default function HomePage() {
           {/* 注释 */}
           <p className="text-blue-300/50 text-sm text-center mt-6">
             {locale === 'zh' 
-              ? '💡 点击付费线路跳转 Creem 完成订阅'
+              ? '💡 点击付费线路跳转支付页面完成订阅'
               : '💡 Click paid routes to subscribe via Creem'}
           </p>
         </div>
 
-        {/* Selected Route Action Button - 仅用于暂无支付链接的付费线路 */}
+        {/* Selected Route Action Button */}
         {selectedRoute && !selectedRoute.route.creemLink && (
           <div className="mb-8 flex justify-center">
             <button
@@ -388,10 +559,54 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Footer */}
+        {/* ========== FAQ ========== */}
+        <div className="mb-16">
+          <h2 className="text-2xl font-semibold text-white text-center mb-8">
+            {locale === 'zh' ? '常见问题' : 'FAQ'}
+          </h2>
+          
+          <div className="max-w-3xl mx-auto space-y-4">
+            {faqs.map((faq, idx) => (
+              <div 
+                key={idx}
+                className="bg-white/5 border border-white/10 rounded-xl p-4"
+              >
+                <h3 className="text-white font-semibold mb-2">
+                  {locale === 'zh' ? faq.qZh : faq.qEn}
+                </h3>
+                <p className="text-blue-300/70 text-sm leading-relaxed">
+                  {locale === 'zh' ? faq.aZh : faq.aEn}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ========== Bottom CTA ========== */}
+        <div className="text-center mb-12 p-8 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-2xl border border-cyan-400/20">
+          <p className="text-blue-200 mb-4">
+            {locale === 'zh'
+              ? '不确定哪个方案适合你？'
+              : 'Not sure which plan fits?'}
+          </p>
+          <button
+            onClick={() => handleFreeDiagnosis('facebook')}
+            disabled={loading}
+            className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl text-white font-semibold shadow-lg shadow-cyan-500/30 hover:from-cyan-400 hover:to-blue-500 hover:scale-105 transition-all duration-300 disabled:opacity-70"
+          >
+            {locale === 'zh' ? '先试试免费诊断' : 'Start with a free diagnosis'}
+          </button>
+        </div>
+
+        {/* ========== Footer ========== */}
         <div className="mt-20 pt-8 border-t border-white/10 text-center">
           <p className="text-blue-300/60 text-sm mb-2">
             {t('footer.rights')}
+          </p>
+          <p className="text-blue-300/60 text-sm mb-4">
+            {locale === 'zh'
+              ? 'AI Ad Decision Engine for Facebook, Instagram & TikTok'
+              : 'AI Ad Decision Engine for Facebook, Instagram & TikTok'}
           </p>
           <p className="text-blue-300/60 text-sm">
             {t('footer.support')}: <a href="mailto:leo.tikboost@gmail.com" className="text-cyan-400 hover:text-cyan-300 transition-colors">leo.tikboost@gmail.com</a>
