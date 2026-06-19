@@ -385,7 +385,7 @@ export default function TikTokReviewPage() {
         <label className="text-blue-200 mb-2 block">{t('广告目标', 'Campaign Objective')}</label>
         <div className="grid grid-cols-3 gap-2">
           {[
-            { id: 'purchase', zh: '购买/销售', en: 'Purchase/Sales' },
+            { id: 'purchase', zh: '转化/销售', en: 'Conversions' },
             { id: 'leads', zh: '线索/留资', en: 'Leads' },
             { id: 'app_install', zh: 'App安装', en: 'App Install' },
             { id: 'website_traffic', zh: '网站流量', en: 'Website Traffic' },
