@@ -9,17 +9,161 @@ import { Button } from '@/components/ui/button';
 
 // ========== 类型定义 ==========
 
+// 字段显隐规则类型
+type FieldVisibility = 'required' | 'optional' | 'hidden' | 'conditional';
+
+// 根据广告目标的字段显隐规则
+type ObjectiveId = 'purchase' | 'leads' | 'app_install' | 'website_traffic' | 'dm' | 'live';
+
+const OBJECTIVE_FIELD_RULES: Record<ObjectiveId, Record<string, FieldVisibility>> = {
+  purchase: {
+    // Section 1
+    target_roas: 'required',
+    target_cpa: 'optional',
+    // Section 3 - CTA
+    cta_button: 'required', // 默认 Shop Now
+    // Section 4 - 落地页
+    landing_page_url: 'required',
+    app_store_url: 'hidden',
+    form_type: 'hidden',
+    // Section 6 - 数据追踪
+    pixel_status: 'required',
+    events_api: 'required',
+    event_verification: 'required',
+    event_duplication: 'required',
+    mmp_integration: 'hidden',
+  },
+  leads: {
+    // Section 1
+    target_roas: 'optional',
+    target_cpa: 'required',
+    // Section 3 - CTA
+    cta_button: 'required', // 默认 Learn More
+    // Section 4 - 落地页
+    landing_page_url: 'conditional', // form_type=external时required
+    app_store_url: 'hidden',
+    form_type: 'required', // 原生表单/站外表单
+    // Section 6 - 数据追踪
+    pixel_status: 'conditional', // form_type=external时检测
+    events_api: 'conditional',
+    event_verification: 'optional',
+    event_duplication: 'optional',
+    mmp_integration: 'hidden',
+  },
+  app_install: {
+    // Section 1
+    target_roas: 'optional',
+    target_cpa: 'required',
+    // Section 3 - CTA
+    cta_button: 'required', // 默认 Install Now
+    // Section 4 - 落地页
+    landing_page_url: 'hidden',
+    app_store_url: 'required',
+    form_type: 'hidden',
+    // Section 6 - 数据追踪
+    pixel_status: 'hidden',
+    events_api: 'hidden',
+    event_verification: 'hidden',
+    event_duplication: 'hidden',
+    mmp_integration: 'required',
+  },
+  website_traffic: {
+    // Section 1
+    target_roas: 'optional',
+    target_cpa: 'optional',
+    // Section 3 - CTA
+    cta_button: 'required', // 默认 Learn More
+    // Section 4 - 落地页
+    landing_page_url: 'required',
+    app_store_url: 'hidden',
+    form_type: 'hidden',
+    // Section 6 - 数据追踪
+    pixel_status: 'required',
+    events_api: 'required',
+    event_verification: 'required',
+    event_duplication: 'required',
+    mmp_integration: 'hidden',
+  },
+  dm: {
+    // Section 1
+    target_roas: 'optional',
+    target_cpa: 'optional',
+    // Section 3 - CTA
+    cta_button: 'required', // 默认 Send Message
+    // Section 4 - 落地页
+    landing_page_url: 'hidden',
+    app_store_url: 'hidden',
+    form_type: 'hidden',
+    // Section 6 - 数据追踪
+    pixel_status: 'hidden',
+    events_api: 'hidden',
+    event_verification: 'hidden',
+    event_duplication: 'hidden',
+    mmp_integration: 'hidden',
+  },
+  live: {
+    // Section 1
+    target_roas: 'optional',
+    target_cpa: 'optional',
+    // Section 3 - CTA
+    cta_button: 'required', // 默认 Watch Now
+    // Section 4 - 落地页
+    landing_page_url: 'hidden',
+    app_store_url: 'hidden',
+    form_type: 'hidden',
+    // Section 6 - 数据追踪
+    pixel_status: 'hidden',
+    events_api: 'hidden',
+    event_verification: 'hidden',
+    event_duplication: 'hidden',
+    mmp_integration: 'hidden',
+  },
+};
+
+// CTA按钮默认值
+const CTA_DEFAULTS: Record<ObjectiveId, { value: string; labelZh: string; labelEn: string }> = {
+  purchase: { value: 'shop_now', labelZh: '立即购买', labelEn: 'Shop Now' },
+  leads: { value: 'learn_more', labelZh: '了解更多', labelEn: 'Learn More' },
+  app_install: { value: 'install_now', labelZh: '立即安装', labelEn: 'Install Now' },
+  website_traffic: { value: 'learn_more', labelZh: '了解更多', labelEn: 'Learn More' },
+  dm: { value: 'send_message', labelZh: '发送私信', labelEn: 'Send Message' },
+  live: { value: 'watch_now', labelZh: '立即观看', labelEn: 'Watch Now' },
+};
+
+// 获取字段显隐状态
+function getFieldVisibility(objective: ObjectiveId | '', fieldId: string, formData?: FormData): FieldVisibility {
+  if (!objective) return 'optional'; // 未选择目标时默认可选
+  
+  const rules = OBJECTIVE_FIELD_RULES[objective];
+  const visibility = rules[fieldId] || 'optional';
+  
+  // 处理 conditional 类型
+  if (visibility === 'conditional' && formData) {
+    if (fieldId === 'landing_page_url' || fieldId === 'pixel_status' || fieldId === 'events_api') {
+      // 线索目标：根据表单类型决定
+      if (formData.formType === 'external') {
+        return fieldId === 'landing_page_url' ? 'required' : 'required';
+      } else {
+        return 'hidden'; // 原生表单时隐藏
+      }
+    }
+  }
+  
+  return visibility;
+}
+
 interface FormData {
   // Section 1: 基础信息
   platform: 'tiktok_ads' | '';
   countries: string[];
-  objective: 'purchase' | 'leads' | 'app_install' | 'website_traffic' | 'dm' | 'live' | '';
+  objective: ObjectiveId | '';
   industry: string;
   subCategory?: string;  // 二级子类
   category: string;
   avgOrderValue?: number;
   marginRate?: number;
   targetCPA?: number;
+  targetROAS?: number;  // 新增：目标ROAS
   accountType: 'new' | 'mature' | '';
   hasHistoryData: 'yes' | 'no' | '';
 
@@ -46,6 +190,7 @@ interface FormData {
   productAppearTime: string;
   creativeType: string[];
   hasCTA: 'yes' | 'no' | '';
+  ctaButton?: string;  // 新增：CTA按钮类型
   isVertical: 'yes' | 'no' | 'unknown' | '';
   hasSubtitleAndSound: string;
   creativeCount: number;
@@ -55,6 +200,8 @@ interface FormData {
 
   // Section 5: 落地页
   landingPageUrl: string;
+  appStoreUrl?: string;  // 新增：应用商店链接
+  formType?: 'native' | 'external' | '';  // 新增：表单类型（原生/站外）
   clickDestination: string;
   firstScreenProductVisible: 'yes' | 'no' | 'unknown' | '';
 
@@ -62,6 +209,8 @@ interface FormData {
   pixelInstalled: 'yes' | 'no' | 'unknown' | '';
   eventsApiConfigured: 'yes' | 'no' | 'unknown' | '';
   keyEventTested: 'yes' | 'no' | 'unknown' | '';
+  eventDuplication?: 'yes' | 'no' | 'unknown' | '';  // 新增：事件重复上报
+  mmpIntegration?: 'yes' | 'no' | 'unknown' | '';  // 新增：MMP集成
   attributionWindow: string;
   dailyBudget?: number;
   adGroupCount?: number;
@@ -483,16 +632,39 @@ export default function TikTokReviewPage() {
               placeholder={t('如 30', 'e.g. 30')}
             />
           </div>
-          <div>
-            <label className="text-blue-200/70 text-sm block mb-1">{t('目标CPA ($)', 'Target CPA ($)')}</label>
-            <input
-              type="number"
-              value={formData.targetCPA || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, targetCPA: parseFloat(e.target.value) || undefined }))}
-              className="w-full bg-white/5 border border-white/20 rounded px-3 py-1.5 text-blue-200"
-              placeholder={t('如 10', 'e.g. 10')}
-            />
-          </div>
+          {/* 目标CPA：根据objective显示，lead_gen/app_install必填 */}
+          {getFieldVisibility(formData.objective, 'targetCPA') !== 'hidden' && (
+            <div>
+              <label className="text-blue-200/70 text-sm block mb-1">
+                {t('目标CPA ($)', 'Target CPA ($)')}
+                {getFieldVisibility(formData.objective, 'targetCPA') === 'required' && <span className="text-red-400 ml-1">*</span>}
+              </label>
+              <input
+                type="number"
+                value={formData.targetCPA || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, targetCPA: parseFloat(e.target.value) || undefined }))}
+                className="w-full bg-white/5 border border-white/20 rounded px-3 py-1.5 text-blue-200"
+                placeholder={t('如 10', 'e.g. 10')}
+              />
+            </div>
+          )}
+          {/* 目标ROAS：仅purchase目标显示，必填 */}
+          {getFieldVisibility(formData.objective, 'targetROAS') !== 'hidden' && (
+            <div>
+              <label className="text-blue-200/70 text-sm block mb-1">
+                {t('目标ROAS', 'Target ROAS')}
+                {getFieldVisibility(formData.objective, 'targetROAS') === 'required' && <span className="text-red-400 ml-1">*</span>}
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                value={formData.targetROAS || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, targetROAS: parseFloat(e.target.value) || undefined }))}
+                className="w-full bg-white/5 border border-white/20 rounded px-3 py-1.5 text-blue-200"
+                placeholder={t('如 2.0', 'e.g. 2.0')}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
