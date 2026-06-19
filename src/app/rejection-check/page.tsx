@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/i18n-context';
 import { useAuth } from '@/lib/auth-context';
@@ -278,7 +278,21 @@ export default function TikTokReviewPage() {
     return false;
   };
 
-  // 展开下一个 Section
+  // 自动展开下一个符合条件的 Section（延迟触发避免立即收起）
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // 检查是否有下一个符合条件的 Section
+      for (let i = 1; i <= 6; i++) {
+        if (i > expandedSection && canExpandSection(i)) {
+          setExpandedSection(i);
+          break;
+        }
+      }
+    }, 500); // 延迟500ms，让用户有时间继续选择同一 Section 的其他选项
+    return () => clearTimeout(timer);
+  }, [formData, expandedSection]);
+
+  // 手动展开下一个 Section（用于"继续"按钮）
   const expandNextSection = () => {
     for (let i = expandedSection + 1; i <= 6; i++) {
       if (canExpandSection(i)) {
@@ -318,7 +332,7 @@ export default function TikTokReviewPage() {
         <label className="text-blue-200 mb-2 block">{t('投放平台', 'Ad Platform')}</label>
         <div className="flex gap-3">
           <button
-            onClick={() => { setFormData(prev => ({ ...prev, platform: 'tiktok_ads' })); expandNextSection(); }}
+            onClick={() => { setFormData(prev => ({ ...prev, platform: 'tiktok_ads' })); }}
             className={`px-4 py-2 rounded-lg border ${formData.platform === 'tiktok_ads' ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
           >
             {t('TikTok Ads', 'TikTok Ads')}
@@ -380,7 +394,7 @@ export default function TikTokReviewPage() {
           ].map(opt => (
             <button
               key={opt.id}
-              onClick={() => { setFormData(prev => ({ ...prev, objective: opt.id as any })); expandNextSection(); }}
+              onClick={() => { setFormData(prev => ({ ...prev, objective: opt.id as any })); }}
               className={`px-3 py-2 rounded-lg border text-sm ${formData.objective === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
             >
               {locale === 'zh' ? opt.zh : opt.en}
@@ -518,7 +532,6 @@ export default function TikTokReviewPage() {
                       ? formData.sensitiveCategories.filter(id => id !== c.id)
                       : [...formData.sensitiveCategories, c.id];
                 setFormData(prev => ({ ...prev, sensitiveCategories: newCategories }));
-                expandNextSection();
               }}
               className={`px-3 py-2 rounded-lg border text-sm ${formData.sensitiveCategories.includes(c.id) ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
             >
@@ -619,7 +632,6 @@ export default function TikTokReviewPage() {
                   ? formData.targetAudience.filter(id => id !== opt.id)
                   : [...formData.targetAudience, opt.id];
                 setFormData(prev => ({ ...prev, targetAudience: newAudience }));
-                expandNextSection();
               }}
               className={`px-3 py-2 rounded-lg border text-sm ${formData.targetAudience.includes(opt.id) ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
             >
@@ -696,7 +708,7 @@ export default function TikTokReviewPage() {
           ].map(opt => (
             <button
               key={opt.id}
-              onClick={() => { setFormData(prev => ({ ...prev, hookType: opt.id })); expandNextSection(); }}
+              onClick={() => { setFormData(prev => ({ ...prev, hookType: opt.id })); }}
               className={`px-3 py-2 rounded-lg border text-sm ${formData.hookType === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
             >
               {locale === 'zh' ? opt.zh : opt.en}
@@ -806,7 +818,7 @@ export default function TikTokReviewPage() {
         <input
           type="url"
           value={formData.landingPageUrl}
-          onChange={(e) => { setFormData(prev => ({ ...prev, landingPageUrl: e.target.value })); expandNextSection(); }}
+          onChange={(e) => { setFormData(prev => ({ ...prev, landingPageUrl: e.target.value })); }}
           className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-blue-200"
           placeholder="https://example.com/product"
         />
