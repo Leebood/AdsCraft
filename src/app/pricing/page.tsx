@@ -9,7 +9,7 @@ import { useAuth } from '@/lib/auth-context';
 import { CREEM_PRODUCTS } from '@/lib/creem-config';
 
 function PricingContent() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { user, refreshSubscription } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -80,59 +80,104 @@ function PricingContent() {
     }
   };
 
-  const routePricing: Record<string, {
-    title: string;
-    price: string;
-    roi: string;
-    borderColor: string;
-    iconColor: string;
-    buttonBg: string;
-    buttonHover: string;
-    shadowColor: string;
-  }> = {
-    retailer: {
-      title: t('pricing.retailer.title'),
-      price: '$19.9',
-      roi: t('pricing.retailer.roi'),
-      borderColor: 'border-yellow-400',
-      iconColor: 'text-yellow-600',
-      buttonBg: 'bg-yellow-500',
-      buttonHover: 'hover:bg-yellow-600',
-      shadowColor: 'shadow-yellow-500/20'
-    },
-    manufacturer: {
-      title: t('pricing.manufacturer.title'),
-      price: '$29.9',
-      roi: t('pricing.manufacturer.roi'),
-      borderColor: 'border-violet-400',
-      iconColor: 'text-violet-600',
-      buttonBg: 'bg-violet-500',
-      buttonHover: 'hover:bg-violet-600',
-      shadowColor: 'shadow-violet-500/20'
-    },
-    brand: {
-      title: t('pricing.brand.title'),
-      price: '$29.9',
-      roi: t('pricing.brand.roi'),
-      borderColor: 'border-rose-400',
-      iconColor: 'text-rose-600',
-      buttonBg: 'bg-rose-500',
-      buttonHover: 'hover:bg-rose-600',
-      shadowColor: 'shadow-rose-500/20'
-    },
-    local_service: {
-      title: t('pricing.localService.title'),
-      price: '$9.9',
-      roi: t('pricing.localService.roi'),
-      borderColor: 'border-emerald-400',
-      iconColor: 'text-emerald-600',
-      buttonBg: 'bg-emerald-500',
-      buttonHover: 'hover:bg-emerald-600',
-      shadowColor: 'shadow-emerald-500/20'
-    }
+  // 使用 creem-config.ts 中的价格数据，确保与首页一致
+  const getRoutePricing = (currentLocale: string) => {
+    const product = CREEM_PRODUCTS[route as keyof typeof CREEM_PRODUCTS];
+    if (!product) return null;
+
+    // 根据线路类型设置样式和标题
+    const styleMap: Record<string, {
+      titleEn: string;
+      titleZh: string;
+      borderColor: string;
+      iconColor: string;
+      buttonBg: string;
+      buttonHover: string;
+      shadowColor: string;
+    }> = {
+      // Facebook 线路
+      fb_retailer: {
+        titleEn: 'Retailer Plan',
+        titleZh: '零售商方案',
+        borderColor: 'border-yellow-400',
+        iconColor: 'text-yellow-600',
+        buttonBg: 'bg-yellow-500',
+        buttonHover: 'hover:bg-yellow-600',
+        shadowColor: 'shadow-yellow-500/20'
+      },
+      fb_manufacturer: {
+        titleEn: 'Manufacturer Plan',
+        titleZh: '制造商方案',
+        borderColor: 'border-violet-400',
+        iconColor: 'text-violet-600',
+        buttonBg: 'bg-violet-500',
+        buttonHover: 'hover:bg-violet-600',
+        shadowColor: 'shadow-violet-500/20'
+      },
+      fb_brand: {
+        titleEn: 'Brand Plan',
+        titleZh: '品牌方方案',
+        borderColor: 'border-rose-400',
+        iconColor: 'text-rose-600',
+        buttonBg: 'bg-rose-500',
+        buttonHover: 'hover:bg-rose-600',
+        shadowColor: 'shadow-rose-500/20'
+      },
+      fb_local_service: {
+        titleEn: 'Local Service Plan',
+        titleZh: '本地服务方案',
+        borderColor: 'border-emerald-400',
+        iconColor: 'text-emerald-600',
+        buttonBg: 'bg-emerald-500',
+        buttonHover: 'hover:bg-emerald-600',
+        shadowColor: 'shadow-emerald-500/20'
+      },
+      // TikTok 线路
+      tiktok_local_service: {
+        titleEn: 'TikTok Local Service',
+        titleZh: 'TikTok 本地服务',
+        borderColor: 'border-emerald-400',
+        iconColor: 'text-emerald-600',
+        buttonBg: 'bg-emerald-500',
+        buttonHover: 'hover:bg-emerald-600',
+        shadowColor: 'shadow-emerald-500/20'
+      },
+      tiktok_website_conv: {
+        titleEn: 'TikTok Website Conversion',
+        titleZh: 'TikTok 网站转化',
+        borderColor: 'border-blue-400',
+        iconColor: 'text-blue-600',
+        buttonBg: 'bg-blue-500',
+        buttonHover: 'hover:bg-blue-600',
+        shadowColor: 'shadow-blue-500/20'
+      },
+      tiktok_brand_awareness: {
+        titleEn: 'TikTok Brand Awareness',
+        titleZh: 'TikTok 品牌曝光',
+        borderColor: 'border-pink-400',
+        iconColor: 'text-pink-600',
+        buttonBg: 'bg-pink-500',
+        buttonHover: 'hover:bg-pink-600',
+        shadowColor: 'shadow-pink-500/20'
+      }
+    };
+
+    const style = styleMap[route];
+    if (!style) return null;
+
+    return {
+      title: currentLocale === 'zh' ? style.titleZh : style.titleEn,
+      priceUsd: product.price,      // 美元价格（Creem支付用）
+      priceCn: product.priceCn,     // 人民币价格（微信支付用）
+      borderColor: style.borderColor,
+      iconColor: style.iconColor,
+      buttonBg: style.buttonBg,
+      buttonHover: style.buttonHover,
+      shadowColor: style.shadowColor
+    };
   };
 
-  const pricingData = routePricing[route];
+  const pricingData = getRoutePricing(locale);
 
   if (!pricingData) {
     return (
@@ -234,15 +279,22 @@ function PricingContent() {
                 {pricingData.title}
               </CardTitle>
               <div className="mt-4">
-                <span className="text-5xl font-bold text-gray-800">{pricingData.price}</span>
+                <span className="text-5xl font-bold text-gray-800">
+                  {paymentMethod === 'creem' ? pricingData.priceUsd : pricingData.priceCn}
+                </span>
                 <span className="text-gray-500 text-lg ml-2">{t('pricing.premium.period')}</span>
               </div>
             </CardHeader>
             
             <CardContent>
-              {/* ROI预期 */}
+              {/* 支付方式说明 */}
               <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-gray-700 font-medium">{t('pricing.roi.title')}: {pricingData.roi}</p>
+                <p className="text-gray-700 font-medium">
+                  {paymentMethod === 'creem' 
+                    ? (locale === 'zh' ? 'Creem 支付支持信用卡，价格以美元结算' : 'Creem payment supports credit cards, priced in USD')
+                    : (locale === 'zh' ? '微信支付仅支持人民币结算' : 'WeChat Pay only supports RMB')
+                  }
+                </p>
               </div>
               
               {/* 功能列表 */}
