@@ -75,8 +75,9 @@ export default function HomePage() {
       'brand': 'brand',
     };
     
-    // 生成 platform_routeId 格式的 key
-    const routeKey = `${platform}_${routeId}`;
+    // 生成 platform_routeId 格式的 key（需要将 facebook 转为 fb）
+    const platformPrefix = platform === 'facebook' ? 'fb' : 'tiktok';
+    const routeKey = `${platformPrefix}_${routeId}`;
     // 尝试两种格式匹配
     const dbRoute = routeMapping[routeKey] || routeMapping[routeId] || routeId;
     return subscriptions.some(s => s.route === dbRoute && s.status === 'active');
@@ -114,7 +115,9 @@ export default function HomePage() {
       if (locale === 'zh') {
         // 中文模式：跳转到pricing页面让用户选择支付方式（Creem或微信）
         // 使用 platform_routeId 格式来区分 Facebook 和 TikTok 的同名线路
-        const routeKey = `${platform}_${route.id}`;
+        // 需要将 facebook 转为 fb，以匹配 creem-config.ts 中的 key
+        const platformPrefix = platform === 'facebook' ? 'fb' : 'tiktok';
+        const routeKey = `${platformPrefix}_${route.id}`;
         handleAuthRequiredAction(`/pricing?route=${routeKey}`);
       } else if (route.creemLink) {
         // 英文模式：直接跳转Creem支付
