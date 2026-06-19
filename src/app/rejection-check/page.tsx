@@ -13,7 +13,7 @@ interface FormData {
   // Section 1: 基础信息
   platform: 'tiktok_ads' | '';
   countries: string[];
-  objective: 'purchase' | 'leads' | 'app_install' | 'dm' | 'live' | '';
+  objective: 'purchase' | 'leads' | 'app_install' | 'website_traffic' | 'dm' | 'live' | '';
   industry: string;
   category: string;
   avgOrderValue?: number;
@@ -364,6 +364,7 @@ export default function TikTokReviewPage() {
             { id: 'purchase', zh: '购买/销售', en: 'Purchase/Sales' },
             { id: 'leads', zh: '线索/留资', en: 'Leads' },
             { id: 'app_install', zh: 'App安装', en: 'App Install' },
+            { id: 'website_traffic', zh: '网站流量', en: 'Website Traffic' },
             { id: 'dm', zh: '私信', en: 'Direct Message' },
             { id: 'live', zh: '直播引流', en: 'Live Stream' }
           ].map(opt => (

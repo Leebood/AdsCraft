@@ -17,7 +17,7 @@ interface ReviewFormData {
   // Section 1: 基础信息
   platform: 'tiktok_ads';
   countries: string[];
-  objective: 'purchase' | 'leads' | 'app_install' | 'dm' | 'live';
+  objective: 'purchase' | 'leads' | 'app_install' | 'website_traffic' | 'dm' | 'live';
   industry: string;
   category: string;
   avgOrderValue?: number;
