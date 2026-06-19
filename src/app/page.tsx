@@ -323,100 +323,205 @@ export default function HomePage() {
               : 'Find why your ads are not converting, get AI-recommended campaign settings, and optimize your budget in 7-14 days.'}
           </p>
           
-          {/* CTA 按钮 - 简洁 */}
-          <div className="flex flex-wrap justify-center gap-3 mb-6">
+          {/* CTA 按钮 */}
+          <div className="flex flex-wrap justify-center gap-4 mb-8">
+            {/* Facebook 免费诊断 */}
             <button
               onClick={() => handleFreeDiagnosis('facebook')}
               disabled={loading}
-              className="px-4 py-2 border border-blue-500/50 rounded-lg text-blue-400 hover:bg-blue-500/10 transition-colors text-sm"
+              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl text-white font-semibold shadow-lg shadow-blue-500/30 hover:from-blue-400 hover:to-blue-500 hover:scale-105 transition-all duration-300 flex items-center gap-2 disabled:opacity-70"
             >
-              Facebook
+              <div className="w-5 h-5 text-white" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.facebook.icon }} />
+              {locale === 'zh' ? 'Facebook 免费诊断' : 'Facebook Free Diagnosis'}
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
             </button>
+            
+            {/* TikTok 免费诊断 */}
             <button
               onClick={() => handleFreeDiagnosis('tiktok')}
               disabled={loading}
-              className="px-4 py-2 border border-cyan-500/50 rounded-lg text-cyan-400 hover:bg-cyan-500/10 transition-colors text-sm"
+              className="px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-600 rounded-xl text-white font-semibold shadow-lg shadow-pink-500/30 hover:from-pink-400 hover:to-rose-500 hover:scale-105 transition-all duration-300 flex items-center gap-2 disabled:opacity-70"
             >
-              TikTok
+              <div className="w-5 h-5 text-white" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.tiktok.icon }} />
+              {locale === 'zh' ? 'TikTok 免费诊断' : 'TikTok Free Diagnosis'}
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
             </button>
+            
+            {/* 查看示例报告 */}
             <button
-              onClick={() => document.getElementById('sample-output')?.scrollIntoView({ behavior: 'smooth' })}
-              className="px-4 py-2 border border-white/20 rounded-lg text-slate-400 hover:text-white hover:border-white/40 transition-colors text-sm"
+              onClick={() => {
+                const sampleSection = document.getElementById('sample-output');
+                sampleSection?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="px-6 py-3 bg-white/10 border border-white/20 rounded-xl text-white font-semibold hover:bg-white/15 hover:border-cyan-400/50 transition-all duration-300 flex items-center gap-2"
             >
-              {locale === 'zh' ? '示例' : 'Sample'}
+              {locale === 'zh' ? '查看示例报告' : 'View Sample Report'}
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
             </button>
           </div>
           
-          {/* 结果承诺 - 简洁 */}
-          <p className="text-slate-400 text-xs max-w-xl mx-auto">
+          {/* 结果承诺 */}
+          <p className="text-blue-300/70 text-sm max-w-2xl mx-auto">
             {locale === 'zh'
-              ? '诊断 → 受众建议 → 预算分配 → 创意方向 → 优化计划'
-              : 'Diagnosis → Audience → Budget → Creative → Optimization'}
+              ? '获取广告诊断、受众建议、预算分配、创意方向和下一步优化计划。'
+              : 'Get a campaign diagnosis, audience suggestion, budget split, creative direction, and next-step optimization plan.'}
           </p>
         </div>
 
-        {/* ========== How It Works - 简洁 ========== */}
-        <div className="mb-8 py-4">
-          <div className="flex flex-wrap justify-center items-center gap-2 px-4">
+        {/* ========== How It Works ========== */}
+        <div className="mb-16 py-8 rounded-2xl bg-slate-800/30">
+          {/* Section Label */}
+          <div className="text-center mb-6">
+            <span className="inline-block px-3 py-1 rounded text-xs font-medium tracking-wider uppercase bg-white/5 text-slate-400 border border-white/10">
+              {locale === 'zh' ? '工作流程' : 'HOW IT WORKS'}
+            </span>
+          </div>
+          
+          <h2 className="text-2xl font-semibold text-white text-center mb-8">
+            {locale === 'zh' ? '四步完成优化' : '4 Steps to Optimize'}
+          </h2>
+          <div className="flex flex-wrap justify-center items-center gap-3 md:gap-6 px-4">
             {engineSteps.map((step, idx) => (
               <div key={step.num} className="flex items-center">
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
-                  <span className="text-cyan-400 font-bold text-sm">{step.num}</span>
-                  <span className="text-slate-300 text-sm">{step.title}</span>
+                <div className="flex flex-col items-center">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-cyan-500/20 border border-cyan-400/30 flex items-center justify-center text-cyan-400 font-bold text-lg md:text-xl">
+                    {step.num}
+                  </div>
+                  <div className="mt-2 text-center">
+                    <div className="text-white font-medium text-sm md:text-base">{step.title}</div>
+                    <div className="text-slate-400 text-xs md:text-sm">{step.desc}</div>
+                  </div>
                 </div>
                 {idx < engineSteps.length - 1 && (
-                  <span className="text-slate-500 mx-1">→</span>
+                  <svg className="w-6 h-6 md:w-8 md:h-8 text-slate-500 mx-2 md:mx-4 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 )}
               </div>
             ))}
           </div>
         </div>
 
-        {/* ========== Sample Output - 简洁列表 ========== */}
-        <div id="sample-output" className="mb-8 py-4">
-          {/* 简洁列表 */}
-          <div className="flex flex-wrap justify-center gap-2 px-4">
+        {/* ========== Sample Diagnosis Output ========== */}
+        <div id="sample-output" className="mb-16 py-8 rounded-2xl bg-slate-800/50">
+          {/* Section Label */}
+          <div className="text-center mb-6">
+            <span className="inline-block px-3 py-1 rounded text-xs font-medium tracking-wider uppercase bg-white/5 text-slate-400 border border-white/10">
+              {locale === 'zh' ? '示例诊断报告' : 'SAMPLE OUTPUT'}
+            </span>
+          </div>
+          
+          <h2 className="text-2xl font-semibold text-white text-center mb-4">
+            {locale === 'zh' ? '提交后你会得到' : 'What You Will Get'}
+          </h2>
+          <p className="text-slate-400 text-center mb-8 max-w-2xl mx-auto">
+            {locale === 'zh'
+              ? '提交广告信息后，你会得到以下诊断结果'
+              : 'After submitting your ad info, you will receive the following diagnosis results'}
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto px-4">
             {sampleOutputs.map((item, idx) => (
               <div 
                 key={idx}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10"
+                className="bg-white/[0.04] border border-white/10 rounded-xl p-4 hover:bg-white/[0.07] hover:border-cyan-400/30 transition-all duration-300"
               >
-                <span className="text-cyan-400 text-sm">●</span>
-                <span className="text-slate-300 text-sm">{locale === 'zh' ? item.titleZh : item.titleEn}</span>
+                <div className="text-2xl mb-2">{item.icon}</div>
+                <h3 className="text-white font-semibold mb-1">
+                  {locale === 'zh' ? item.titleZh : item.titleEn}
+                </h3>
+                <p className="text-slate-400 text-sm">
+                  {locale === 'zh' ? item.descZh : item.descEn}
+                </p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* ========== Use Cases - 简洁标签 ========== */}
-        <div className="mb-8 py-4">
-          {/* 简洁标签 */}
-          <div className="flex flex-wrap justify-center gap-2 px-4">
+        {/* ========== Use Cases ========== */}
+        <div className="mb-16 py-8 rounded-2xl bg-slate-800/30">
+          {/* Section Label */}
+          <div className="text-center mb-6">
+            <span className="inline-block px-3 py-1 rounded text-xs font-medium tracking-wider uppercase bg-white/5 text-slate-400 border border-white/10">
+              {locale === 'zh' ? '适合谁使用' : 'USE CASES'}
+            </span>
+          </div>
+          
+          <h2 className="text-2xl font-semibold text-white text-center mb-4">
+            {locale === 'zh' ? '专为小商家和个人运营者打造' : 'Built for Small Businesses'}
+          </h2>
+          <p className="text-slate-400 text-center mb-8 max-w-2xl mx-auto">
+            {locale === 'zh'
+              ? '没有专业营销团队也能高效投放广告'
+              : 'Run paid ads effectively without a full marketing team.'}
+          </p>
+          
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-4xl mx-auto px-4">
             {useCases.map((item, idx) => (
               <div 
                 key={idx}
-                className="px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-slate-300 text-sm"
+                className="bg-white/[0.04] border border-white/10 rounded-xl p-4 text-center hover:bg-white/[0.07] transition-all duration-300"
               >
-                {locale === 'zh' ? item.titleZh : item.titleEn}
+                <div className="text-3xl mb-2">{item.icon}</div>
+                <h3 className="text-white font-semibold text-sm mb-1">
+                  {locale === 'zh' ? item.titleZh : item.titleEn}
+                </h3>
+                <p className="text-slate-500 text-xs">
+                  {locale === 'zh' ? item.descZh : item.descEn}
+                </p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* ========== Pricing - 简洁 ========== */}
-        <div className="mb-12 py-4">
+        {/* ========== Pricing（保留原有双平台线路展示 + 交付内容） ========== */}
+        <div className="mb-16 py-8">
+          {/* Section Label */}
+          <div className="text-center mb-6">
+            <span className="inline-block px-3 py-1 rounded text-xs font-medium tracking-wider uppercase bg-white/5 text-slate-400 border border-white/10">
+              {locale === 'zh' ? '选择你的方案' : 'PRICING'}
+            </span>
+          </div>
+          
+          <h2 className="text-2xl font-semibold text-white text-center mb-2">
+            {locale === 'zh' ? '定价方案' : 'Choose Your Plan'}
+          </h2>
+          <p className="text-slate-400 text-center mb-8 max-w-xl mx-auto">
+            {locale === 'zh'
+              ? '免费诊断 + 专业方案，按需选择'
+              : 'Free diagnosis + Professional plans, choose what fits your needs'}
+          </p>
+          
           {/* 双平台分列布局 */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto px-4">
             {/* Facebook Platform Column */}
-            <div className="border border-white/10 rounded-xl p-4">
-              {/* Platform Header - 简洁 */}
-              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
-                <span className="text-blue-400 text-sm font-medium">Facebook</span>
+            <div className="bg-slate-800/50 rounded-2xl p-6 border-t-2 border-t-blue-500 border-x border-b border-white/10">
+              {/* Platform Header */}
+              <div className="flex items-center gap-4 mb-6 pb-4 border-b border-white/10">
+                <div 
+                  className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-400"
+                  dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.facebook.icon }}
+                />
+                <div>
+                  <h4 className="text-lg font-semibold text-white">
+                    {PLATFORM_CONFIGS.facebook.name}
+                  </h4>
+                  <p className="text-slate-400 text-sm">
+                    {locale === 'zh' ? '转化导向、受众定向、预算结构' : 'Conversion-focused, audience targeting, budget structure'}
+                  </p>
+                </div>
               </div>
               
-              {/* Route Cards - 简洁 */}
-              <div className="space-y-2">
+              {/* Route Cards with Deliverables */}
+              <div className="space-y-3">
                 {PLATFORM_CONFIGS.facebook.routes.map((route) => {
+                  const styles = getRouteStyles(route.color);
                   const routeKey = `fb_${route.id}`;
                   const deliverables = routeDeliverables[routeKey]?.items || [];
                   
@@ -424,135 +529,302 @@ export default function HomePage() {
                     <div
                       key={route.id}
                       onClick={() => handleRouteClick('facebook', route)}
-                      className="group cursor-pointer p-3 rounded-lg border border-white/10 hover:border-cyan-400/30 transition-colors"
+                      className={`group cursor-pointer p-4 rounded-xl border transition-all duration-300 bg-white/[0.04] border-white/10 hover:bg-white/[0.07] hover:border-white/18 ${styles.hoverBorder}`}
                     >
-                      {/* Header - 简洁 */}
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-slate-300 group-hover:text-white transition-colors">
-                            {locale === 'zh' ? route.nameZh : route.name}
-                          </span>
-                          {route.isFree && (
-                            <span className="text-xs text-cyan-400">Free</span>
-                          )}
+                      {/* Header Row */}
+                      <div className="flex items-center gap-4 mb-3">
+                        {/* Icon */}
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${styles.bg} ${styles.border} group-hover:scale-105 transition-transform`}>
+                          <div 
+                            className={`w-5 h-5 ${styles.text}`}
+                            dangerouslySetInnerHTML={{ __html: route.icon }}
+                          />
                         </div>
-                        <span className={`text-sm font-medium ${route.isFree ? 'text-cyan-400' : 'text-slate-300'}`}>
-                          {locale === 'zh' ? route.priceTextZh : route.priceText}
-                        </span>
+                        
+                        {/* Name & Badge */}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h5 className="text-base font-semibold text-white group-hover:text-cyan-300 transition-colors">
+                              {locale === 'zh' ? route.nameZh : route.name}
+                            </h5>
+                            {route.isFree && (
+                              <span className="px-2 py-0.5 text-xs bg-cyan-500/20 text-cyan-400 rounded-full">
+                                {locale === 'zh' ? '首次使用推荐' : 'Best for first-time users'}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* Price */}
+                        <div className="text-right">
+                          <div className={`text-lg font-bold ${route.isFree ? 'text-cyan-400' : styles.text}`}>
+                            {locale === 'zh' ? route.priceTextZh : route.priceText}
+                          </div>
+                        </div>
                       </div>
                       
-                      {/* Deliverables - 简洁 */}
-                      <div className="flex flex-wrap gap-1">
-                        {deliverables.slice(0, 3).map((item, idx) => (
-                          <span key={idx} className="text-xs text-slate-500 px-1.5 py-0.5 bg-white/5 rounded">
+                      {/* Deliverables List */}
+                      <div className="ml-14 space-y-1">
+                        {deliverables.map((item, idx) => (
+                          <div key={idx} className="flex items-center gap-2 text-xs text-blue-300/70">
+                            <svg className="w-3 h-3 text-cyan-400" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
                             {locale === 'zh' ? item.zh : item.en}
-                          </span>
+                          </div>
                         ))}
                       </div>
                       
-                      {/* Action */}
-                      {route.isFree && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRouteClick('facebook', route);
-                          }}
-                          disabled={loading}
-                          className="mt-2 px-3 py-1 text-xs rounded bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 disabled:opacity-50"
-                        >
-                          {locale === 'zh' ? '开始' : 'Start'}
-                        </button>
-                      )}
+                      {/* Action Area */}
+                      <div className="mt-3 ml-14">
+                        {route.isFree ? (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRouteClick('facebook', route);
+                            }}
+                            disabled={loading}
+                            className="px-4 py-2 rounded-lg text-sm font-medium transition-all bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 disabled:opacity-50"
+                          >
+                            {locale === 'zh' ? '开始免费诊断' : 'Start Free Diagnosis'}
+                          </button>
+                        ) : (
+                          locale === 'zh' ? (
+                            <div className="flex items-center gap-2 text-xs text-blue-300/60">
+                              <span className="px-2 py-1 rounded bg-green-500/10 text-green-400">微信支付</span>
+                              <span className="text-blue-300/40">/</span>
+                              <span className="px-2 py-1 rounded bg-white/5 text-blue-300">Creem订阅</span>
+                              <span className="ml-2 text-blue-300/50">→ 点击查看详情</span>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handlePayment(route);
+                              }}
+                              disabled={loading}
+                              className="px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white/10 text-white hover:bg-white/20 disabled:opacity-50"
+                            >
+                              Subscribe via Creem
+                            </button>
+                          )
+                        )}
+                      </div>
                     </div>
                   );
                 })}
               </div>
             </div>
 
-            {/* TikTok - 简洁 */}
-            <div className="flex-1">
-              <div className="mb-3">
-                <span className="text-sm font-medium text-slate-300">{PLATFORM_CONFIGS.tiktok.name}</span>
-                <span className="ml-2 text-xs text-slate-500">{locale === 'zh' ? '内容角度、拒审检查' : 'Content, Rejection'}</span>
+            {/* TikTok Platform Column */}
+            <div className="bg-slate-800/50 rounded-2xl p-6 border-t-2 border-t-cyan-500 border-x border-b border-white/10">
+              {/* Platform Header */}
+              <div className="flex items-center gap-4 mb-6 pb-4 border-b border-white/10">
+                <div 
+                  className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400/30 flex items-center justify-center text-cyan-400"
+                  dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.tiktok.icon }}
+                />
+                <div>
+                  <h4 className="text-lg font-semibold text-white">
+                    {PLATFORM_CONFIGS.tiktok.name}
+                  </h4>
+                  <p className="text-slate-400 text-sm">
+                    {locale === 'zh' ? '内容角度、拒审检查、素材方向' : 'Content angles, rejection check, creative direction'}
+                  </p>
+                </div>
               </div>
               
-              {/* Route Cards - 简洁 */}
-              <div className="space-y-2">
+              {/* Route Cards with Deliverables */}
+              <div className="space-y-3">
                 {PLATFORM_CONFIGS.tiktok.routes.map((route) => {
+                  const styles = getRouteStyles(route.color);
                   const routeKey = `tiktok_${route.id}`;
                   const deliverables = routeDeliverables[routeKey]?.items || [];
+                  const hasPaymentLink = route.creemLink && route.creemLink.length > 0;
+                  const isPaidButNoLink = !route.isFree && !hasPaymentLink;
                   
                   return (
                     <div
                       key={route.id}
-                      onClick={() => handleRouteClick('tiktok', route)}
-                      className="group cursor-pointer p-3 rounded-lg border border-white/10 hover:border-cyan-400/30 transition-colors"
+                      onClick={() => !isPaidButNoLink && handleRouteClick('tiktok', route)}
+                      className={`group ${isPaidButNoLink ? 'opacity-60' : 'cursor-pointer'} p-4 rounded-xl border transition-all duration-300 bg-white/[0.04] border-white/10 hover:bg-white/[0.07] hover:border-white/18 ${styles.hoverBorder}`}
                     >
-                      {/* Header - 简洁 */}
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-slate-300 group-hover:text-white transition-colors">
-                            {locale === 'zh' ? route.nameZh : route.name}
-                          </span>
-                          {route.isFree && (
-                            <span className="text-xs text-cyan-400">Free</span>
-                          )}
+                      {/* Header Row */}
+                      <div className="flex items-center gap-4 mb-3">
+                        {/* Icon */}
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${styles.bg} ${styles.border} group-hover:scale-105 transition-transform`}>
+                          <div 
+                            className={`w-5 h-5 ${styles.text}`}
+                            dangerouslySetInnerHTML={{ __html: route.icon }}
+                          />
                         </div>
-                        <span className={`text-sm font-medium ${route.isFree ? 'text-cyan-400' : 'text-slate-300'}`}>
-                          {locale === 'zh' ? route.priceTextZh : route.priceText}
-                        </span>
+                        
+                        {/* Name & Badge */}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h5 className="text-base font-semibold text-white group-hover:text-cyan-300 transition-colors">
+                              {locale === 'zh' ? route.nameZh : route.name}
+                            </h5>
+                            {route.isFree && (
+                              <span className="px-2 py-0.5 text-xs bg-cyan-500/20 text-cyan-400 rounded-full border border-cyan-400/30">
+                                {locale === 'zh' ? '首次使用推荐' : 'Best for first-time users'}
+                              </span>
+                            )}
+                            {isPaidButNoLink && (
+                              <span className="px-2 py-0.5 text-xs bg-blue-500/20 text-blue-400 rounded-full">
+                                {locale === 'zh' ? '即将上线' : 'Coming Soon'}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* Price */}
+                        <div className="text-right">
+                          <div className={`text-lg font-bold ${route.isFree ? 'text-cyan-400' : styles.text}`}>
+                            {locale === 'zh' ? route.priceTextZh : route.priceText}
+                          </div>
+                        </div>
                       </div>
                       
-                      {/* Deliverables - 简洁 */}
-                      <div className="flex flex-wrap gap-1">
-                        {deliverables.slice(0, 3).map((item, idx) => (
-                          <span key={idx} className="text-xs text-slate-500 px-1.5 py-0.5 bg-white/5 rounded">
+                      {/* Deliverables List */}
+                      <div className="ml-14 space-y-1">
+                        {deliverables.map((item, idx) => (
+                          <div key={idx} className="flex items-center gap-2 text-xs text-blue-300/70">
+                            <svg className="w-3 h-3 text-cyan-400" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
                             {locale === 'zh' ? item.zh : item.en}
-                          </span>
+                          </div>
                         ))}
                       </div>
                       
-                      {/* Action */}
-                      {route.isFree && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRouteClick('tiktok', route);
-                          }}
-                          disabled={loading}
-                          className="mt-2 px-3 py-1 text-xs rounded bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 disabled:opacity-50"
-                        >
-                          {locale === 'zh' ? '开始' : 'Start'}
-                        </button>
-                      )}
+                      {/* Action Area */}
+                      <div className="mt-3 ml-14">
+                        {route.isFree ? (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRouteClick('tiktok', route);
+                            }}
+                            disabled={loading}
+                            className="px-4 py-2 rounded-lg text-sm font-medium transition-all bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 disabled:opacity-50"
+                          >
+                            {locale === 'zh' ? '开始免费诊断' : 'Start Free Diagnosis'}
+                          </button>
+                        ) : isPaidButNoLink ? (
+                          <button
+                            disabled
+                            className="px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white/10 text-white/50 disabled:opacity-50"
+                          >
+                            {locale === 'zh' ? '即将上线' : 'Coming Soon'}
+                          </button>
+                        ) : (
+                          locale === 'zh' ? (
+                            <div className="flex items-center gap-2 text-xs text-blue-300/60">
+                              <span className="px-2 py-1 rounded bg-green-500/10 text-green-400">微信支付</span>
+                              <span className="text-blue-300/40">/</span>
+                              <span className="px-2 py-1 rounded bg-white/5 text-blue-300">Creem订阅</span>
+                              <span className="ml-2 text-blue-300/50">→ 点击查看详情</span>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handlePayment(route);
+                              }}
+                              disabled={loading}
+                              className="px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white/10 text-white hover:bg-white/20 disabled:opacity-50"
+                            >
+                              Subscribe via Creem
+                            </button>
+                          )
+                        )}
+                      </div>
                     </div>
                   );
                 })}
               </div>
             </div>
           </div>
+          
+          {/* 注释 */}
+          <p className="text-blue-300/50 text-sm text-center mt-6">
+            {locale === 'zh' 
+              ? '💡 点击免费方案立即开始，付费方案支持微信或 Creem 安全支付'
+              : '💡 Start free diagnosis instantly, or subscribe securely via Creem'}
+          </p>
         </div>
 
-        {/* FAQ - 简洁 */}
-        <div className="mb-8 pt-6 border-t border-white/10">
-          <h2 className="text-base font-medium text-slate-300 mb-4">{locale === 'zh' ? '常见问题' : 'FAQ'}</h2>
-          <div className="space-y-2">
-            {faqs.slice(0, 3).map((faq, idx) => (
-              <div key={idx} className="text-sm">
-                <span className="text-slate-400">{locale === 'zh' ? faq.qZh : faq.qEn}</span>
-                <span className="text-slate-500 ml-2">— {locale === 'zh' ? faq.aZh : faq.aEn}</span>
+        {/* Selected Route Action Button */}
+        {selectedRoute && !selectedRoute.route.creemLink && (
+          <div className="mb-8 flex justify-center">
+            <button
+              onClick={() => handleAuthRequiredAction(`/questions?route=${selectedRoute.route.id}&platform=${selectedRoute.platform}`)}
+              disabled={loading}
+              className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl text-white font-semibold shadow-lg shadow-cyan-500/30 hover:from-cyan-400 hover:to-blue-500 hover:scale-105 transition-all duration-300 flex items-center gap-2 disabled:opacity-70 disabled:cursor-wait"
+            >
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  Loading...
+                </span>
+              ) : (
+                <>
+                  {t('home.startNow')}
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </>
+              )}
+            </button>
+          </div>
+        )}
+
+        {/* ========== FAQ ========== */}
+        <div className="mb-16 py-8 rounded-2xl bg-slate-800/50">
+          {/* Section Label */}
+          <div className="text-center mb-6">
+            <span className="inline-block px-3 py-1 rounded text-xs font-medium tracking-wider uppercase bg-white/5 text-slate-400 border border-white/10">
+              {locale === 'zh' ? '常见问题' : 'FAQ'}
+            </span>
+          </div>
+          
+          <h2 className="text-2xl font-semibold text-white text-center mb-8">
+            {locale === 'zh' ? '常见问题解答' : 'Frequently Asked Questions'}
+          </h2>
+          
+          <div className="max-w-3xl mx-auto space-y-3 px-4">
+            {faqs.map((faq, idx) => (
+              <div 
+                key={idx}
+                className="bg-white/[0.04] border border-white/10 rounded-xl p-4 hover:bg-white/[0.07] transition-all duration-300"
+              >
+                <h3 className="text-white font-semibold mb-2">
+                  {locale === 'zh' ? faq.qZh : faq.qEn}
+                </h3>
+                <p className="text-slate-400 text-sm leading-relaxed">
+                  {locale === 'zh' ? faq.aZh : faq.aEn}
+                </p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Footer - 简洁 */}
-        <div className="mt-6 pt-4 border-t border-white/10 text-center">
-          <p className="text-slate-500 text-xs">
-            AI Ad Decision Engine for Facebook & TikTok
+        {/* ========== Footer ========== */}
+        <div className="mt-20 pt-8 border-t border-white/10 text-center bg-slate-900/80 -mx-4 px-4 pb-8 rounded-b-xl">
+          <p className="text-slate-500 text-sm mb-2">
+            {t('footer.rights')}
           </p>
-          <p className="text-slate-400 text-xs mt-1">
-            {t('footer.support')}: <a href="mailto:leo.tikboost@gmail.com" className="text-cyan-400 hover:text-cyan-300">leo.tikboost@gmail.com</a>
+          <p className="text-slate-400 text-sm mb-4">
+            {locale === 'zh'
+              ? 'AI Ad Decision Engine for Facebook & TikTok'
+              : 'AI Ad Decision Engine for Facebook & TikTok'}
+          </p>
+          <p className="text-slate-500 text-sm">
+            {t('footer.support')}: <a href="mailto:leo.tikboost@gmail.com" className="text-cyan-400 hover:text-cyan-300 transition-colors">leo.tikboost@gmail.com</a>
           </p>
         </div>
       </div>
