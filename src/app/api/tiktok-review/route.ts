@@ -2,14 +2,16 @@
  * TikTok 四层审查 API
  * 实现文档：AdsCraft_TK四层审查方案.md
  * 
- * 第一层：硬规则审查（阻断项检查）
- * 第二层：风险评分模型
- * 第三层：AI语义与多模态审查
- * 第四层：真实技术验证（落地页 URL 检测）
+ * 优化版本：API 调用成本优化
+ * - 第一层：纯代码逻辑（0次API调用）
+ * - 第二层：纯数学计算（0次API调用）
+ * - 第三层：唯一AI调用层（1次GPT-4o-mini调用，<3000 token）
+ * - 第四层：纯HTTP请求（0次API调用）
+ * 
+ * 总目标：一次完整审查 ≤ 1次AI调用 ≤ 5万token
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { LLMClient, Config, HeaderUtils } from 'coze-coding-dev-sdk';
 
 // ========== 类型定义 ==========
 
@@ -295,65 +297,100 @@ function runLayer2Review(data: ReviewFormData, layer1Result: ReviewResult['layer
   };
 }
 
-// ========== 第三层：AI 语义审查 ==========
+// ========== 第三层：AI 语义审查（唯一AI调用层） ==========
+// 使用 GPT-4o-mini，上下文限制 < 3000 token，单次调用完成
 
-async function runLayer3Review(data: ReviewFormData, customHeaders: Record<string, string>): Promise<ReviewResult['layer3Result']> {
+async function runLayer3Review(data: ReviewFormData): Promise<ReviewResult['layer3Result']> {
   const findings: ReviewResult['layer3Result'] = [];
 
-  // 如果没有素材文案，跳过 AI 审查
-  if (!data.adCopy && !data.subtitleText && !data.videoUrl) {
+  // 如果没有素材文案，跳过 AI 审查（0次API调用）
+  if (!data.adCopy && !data.subtitleText) {
     return findings;
   }
 
+  // 检查 OpenAI API Key
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    console.warn('OpenAI API key not configured, skipping Layer 3 AI review');
+    return findings;
+  }
+
+  // 精简上下文：只传文案和字幕文本，限制总长度 < 2000 字符（约 500 token）
+  const adCopyTrimmed = (data.adCopy || '').slice(0, 800);
+  const subtitleTrimmed = (data.subtitleText || '').slice(0, 800);
+  
+  // 精简 prompt，只传本层需要的最小上下文
+  const systemPrompt = '你是 TikTok 广告政策审查专家。输出必须是纯 JSON 数组格式，不要有任何额外文字。';
+  
+  const userPrompt = `审查以下素材文案：
+文案：${adCopyTrimmed || '未提供'}
+字幕：${subtitleTrimmed || '未提供'}
+
+仅检查：
+1. 效果承诺（Guaranteed/100%/Best/必定/一定等）
+2. 不现实效果暗示
+3. 前后对比暗示（before/after/使用前后）
+
+输出 JSON 数组：[{"riskLevel":"high|medium|low","finding":"发现内容","position":"位置","reason":"原因","confidence":90,"suggestion":"建议"}]
+无问题则返回 []`;
+
   try {
-    const config = new Config();
-    const client = new LLMClient(config, customHeaders);
-
-    const prompt = `你是 TikTok 广告政策审查专家。请根据以下素材内容进行审查：
-
-【素材信息】
-- 文案：${data.adCopy || '未提供'}
-- 字幕文本：${data.subtitleText || '未提供'}
-- 前三秒钩子类型：${data.hookType}
-- 素材类型：${data.creativeType.join(',')}
-- 行业：${data.industry}
-- 敏感类别：${data.sensitiveCategories.join(',') || '无'}
-
-【审查重点】
-1. 是否包含效果承诺（Guaranteed/100%/Best等绝对化用语）
-2. 是否暗示不现实效果
-3. 是否存在前后对比暗示
-4. 素材与受众匹配度
-5. CTA 是否清晰有效
-
-请输出 JSON 数组格式的审查结果，每条包含：
-- riskLevel: "high" | "medium" | "low"
-- finding: 具体发现的内容描述
-- position: 出现位置（如"文案第3句"或"视频00:04")
-- reason: 为什么构成风险
-- confidence: 置信度百分比
-- suggestion: 具体修改建议
-
-如果未发现明显问题，返回空数组 []`;
-
-    const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
-      { role: 'system', content: '你是 TikTok 广告政策审查专家，输出必须是纯 JSON 格式。' },
-      { role: 'user', content: prompt }
-    ];
-
-    const response = await client.invoke(messages, {
-      model: 'doubao-seed-2-0-mini-260215',
-      temperature: 0.3
+    // 单次调用 GPT-4o-mini
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.3,
+        max_tokens: 1000, // 限制输出 token
+      }),
     });
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('OpenAI API error:', error);
+      return findings;
+    }
+
+    const result = await response.json();
+    const content = result.choices[0]?.message?.content || '';
+    
+    // 记录 token 使用量（用于成本监控）
+    console.log(`Layer 3 AI review tokens: prompt=${result.usage?.prompt_tokens || 0}, completion=${result.usage?.completion_tokens || 0}`);
 
     // 解析结果
     try {
-      const parsed = JSON.parse(response.content);
+      const parsed = JSON.parse(content);
       if (Array.isArray(parsed)) {
-        return parsed;
+        return parsed.map(item => ({
+          riskLevel: item.riskLevel || 'medium',
+          finding: item.finding || '',
+          position: item.position || '未知位置',
+          reason: item.reason || '',
+          confidence: item.confidence || 80,
+          suggestion: item.suggestion || ''
+        }));
       }
     } catch {
-      // 解析失败，返回空数组
+      // JSON 解析失败，尝试提取数组部分
+      const arrayMatch = content.match(/\[[\s\S]*\]/);
+      if (arrayMatch) {
+        try {
+          const parsed = JSON.parse(arrayMatch[0]);
+          if (Array.isArray(parsed)) {
+            return parsed;
+          }
+        } catch {
+          // 提取失败，返回空数组
+        }
+      }
     }
   } catch (error) {
     console.error('Layer 3 AI review error:', error);
@@ -510,20 +547,17 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const formData: ReviewFormData = body;
 
-    // 提取请求头用于 AI 调用
-    const customHeaders = HeaderUtils.extractForwardHeaders(request.headers);
-
-    // 第四层：技术验证（独立执行）
+    // 第四层：技术验证（0次API调用，纯HTTP请求）
     const layer4Result = await runLayer4Review(formData);
 
-    // 第一层：硬规则审查
+    // 第一层：硬规则审查（0次API调用）
     const layer1Result = runLayer1Review(formData, layer4Result);
 
-    // 第二层：风险评分
+    // 第二层：风险评分（0次API调用）
     const layer2Result = runLayer2Review(formData, layer1Result);
 
-    // 第三层：AI 语义审查
-    const layer3Result = await runLayer3Review(formData, customHeaders);
+    // 第三层：AI语义审查（1次GPT-4o-mini调用，<3000 token）
+    const layer3Result = await runLayer3Review(formData);
 
     // 四维结论
     const fourDimResults = generateFourDimensionResults(layer1Result, layer2Result, layer3Result, formData);
