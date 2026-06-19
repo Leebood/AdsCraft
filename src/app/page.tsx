@@ -190,6 +190,91 @@ export default function HomePage() {
     },
   ];
 
+  // 每个套餐的交付内容（中英文）
+  const routeDeliverables: Record<string, { items: Array<{ en: string; zh: string }> }> = {
+    // Facebook 免费方案
+    'fb_free': {
+      items: [
+        { en: 'Basic campaign diagnosis', zh: '基础广告诊断' },
+        { en: 'Problem identification', zh: '问题识别' },
+        { en: 'Config preview', zh: '配置预览' },
+      ]
+    },
+    // Facebook 付费方案
+    'fb_local_service': {
+      items: [
+        { en: 'Local audience structure', zh: '本地受众结构' },
+        { en: 'Campaign objective recommendation', zh: '广告目标推荐' },
+        { en: 'Budget split for local reach', zh: '本地触达预算分配' },
+        { en: 'Geo-targeting setup', zh: '地理定向设置' },
+        { en: '7-day optimization checklist', zh: '7天优化清单' },
+      ]
+    },
+    'fb_retailer': {
+      items: [
+        { en: 'Product audience structure', zh: '产品受众结构' },
+        { en: 'Campaign objective recommendation', zh: '广告目标推荐' },
+        { en: 'Budget split', zh: '预算分配' },
+        { en: 'Retargeting setup', zh: '再营销设置' },
+        { en: '7-day optimization checklist', zh: '7天优化清单' },
+      ]
+    },
+    'fb_manufacturer': {
+      items: [
+        { en: 'B2B lead audience structure', zh: 'B2B询盘受众结构' },
+        { en: 'Campaign objective recommendation', zh: '广告目标推荐' },
+        { en: 'Budget split for lead generation', zh: '询盘预算分配' },
+        { en: 'Lead form optimization', zh: '表单优化建议' },
+        { en: '7-day optimization checklist', zh: '7天优化清单' },
+      ]
+    },
+    'fb_brand': {
+      items: [
+        { en: 'Brand audience structure', zh: '品牌受众结构' },
+        { en: 'Campaign objective recommendation', zh: '广告目标推荐' },
+        { en: 'Budget split for brand awareness', zh: '品牌曝光预算分配' },
+        { en: 'Creative direction', zh: '创意方向建议' },
+        { en: '7-day optimization checklist', zh: '7天优化清单' },
+      ]
+    },
+    // TikTok 免费方案
+    'tiktok_rejection_check': {
+      items: [
+        { en: 'Free ad diagnosis', zh: '免费广告诊断' },
+        { en: 'Rejection risk analysis', zh: '拒审风险分析' },
+        { en: 'Compliance check preview', zh: '合规检查预览' },
+      ]
+    },
+    // TikTok 付费方案
+    'tiktok_local_service': {
+      items: [
+        { en: 'Local audience structure', zh: '本地受众结构' },
+        { en: 'Campaign objective recommendation', zh: '广告目标推荐' },
+        { en: 'Budget split for local reach', zh: '本地触达预算分配' },
+        { en: 'Creative angle suggestions', zh: '创意角度建议' },
+        { en: '7-day optimization checklist', zh: '7天优化清单' },
+      ]
+    },
+    'tiktok_website_conv': {
+      items: [
+        { en: 'Website conversion audience', zh: '网站转化受众' },
+        { en: 'Campaign objective recommendation', zh: '广告目标推荐' },
+        { en: 'Budget split', zh: '预算分配' },
+        { en: 'Landing page optimization', zh: '落地页优化' },
+        { en: '7-day optimization checklist', zh: '7天优化清单' },
+      ]
+    },
+    'tiktok_brand_awareness': {
+      items: [
+        { en: 'Brand audience structure', zh: '品牌受众结构' },
+        { en: 'Campaign objective recommendation', zh: '广告目标推荐' },
+        { en: 'Budget split for brand awareness', zh: '品牌曝光预算分配' },
+        { en: 'Creative direction', zh: '创意方向建议' },
+        { en: '7-day optimization checklist', zh: '7天优化清单' },
+      ]
+    },
+  };
+
   // 四步流程数据（保留）
   const engineSteps = [
     { num: 1, title: locale === 'zh' ? '诊断分析' : 'Diagnosis', desc: locale === 'zh' ? '识别问题根因' : 'Identify root causes' },
@@ -366,14 +451,14 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* ========== Pricing（保留原有双平台线路展示） ========== */}
+        {/* ========== Pricing（保留原有双平台线路展示 + 交付内容） ========== */}
         <div className="mb-16">
           <h2 className="text-2xl font-semibold text-white text-center mb-8">
             {locale === 'zh' ? '选择你的方案' : 'Choose Your Plan'}
           </h2>
           
           {/* 双平台分列布局 */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
             {/* Facebook Platform Column */}
             <div className="bg-gradient-to-br from-blue-900/40 to-indigo-900/40 rounded-2xl border border-blue-400/20 p-6">
               {/* Platform Header */}
@@ -392,52 +477,83 @@ export default function HomePage() {
                 </div>
               </div>
               
-              {/* Route Cards */}
-              <div className="space-y-3">
+              {/* Route Cards with Deliverables */}
+              <div className="space-y-4">
                 {PLATFORM_CONFIGS.facebook.routes.map((route) => {
                   const styles = getRouteStyles(route.color);
+                  const routeKey = `fb_${route.id}`;
+                  const deliverables = routeDeliverables[routeKey]?.items || [];
+                  
                   return (
-                    <button
+                    <div
                       key={route.id}
                       onClick={() => handleRouteClick('facebook', route)}
-                      disabled={loading}
-                      className={`group w-full p-4 rounded-xl border transition-all duration-300 flex items-center gap-4 bg-white/5 border-white/10 hover:bg-white/10 ${styles.hoverBorder} disabled:opacity-70 disabled:cursor-wait`}
+                      className={`group cursor-pointer p-4 rounded-xl border transition-all duration-300 bg-white/5 border-white/10 hover:bg-white/10 ${styles.hoverBorder}`}
                     >
-                      {/* Icon */}
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${styles.bg} ${styles.border} group-hover:scale-105 transition-transform`}>
-                        <div 
-                          className={`w-6 h-6 ${styles.text}`}
-                          dangerouslySetInnerHTML={{ __html: route.icon }}
-                        />
-                      </div>
-                      
-                      {/* Info */}
-                      <div className="flex-1">
-                        <h5 className="text-base font-semibold text-white group-hover:text-cyan-300 transition-colors">
-                          {locale === 'zh' ? route.nameZh : route.name}
-                        </h5>
-                        <p className="text-blue-200/60 text-sm">
-                          {locale === 'zh' ? route.descriptionZh : route.description}
-                        </p>
-                      </div>
-                      
-                      {/* Price */}
-                      <div className="text-right">
-                        <div className={`text-lg font-bold ${route.isFree ? 'text-cyan-400' : styles.text}`}>
-                          {locale === 'zh' ? route.priceTextZh : route.priceText}
+                      {/* Header Row */}
+                      <div className="flex items-center gap-4 mb-3">
+                        {/* Icon */}
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${styles.bg} ${styles.border} group-hover:scale-105 transition-transform`}>
+                          <div 
+                            className={`w-5 h-5 ${styles.text}`}
+                            dangerouslySetInnerHTML={{ __html: route.icon }}
+                          />
                         </div>
-                        {!route.isFree && route.creemLink && (
-                          <div className="text-xs text-blue-300/50">
-                            {locale === 'zh' ? '订阅' : 'Subscribe'}
+                        
+                        {/* Name & Badge */}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h5 className="text-base font-semibold text-white group-hover:text-cyan-300 transition-colors">
+                              {locale === 'zh' ? route.nameZh : route.name}
+                            </h5>
+                            {route.isFree && (
+                              <span className="px-2 py-0.5 text-xs bg-cyan-500/20 text-cyan-400 rounded-full">
+                                {locale === 'zh' ? '首次使用推荐' : 'Best for first-time users'}
+                              </span>
+                            )}
                           </div>
-                        )}
+                        </div>
+                        
+                        {/* Price */}
+                        <div className="text-right">
+                          <div className={`text-lg font-bold ${route.isFree ? 'text-cyan-400' : styles.text}`}>
+                            {locale === 'zh' ? route.priceTextZh : route.priceText}
+                          </div>
+                        </div>
                       </div>
                       
-                      {/* Arrow */}
-                      <svg className="w-5 h-5 text-blue-300/50 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
+                      {/* Deliverables List */}
+                      <div className="ml-14 space-y-1">
+                        {deliverables.map((item, idx) => (
+                          <div key={idx} className="flex items-center gap-2 text-xs text-blue-300/70">
+                            <svg className="w-3 h-3 text-cyan-400" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                            {locale === 'zh' ? item.zh : item.en}
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* Action Button */}
+                      <div className="mt-3 ml-14">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRouteClick('facebook', route);
+                          }}
+                          disabled={loading}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                            route.isFree 
+                              ? 'bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30'
+                              : 'bg-white/10 text-white hover:bg-white/20'
+                          } disabled:opacity-50`}
+                        >
+                          {route.isFree 
+                            ? (locale === 'zh' ? '开始免费诊断' : 'Start Free Diagnosis')
+                            : (locale === 'zh' ? '通过 Creem 订阅' : 'Subscribe via Creem')}
+                        </button>
+                      </div>
+                    </div>
                   );
                 })}
               </div>
@@ -461,62 +577,92 @@ export default function HomePage() {
                 </div>
               </div>
               
-              {/* Route Cards */}
-              <div className="space-y-3">
+              {/* Route Cards with Deliverables */}
+              <div className="space-y-4">
                 {PLATFORM_CONFIGS.tiktok.routes.map((route) => {
                   const styles = getRouteStyles(route.color);
+                  const routeKey = `tiktok_${route.id}`;
+                  const deliverables = routeDeliverables[routeKey]?.items || [];
                   const hasPaymentLink = route.creemLink && route.creemLink.length > 0;
                   const isPaidButNoLink = !route.isFree && !hasPaymentLink;
                   
                   return (
-                    <button
+                    <div
                       key={route.id}
-                      onClick={() => handleRouteClick('tiktok', route)}
-                      disabled={loading || isPaidButNoLink}
-                      className={`group w-full p-4 rounded-xl border transition-all duration-300 flex items-center gap-4 bg-white/5 border-white/10 hover:bg-white/10 ${styles.hoverBorder} ${isPaidButNoLink ? 'opacity-60 cursor-not-allowed' : ''} disabled:opacity-70 disabled:cursor-wait`}
+                      onClick={() => !isPaidButNoLink && handleRouteClick('tiktok', route)}
+                      className={`group ${isPaidButNoLink ? 'opacity-60' : 'cursor-pointer'} p-4 rounded-xl border transition-all duration-300 bg-white/5 border-white/10 hover:bg-white/10 ${styles.hoverBorder}`}
                     >
-                      {/* Icon */}
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${styles.bg} ${styles.border} group-hover:scale-105 transition-transform`}>
-                        <div 
-                          className={`w-6 h-6 ${styles.text}`}
-                          dangerouslySetInnerHTML={{ __html: route.icon }}
-                        />
-                      </div>
-                      
-                      {/* Info */}
-                      <div className="flex-1">
-                        <h5 className="text-base font-semibold text-white group-hover:text-cyan-300 transition-colors">
-                          {locale === 'zh' ? route.nameZh : route.name}
-                        </h5>
-                        <p className="text-blue-200/60 text-sm">
-                          {locale === 'zh' ? route.descriptionZh : route.description}
-                        </p>
-                      </div>
-                      
-                      {/* Price */}
-                      <div className="text-right">
-                        <div className={`text-lg font-bold ${route.isFree ? 'text-cyan-400' : styles.text}`}>
-                          {locale === 'zh' ? route.priceTextZh : route.priceText}
+                      {/* Header Row */}
+                      <div className="flex items-center gap-4 mb-3">
+                        {/* Icon */}
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${styles.bg} ${styles.border} group-hover:scale-105 transition-transform`}>
+                          <div 
+                            className={`w-5 h-5 ${styles.text}`}
+                            dangerouslySetInnerHTML={{ __html: route.icon }}
+                          />
                         </div>
-                        {isPaidButNoLink && (
-                          <div className="text-xs text-blue-300/50">
-                            {locale === 'zh' ? '即将上线' : 'Coming Soon'}
+                        
+                        {/* Name & Badge */}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h5 className="text-base font-semibold text-white group-hover:text-cyan-300 transition-colors">
+                              {locale === 'zh' ? route.nameZh : route.name}
+                            </h5>
+                            {route.isFree && (
+                              <span className="px-2 py-0.5 text-xs bg-cyan-500/20 text-cyan-400 rounded-full">
+                                {locale === 'zh' ? '首次使用推荐' : 'Best for first-time users'}
+                              </span>
+                            )}
+                            {isPaidButNoLink && (
+                              <span className="px-2 py-0.5 text-xs bg-blue-500/20 text-blue-400 rounded-full">
+                                {locale === 'zh' ? '即将上线' : 'Coming Soon'}
+                              </span>
+                            )}
                           </div>
-                        )}
-                        {!route.isFree && hasPaymentLink && (
-                          <div className="text-xs text-blue-300/50">
-                            {locale === 'zh' ? '订阅' : 'Subscribe'}
+                        </div>
+                        
+                        {/* Price */}
+                        <div className="text-right">
+                          <div className={`text-lg font-bold ${route.isFree ? 'text-cyan-400' : styles.text}`}>
+                            {locale === 'zh' ? route.priceTextZh : route.priceText}
                           </div>
-                        )}
+                        </div>
                       </div>
                       
-                      {/* Arrow */}
-                      {!isPaidButNoLink && (
-                        <svg className="w-5 h-5 text-blue-300/50 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      )}
-                    </button>
+                      {/* Deliverables List */}
+                      <div className="ml-14 space-y-1">
+                        {deliverables.map((item, idx) => (
+                          <div key={idx} className="flex items-center gap-2 text-xs text-blue-300/70">
+                            <svg className="w-3 h-3 text-cyan-400" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                            {locale === 'zh' ? item.zh : item.en}
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* Action Button */}
+                      <div className="mt-3 ml-14">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!isPaidButNoLink) handleRouteClick('tiktok', route);
+                          }}
+                          disabled={loading || isPaidButNoLink}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                            route.isFree 
+                              ? 'bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30'
+                              : 'bg-white/10 text-white hover:bg-white/20'
+                          } disabled:opacity-50`}
+                        >
+                          {route.isFree 
+                            ? (locale === 'zh' ? '开始免费诊断' : 'Start Free Diagnosis')
+                            : isPaidButNoLink 
+                              ? (locale === 'zh' ? '即将上线' : 'Coming Soon')
+                              : (locale === 'zh' ? '通过 Creem 订阅' : 'Subscribe via Creem')}
+                        </button>
+                      </div>
+                    </div>
                   );
                 })}
               </div>
@@ -526,8 +672,8 @@ export default function HomePage() {
           {/* 注释 */}
           <p className="text-blue-300/50 text-sm text-center mt-6">
             {locale === 'zh' 
-              ? '💡 点击付费线路跳转支付页面完成订阅'
-              : '💡 Click paid routes to subscribe via Creem'}
+              ? '💡 点击免费方案立即开始，付费方案通过 Creem 安全支付'
+              : '💡 Start free diagnosis instantly, or subscribe securely via Creem'}
           </p>
         </div>
 
