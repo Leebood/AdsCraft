@@ -82,7 +82,7 @@ export function ComplianceChecklist({ platform, onComplete, onSkip }: Compliance
         <div className="p-6 border-b border-white/10">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="text-3xl">{config.icon}</div>
+              <div className="w-10 h-10 flex items-center justify-center" dangerouslySetInnerHTML={{ __html: config.icon }} />
               <div>
                 <h2 className="text-xl font-semibold text-white">
                   {config.name} 合规预检
