@@ -53,12 +53,41 @@ export function AIDiagnosis({ route, budget, goal, planData, isPremium = false }
           budget,
           goal,
           planData,
-          locale
+          locale,
+          userId: user?.id,
+          tierKey: 'free', // 默认免费层，实际应根据用户订阅状态设置
         })
       });
 
       if (!response.ok) {
-        throw new Error(t('aiDiagnosis.error'));
+        // 处理额度不足(402)
+        if (response.status === 402) {
+          try {
+            const errorData = await response.json();
+            if (errorData.error === 'credits_exhausted') {
+              setError(errorData.message);
+              // 如果有actions，显示升级引导
+              if (errorData.actions && errorData.actions.length > 0) {
+                // 免费用户显示升级按钮
+                const upgradeAction = errorData.actions.find((a: { label: string; link: string }) => a.link === '/pricing');
+                if (upgradeAction) {
+                  // 3秒后自动跳转到pricing
+                  setTimeout(() => {
+                    router.push('/pricing');
+                  }, 3000);
+                }
+              }
+            } else {
+              setError(t('aiDiagnosis.error'));
+            }
+          } catch {
+            setError(t('aiDiagnosis.error'));
+          }
+        } else {
+          throw new Error(t('aiDiagnosis.error'));
+        }
+        setIsAnalyzing(false);
+        return;
       }
 
       // 处理流式响应
