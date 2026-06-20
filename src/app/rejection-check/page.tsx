@@ -428,12 +428,10 @@ export default function TikTokReviewPage() {
   };
   // 手动展开下一个 Section（点击"继续下一步"按钮时调用）
   const goToNextSection = (currentSection: number) => {
-    // 找到下一个符合条件的 Section 并展开
-    for (let i = currentSection + 1; i <= 6; i++) {
-      if (canExpandSection(i)) {
-        setExpandedSection(i);
-        break;
-      }
+    // 直接展开下一个 Section，不检查条件
+    const nextSection = currentSection + 1;
+    if (nextSection <= 6) {
+      setExpandedSection(nextSection);
     }
   };
 
