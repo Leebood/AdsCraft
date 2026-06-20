@@ -98,8 +98,8 @@ export const facebookConfig: PlatformConfig = {
   id: 'facebook',
   name: 'Facebook',
   nameZh: 'Facebook',
-  // 简洁抽象几何图标：社交网络/F形
-  icon: `<svg viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M15 3v6h3v3h-3v9h-3v-9H9v-3h3V3h3z" fill="white"/></svg>`,
+  // 简洁抽象图标：蓝色方块内的F字母
+  icon: `<svg viewBox="0 0 24 24" class="w-6 h-6"><rect width="24" height="24" rx="4" fill="currentColor"/><text x="12" y="17" text-anchor="middle" font-size="14" font-weight="bold" fill="white">F</text></svg>`,
   color: '#1877F2',
   dataSource: 'screenshot',
   
@@ -314,8 +314,8 @@ export const tiktokConfig: PlatformConfig = {
   id: 'tiktok',
   name: 'TikTok',
   nameZh: 'TikTok',
-  // 简洁抽象几何图标：音符/短视频
-  icon: `<svg viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 7v10M8 10c0-2 2-3 4-3s4 1 4 3" stroke="white" stroke-width="2" fill="none"/><circle cx="8" cy="17" r="2" fill="white"/><circle cx="16" cy="17" r="2" fill="white"/><path d="M8 17v-7M16 17v-7" stroke="white" stroke-width="2"/></svg>`,
+  // 简洁抽象图标：粉色/青色方块内的T字母
+  icon: `<svg viewBox="0 0 24 24" class="w-6 h-6"><rect width="24" height="24" rx="4" fill="currentColor"/><text x="12" y="17" text-anchor="middle" font-size="14" font-weight="bold" fill="white">T</text></svg>`,
   color: '#000000',
   dataSource: 'api',
   
