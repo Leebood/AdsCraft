@@ -425,10 +425,10 @@ export default function TikTokReviewPage() {
   const canExpandSection = (sectionNum: number): boolean => {
     if (sectionNum === 1) return true;
     if (sectionNum === 2) return formData.platform !== '' && formData.objective !== '';
-    if (sectionNum === 3) return formData.sensitiveCategories.length > 0 || formData.sensitiveCategories.includes('none');
+    if (sectionNum === 3) return formData.sensitiveCategories.length > 0;
     if (sectionNum === 4) return formData.targetAudience.length > 0;
     if (sectionNum === 5) return formData.hookType !== '';
-    if (sectionNum === 6) return formData.landingPageUrl.length > 5;
+    if (sectionNum === 6) return formData.pixelInstalled !== '' || formData.audienceSize !== '' || formData.bidStrategy !== '';
     return false;
   };
   // 手动展开下一个 Section（点击"继续下一步"按钮时调用）
@@ -1428,14 +1428,14 @@ export default function TikTokReviewPage() {
                   key={section.num}
                   className={`bg-white/5 backdrop-blur-sm border-white/20 transition-all duration-300 ${
                     expandedSection === section.num ? 'border-cyan-400/50' : ''
-                  } ${!canExpandSection(section.num) ? 'opacity-50' : ''}`}
+                  } ${expandedSection < section.num && !canExpandSection(section.num) ? 'opacity-50' : ''}`}
                 >
                   <CardContent className="p-4">
                     {/* Section Header */}
                     <button
                       onClick={() => canExpandSection(section.num) && setExpandedSection(section.num)}
                       className="w-full flex items-center justify-between"
-                      disabled={!canExpandSection(section.num)}
+                      disabled={expandedSection < section.num && !canExpandSection(section.num)}
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
