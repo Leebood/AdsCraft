@@ -13,10 +13,15 @@ export function Navigation() {
   const pathname = usePathname();
   const router = useRouter();
 
-  // 判断是否在首页
-  const isHomePage = pathname === '/';
+  // 判断是否显示简化导航（首页和诊断相关页面）
+  const isSimpleNavPage = pathname === '/' || 
+    pathname.startsWith('/questions') ||
+    pathname.startsWith('/rejection-check') ||
+    pathname.startsWith('/saved') ||
+    pathname.startsWith('/platform') ||
+    pathname.startsWith('/plan');
   
-  // Tab 配置（仅非首页时显示）- 只保留概览和设置
+  // Tab 配置（仅仪表盘和设置页显示）
   const tabs = [
     { 
       id: 'overview', 
@@ -46,8 +51,8 @@ export function Navigation() {
     return <SmartDiagnosisButton />;
   }
 
-  // 首页时显示简化导航（避免与首页线路选择重复）
-  if (isHomePage) {
+  // 首页和诊断相关页面显示简化导航（避免与页面内容重复）
+  if (isSimpleNavPage) {
     return (
       <nav className="flex items-center gap-4">
         <SmartDiagnosisButton />
