@@ -3,6 +3,8 @@ import { formatDiagnosisPrompt, getDiagnosisTemplate } from '@/lib/platforms/dia
 import { selectModelLayer, L0_CONFIG, UserTier, TaskType } from '@/lib/model-router';
 import { executeLayer0FromCheckItems, CheckItemInput, L0Result } from '@/lib/layer0-rules';
 import { retrieveFromPresetKnowledge, injectKnowledgeToPrompt, extractKeywords } from '@/lib/knowledge-rag';
+import { checkAndConsumeCredit } from '@/lib/credits';
+import { TierKey, Platform, getCreditExhaustedUI } from '@/lib/tierLimits';
 
 // Coze智能体配置
 const COZE_API_BASE = process.env.COZE_API_BASE_URL || 'https://api.coze.cn';
@@ -20,6 +22,8 @@ interface DiagnosisRequest {
   taskType?: TaskType; // 新增任务类型
   objective?: string; // 广告目标，用于L0判定
   checkItems?: CheckItemInput[]; // 检查项列表
+  userId?: string; // 用户ID，用于额度校验
+  tierKey?: TierKey; // 套餐类型，用于额度校验
 }
 
 export async function POST(request: NextRequest) {
@@ -35,8 +39,36 @@ export async function POST(request: NextRequest) {
       userTier = 'free',
       taskType = 'report',
       objective,
-      checkItems
+      checkItems,
+      userId,
+      tierKey = 'free'
     } = body;
+
+    // ========== 额度校验（MVP版）==========
+    // 如果提供了userId，进行额度校验
+    if (userId) {
+      const creditType = taskType === 'deep_attribution' ? 'deep_attribution' : 'diagnosis';
+      const creditResult = await checkAndConsumeCredit(
+        userId,
+        tierKey,
+        platform as Platform,
+        creditType
+      );
+
+      if (!creditResult.success) {
+        // 额度不足，返回升级引导
+        const exhaustedUI = getCreditExhaustedUI(tierKey, creditType);
+        return new Response(JSON.stringify({
+          error: 'credits_exhausted',
+          message: exhaustedUI.message,
+          actions: exhaustedUI.actions,
+          currentUsage: creditResult.status,
+        }), {
+          status: 402, // Payment Required
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+    }
 
     // ========== L0: 纯代码判定（不调用AI）==========
     let l0Result = null;

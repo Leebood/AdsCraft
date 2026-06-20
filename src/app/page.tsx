@@ -283,6 +283,8 @@ export default function HomePage() {
     // Facebook 免费方案
     'fb_free': {
       items: [
+        { en: '3 Monthly Diagnosis Credits', zh: '每月3次诊断额度' },
+        { en: '3 Creative Review Credits', zh: '每月3条素材审查额度' },
         { en: 'Basic campaign diagnosis', zh: '基础广告诊断' },
         { en: 'Problem identification', zh: '问题识别' },
         { en: 'Config preview', zh: '配置预览' },
@@ -291,43 +293,47 @@ export default function HomePage() {
     // Facebook 付费方案
     'fb_local_service': {
       items: [
+        { en: '15 Monthly Diagnosis Credits', zh: '每月15次诊断额度' },
+        { en: '8 Creative Review Credits', zh: '每月8条素材审查额度' },
         { en: 'Local audience structure', zh: '本地受众结构' },
         { en: 'Campaign objective recommendation', zh: '广告目标推荐' },
-        { en: 'Budget split for local reach', zh: '本地触达预算分配' },
-        { en: 'Geo-targeting setup', zh: '地理定向设置' },
         { en: '7-day optimization checklist', zh: '7天优化清单' },
       ]
     },
     'fb_retailer': {
       items: [
+        { en: '40 Monthly Diagnosis Credits', zh: '每月40次诊断额度' },
+        { en: '25 Creative Review Credits', zh: '每月25条素材审查额度' },
+        { en: '3 Deep Attribution Credits', zh: '每月3次深度归因额度' },
         { en: 'Product audience structure', zh: '产品受众结构' },
-        { en: 'Campaign objective recommendation', zh: '广告目标推荐' },
-        { en: 'Budget split', zh: '预算分配' },
         { en: 'Retargeting setup', zh: '再营销设置' },
-        { en: '7-day optimization checklist', zh: '7天优化清单' },
       ]
     },
     'fb_manufacturer': {
       items: [
+        { en: '80 Monthly Diagnosis Credits', zh: '每月80次诊断额度' },
+        { en: '60 Creative Review Credits', zh: '每月60条素材审查额度' },
+        { en: '10 Deep Attribution Credits', zh: '每月10次深度归因额度' },
         { en: 'B2B lead audience structure', zh: 'B2B询盘受众结构' },
-        { en: 'Campaign objective recommendation', zh: '广告目标推荐' },
-        { en: 'Budget split for lead generation', zh: '询盘预算分配' },
         { en: 'Lead form optimization', zh: '表单优化建议' },
-        { en: '7-day optimization checklist', zh: '7天优化清单' },
+        { en: 'Unlimited history', zh: '无限历史记录' },
       ]
     },
     'fb_brand': {
       items: [
+        { en: '80 Monthly Diagnosis Credits', zh: '每月80次诊断额度' },
+        { en: '60 Creative Review Credits', zh: '每月60条素材审查额度' },
+        { en: '10 Deep Attribution Credits', zh: '每月10次深度归因额度' },
         { en: 'Brand audience structure', zh: '品牌受众结构' },
-        { en: 'Campaign objective recommendation', zh: '广告目标推荐' },
-        { en: 'Budget split for brand awareness', zh: '品牌曝光预算分配' },
         { en: 'Creative direction', zh: '创意方向建议' },
-        { en: '7-day optimization checklist', zh: '7天优化清单' },
+        { en: 'Unlimited history', zh: '无限历史记录' },
       ]
     },
     // TikTok 免费方案
     'tiktok_rejection_check': {
       items: [
+        { en: '3 Monthly Diagnosis Credits', zh: '每月3次诊断额度' },
+        { en: '3 Creative Review Credits', zh: '每月3条素材审查额度' },
         { en: 'Free ad diagnosis', zh: '免费广告诊断' },
         { en: 'Rejection risk analysis', zh: '拒审风险分析' },
         { en: 'Compliance check preview', zh: '合规检查预览' },
@@ -336,29 +342,30 @@ export default function HomePage() {
     // TikTok 付费方案
     'tiktok_local_service': {
       items: [
+        { en: '20 Monthly Diagnosis Credits', zh: '每月20次诊断额度' },
+        { en: '10 Creative Review Credits', zh: '每月10条素材审查额度' },
         { en: 'Local audience structure', zh: '本地受众结构' },
-        { en: 'Campaign objective recommendation', zh: '广告目标推荐' },
-        { en: 'Budget split for local reach', zh: '本地触达预算分配' },
         { en: 'Creative angle suggestions', zh: '创意角度建议' },
         { en: '7-day optimization checklist', zh: '7天优化清单' },
       ]
     },
     'tiktok_website_conv': {
       items: [
+        { en: '50 Monthly Diagnosis Credits', zh: '每月50次诊断额度' },
+        { en: '30 Creative Review Credits', zh: '每月30条素材审查额度' },
+        { en: '5 Deep Attribution Credits', zh: '每月5次深度归因额度' },
         { en: 'Website conversion audience', zh: '网站转化受众' },
-        { en: 'Campaign objective recommendation', zh: '广告目标推荐' },
-        { en: 'Budget split', zh: '预算分配' },
         { en: 'Landing page optimization', zh: '落地页优化' },
-        { en: '7-day optimization checklist', zh: '7天优化清单' },
       ]
     },
     'tiktok_brand_awareness': {
       items: [
+        { en: '100 Monthly Diagnosis Credits', zh: '每月100次诊断额度' },
+        { en: '80 Creative Review Credits', zh: '每月80条素材审查额度' },
+        { en: '15 Deep Attribution Credits', zh: '每月15次深度归因额度' },
         { en: 'Brand audience structure', zh: '品牌受众结构' },
-        { en: 'Campaign objective recommendation', zh: '广告目标推荐' },
-        { en: 'Budget split for brand awareness', zh: '品牌曝光预算分配' },
         { en: 'Creative direction', zh: '创意方向建议' },
-        { en: '7-day optimization checklist', zh: '7天优化清单' },
+        { en: 'Unlimited history', zh: '无限历史记录' },
       ]
     },
   };
