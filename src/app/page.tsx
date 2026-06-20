@@ -416,9 +416,9 @@ export default function HomePage() {
             <button
               onClick={() => handleFreeDiagnosis('facebook')}
               disabled={loading}
-              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl text-white font-semibold shadow-lg shadow-blue-500/30 hover:from-blue-400 hover:to-blue-500 hover:scale-105 transition-all duration-300 flex items-center gap-2 disabled:opacity-70"
+              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl text-white font-semibold shadow-lg shadow-blue-500/30 hover:from-blue-400 hover:to-blue-500 hover:scale-105 transition-all duration-300 flex items-center gap-3 disabled:opacity-70"
             >
-              <div className="w-5 h-5 text-white" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.facebook.icon }} />
+              <div className="w-10 h-10 flex items-center justify-center" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.facebook.icon }} />
               {locale === 'zh' ? 'Facebook 免费诊断' : 'Facebook Free Diagnosis'}
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -429,9 +429,9 @@ export default function HomePage() {
             <button
               onClick={() => handleFreeDiagnosis('tiktok')}
               disabled={loading}
-              className="px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-600 rounded-xl text-white font-semibold shadow-lg shadow-pink-500/30 hover:from-pink-400 hover:to-rose-500 hover:scale-105 transition-all duration-300 flex items-center gap-2 disabled:opacity-70"
+              className="px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-600 rounded-xl text-white font-semibold shadow-lg shadow-pink-500/30 hover:from-pink-400 hover:to-rose-500 hover:scale-105 transition-all duration-300 flex items-center gap-3 disabled:opacity-70"
             >
-              <div className="w-5 h-5 text-white" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.tiktok.icon }} />
+              <div className="w-10 h-10 flex items-center justify-center" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.tiktok.icon }} />
               {locale === 'zh' ? 'TikTok 免费诊断' : 'TikTok Free Diagnosis'}
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />

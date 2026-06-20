@@ -98,8 +98,19 @@ export const facebookConfig: PlatformConfig = {
   id: 'facebook',
   name: 'Facebook',
   nameZh: 'Facebook',
-  // 简洁抽象图标：蓝色方块内的F字母
-  icon: `<svg viewBox="0 0 24 24" class="w-6 h-6"><rect width="24" height="24" rx="4" fill="currentColor"/><text x="12" y="17" text-anchor="middle" font-size="14" font-weight="bold" fill="white">F</text></svg>`,
+  // 有设计感的Facebook图标：蓝色渐变背景 + F字母 + 装饰圆点
+  icon: `<svg viewBox="0 0 40 40" class="w-10 h-10">
+    <defs>
+      <linearGradient id="fbGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#1877F2"/>
+        <stop offset="100%" style="stop-color:#3B82F6"/>
+      </linearGradient>
+    </defs>
+    <rect width="40" height="40" rx="8" fill="url(#fbGrad)"/>
+    <circle cx="8" cy="8" r="2" fill="rgba(255,255,255,0.3)"/>
+    <circle cx="32" cy="32" r="3" fill="rgba(255,255,255,0.2)"/>
+    <text x="20" y="27" text-anchor="middle" font-size="18" font-weight="bold" fill="white" font-family="system-ui">F</text>
+  </svg>`,
   color: '#1877F2',
   dataSource: 'screenshot',
   
@@ -314,8 +325,20 @@ export const tiktokConfig: PlatformConfig = {
   id: 'tiktok',
   name: 'TikTok',
   nameZh: 'TikTok',
-  // 简洁抽象图标：粉色/青色方块内的T字母
-  icon: `<svg viewBox="0 0 24 24" class="w-6 h-6"><rect width="24" height="24" rx="4" fill="currentColor"/><text x="12" y="17" text-anchor="middle" font-size="14" font-weight="bold" fill="white">T</text></svg>`,
+  // 有设计感的TikTok图标：粉色渐变背景 + T字母 + 音符装饰
+  icon: `<svg viewBox="0 0 40 40" class="w-10 h-10">
+    <defs>
+      <linearGradient id="tkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#EC4899"/>
+        <stop offset="50%" style="stop-color:#F472B6"/>
+        <stop offset="100%" style="stop-color:#22D3EE"/>
+      </linearGradient>
+    </defs>
+    <rect width="40" height="40" rx="8" fill="url(#tkGrad)"/>
+    <circle cx="10" cy="30" r="4" fill="rgba(255,255,255,0.25)"/>
+    <path d="M12 8 Q8 16 12 24" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none"/>
+    <text x="22" y="27" text-anchor="middle" font-size="18" font-weight="bold" fill="white" font-family="system-ui">T</text>
+  </svg>`,
   color: '#000000',
   dataSource: 'api',
   
