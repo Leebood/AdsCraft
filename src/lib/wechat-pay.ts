@@ -222,8 +222,13 @@ export async function queryOrderStatus(out_trade_no: string): Promise<{
  * 价格映射（美元转人民币分）
  */
 export const PRICING_MAP: Record<string, { price_usd: string; price_cny: number }> = {
-  retailer: { price_usd: '$19.9', price_cny: 14200 }, // 约142元
-  manufacturer: { price_usd: '$29.9', price_cny: 21400 }, // 约214元
-  brand: { price_usd: '$29.9', price_cny: 21400 }, // 约214元
-  local_service: { price_usd: '$9.9', price_cny: 7100 }, // 约71元
+  // Facebook 套餐
+  fb_local_service: { price_usd: '$9.9', price_cny: 7100 }, // 约71元
+  fb_retailer: { price_usd: '$19.9', price_cny: 14200 }, // 约142元
+  fb_manufacturer: { price_usd: '$29.9', price_cny: 21400 }, // 约214元
+  fb_brand: { price_usd: '$29.9', price_cny: 21400 }, // 约214元
+  // TikTok 套餐
+  tk_local_service: { price_usd: '$14.9', price_cny: 10700 }, // 约107元
+  tk_website_conv: { price_usd: '$24.9', price_cny: 17900 }, // 约179元
+  tk_brand_awareness: { price_usd: '$39.9', price_cny: 28700 }, // 约287元
 };
