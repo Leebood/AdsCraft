@@ -1,5 +1,8 @@
 import { NextRequest } from 'next/server';
 import { formatDiagnosisPrompt, getDiagnosisTemplate } from '@/lib/platforms/diagnosis-templates';
+import { selectModelLayer, L0_CONFIG, UserTier, TaskType } from '@/lib/model-router';
+import { executeLayer0FromCheckItems, CheckItemInput, L0Result } from '@/lib/layer0-rules';
+import { retrieveFromPresetKnowledge, injectKnowledgeToPrompt, extractKeywords } from '@/lib/knowledge-rag';
 
 // Coze智能体配置
 const COZE_API_BASE = process.env.COZE_API_BASE_URL || 'https://api.coze.cn';
@@ -10,24 +13,83 @@ interface DiagnosisRequest {
   route: string;
   budget: string;
   goal: string;
-  platform?: string; // 新增平台参数
+  platform?: string;
   language?: string;
-  metrics?: Record<string, unknown>; // 新增指标数据
+  metrics?: Record<string, unknown>;
+  userTier?: UserTier; // 新增用户层级
+  taskType?: TaskType; // 新增任务类型
+  objective?: string; // 广告目标，用于L0判定
+  checkItems?: CheckItemInput[]; // 检查项列表
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: DiagnosisRequest = await request.json();
-    const { route, budget, goal, platform = 'facebook', language = 'zh', metrics } = body;
+    const {
+      route,
+      budget,
+      goal,
+      platform = 'facebook',
+      language = 'zh',
+      metrics,
+      userTier = 'free',
+      taskType = 'report',
+      objective,
+      checkItems
+    } = body;
 
-    // 获取平台诊断模板
+    // ========== L0: 纯代码判定（不调用AI）==========
+    let l0Result = null;
+    if (objective && checkItems) {
+      l0Result = executeLayer0FromCheckItems(checkItems, objective);
+      
+      // 如果L0判定为阻断，直接返回结果，不调用AI
+      if (l0Result.overall === 'block') {
+        return new Response(JSON.stringify({
+          layer: 'L0',
+          result: l0Result,
+          message: language === 'zh'
+            ? '您的广告方案触发了硬规则阻断，请修改以下问题后重新提交'
+            : 'Your ad plan triggered a hard rule block. Please fix the following issues before resubmitting'
+        }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    // ========== 选择模型层级 ==========
+    const modelConfig = selectModelLayer(userTier, taskType);
+
+    // L0不需要调用AI，直接返回
+    if (modelConfig.layer === 'L0') {
+      return new Response(JSON.stringify({
+        layer: 'L0',
+        result: l0Result || { overall: 'pass', checks: [] },
+        message: language === 'zh' ? '硬规则检查通过' : 'Hard rules check passed'
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // ========== 知识库RAG检索 ==========
+    // 提取关键词用于知识库检索
+    const searchKeywords = [route, goal, objective || '', platform].filter(Boolean);
+    const knowledgeResults = retrieveFromPresetKnowledge(
+      searchKeywords.join(' '),  // 将关键词数组转成单个字符串
+      platform,
+      modelConfig.knowledge_top_k || 5
+    );
+
+    // ========== 构建诊断Prompt ==========
     const template = getDiagnosisTemplate(platform);
-    const platformName = language === 'zh' 
+    const platformName = language === 'zh'
       ? (platform === 'tiktok' ? 'TikTok' : 'Facebook')
       : template.platformName;
 
-    // 构建诊断请求消息（使用平台专属模板）
-    const systemPrompt = language === 'zh' 
+    // 基础System Prompt（不含知识库内容）
+    let baseSystemPrompt = language === 'zh'
       ? `你是一位专业的${platformName}广告诊断师。请根据用户提供的广告方案信息，给出专业的诊断分析。
 
 请按以下JSON格式返回诊断结果（不要添加任何其他文字，只返回JSON）：
@@ -57,9 +119,40 @@ Return the diagnosis result in JSON format only (no other text):
   }
 }`;
 
-    // 使用平台专属prompt模板
+    // 注入知识库内容到System Prompt
+    let systemPrompt = injectKnowledgeToPrompt(baseSystemPrompt, knowledgeResults, language as 'zh' | 'en');
+
+    // L2/L3附加推理指令
+    if (modelConfig.layer === 'L2') {
+      systemPrompt += language === 'zh'
+        ? `\n\n你需要完成多步推理：
+1. 识别违反的具体政策条款（引用编号）
+2. 分析素材中触发违规的具体元素
+3. 给出针对性修改方案（不是泛泛建议）
+4. 评估修改后通过审核的概率`
+        : `\n\nYou need to complete multi-step reasoning:
+1. Identify specific policy clauses violated (quote the number)
+2. Analyze specific elements in the material that triggered the violation
+3. Provide targeted modification suggestions (not generic advice)
+4. Estimate the probability of passing review after modification`;
+    }
+
+    if (modelConfig.layer === 'L3') {
+      systemPrompt += language === 'zh'
+        ? `\n\n你需要完成深度归因分析：
+1. 结合账户历史数据做趋势归因
+2. 交叉分析多个变量（素材/受众/出价/时段）
+3. 给出可量化的优化路径和预期效果
+4. 输出结构化优化方案（含优先级排序）`
+        : `\n\nYou need to complete deep attribution analysis:
+1. Combine account historical data for trend attribution
+2. Cross-analyze multiple variables (material/audience/bidding/time)
+3. Provide quantifiable optimization paths and expected results
+4. Output structured optimization plan (with priority ranking)`;
+    }
+
+    // 用户消息
     const diagnosisPrompt = formatDiagnosisPrompt(platform, route, goal, budget, metrics);
-    
     const userMessage = language === 'zh'
       ? diagnosisPrompt
       : `Please diagnose this ${platformName} Ads plan:
@@ -69,10 +162,11 @@ Budget Range: ${budget}
 Main Goal: ${goal}
 Platform: ${platformName}
 ${metrics ? `Metrics:\n${Object.entries(metrics).map(([k, v]) => `${k}: ${v}`).join('\n')}` : ''}
+${l0Result?.checks?.length ? `L0 Check Results:\n${l0Result.checks.map((c: { id: string; result: string }) => `- ${c.id}: ${c.result}`).join('\n')}` : ''}
 
 Please provide overall score, potential issues, optimization suggestions and current strengths with platform-specific advice.`;
 
-    // 调用Coze智能体流式API
+    // ========== 调用Coze智能体（关闭Web Search）==========
     const response = await fetch(`${COZE_API_BASE}/v3/chat`, {
       method: 'POST',
       headers: {
@@ -91,6 +185,12 @@ Please provide overall score, potential issues, optimization suggestions and cur
           },
         ],
         auto_save_history: false,
+        // 关闭Web Search（通过custom_variables控制）
+        custom_variables: {
+          enable_web_search: 'false',
+          model_layer: modelConfig.layer,
+          max_output_tokens: String(modelConfig.max_output_tokens),
+        },
       }),
     });
 
@@ -103,7 +203,7 @@ Please provide overall score, potential issues, optimization suggestions and cur
       });
     }
 
-    // 创建SSE流式响应
+    // ========== 创建SSE流式响应 ==========
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
@@ -124,30 +224,25 @@ Please provide overall score, potential issues, optimization suggestions and cur
 
             buffer += decoder.decode(value, { stream: true });
 
-            // 分割buffer为完整行
             const lines = buffer.split('\n');
             buffer = lines.pop() || '';
 
             for (const line of lines) {
               const trimmed = line.trim();
 
-              // 空行标记SSE块结束
               if (trimmed === '') {
                 currentEvent = '';
                 continue;
               }
 
-              // 追踪当前事件类型
               if (trimmed.startsWith('event:')) {
                 currentEvent = trimmed.slice('event:'.length).trim();
                 continue;
               }
 
-              // 解析数据payload
               if (trimmed.startsWith('data:')) {
                 const raw = trimmed.slice('data:'.length).trim();
 
-                // done事件
                 if (currentEvent === 'done' || raw === '[DONE]') {
                   controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
                   continue;
@@ -157,17 +252,13 @@ Please provide overall score, potential issues, optimization suggestions and cur
                   const data = JSON.parse(raw);
 
                   if (currentEvent === 'conversation.message.delta') {
-                    // 深度思考模式：reasoning_content包含思考过程
-                    // 正常模式：content包含回答
                     const content = data.reasoning_content || data.content || '';
                     if (content) {
                       controller.enqueue(encoder.encode(`data: ${content}\n\n`));
                     }
                   } else if (currentEvent === 'conversation.chat.completed') {
-                    // 对话完成
                     controller.enqueue(encoder.encode(`data: [COMPLETED]\n\n`));
                   } else if (currentEvent === 'conversation.chat.failed') {
-                    // 对话失败
                     controller.enqueue(encoder.encode(`data: [ERROR] Chat failed\n\n`));
                   }
                 } catch {
