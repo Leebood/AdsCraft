@@ -48,14 +48,14 @@ export function Navigation() {
 
   // 未登录时显示智能诊断按钮（点击跳转登录页）
   if (!loading && !user) {
-    return <SmartDiagnosisButton />;
+    return <SmartDiagnosisButton isHomePage={isSimpleNavPage} />;
   }
 
   // 首页和诊断相关页面显示简化导航（避免与页面内容重复）
   if (isSimpleNavPage) {
     return (
       <nav className="flex items-center gap-4">
-        <SmartDiagnosisButton />
+        <SmartDiagnosisButton isHomePage={true} />
         <div className="w-px h-6 bg-white/20" />
         {!loading && user && (
           <button 

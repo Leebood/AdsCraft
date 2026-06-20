@@ -15,7 +15,11 @@ interface Plan {
   created_at: string;
 }
 
-export function SmartDiagnosisButton() {
+interface SmartDiagnosisButtonProps {
+  isHomePage?: boolean;
+}
+
+export function SmartDiagnosisButton({ isHomePage = false }: SmartDiagnosisButtonProps) {
   const { user, loading, isPremium, subscription } = useAuth();
   const { locale } = useI18n();
   const router = useRouter();
@@ -120,6 +124,18 @@ export function SmartDiagnosisButton() {
 
   // 未登录状态
   if (!user) {
+    // 首页已有免费诊断按钮，导航栏只显示登录
+    if (isHomePage) {
+      return (
+        <Link 
+          href="/login" 
+          className="text-blue-200/80 hover:text-cyan-300 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-white/5"
+        >
+          {locale === 'zh' ? '登录' : 'Login'}
+        </Link>
+      );
+    }
+    // 非首页：显示登录 + 免费诊断按钮
     return (
       <div className="flex gap-3 items-center">
         <Link 
@@ -139,16 +155,21 @@ export function SmartDiagnosisButton() {
   }
 
   // 已登录状态：显示下拉菜单
+  // 首页已有免费诊断入口，按钮文字统一为"我的方案"
+  const buttonText = isHomePage 
+    ? (locale === 'zh' ? '我的方案' : 'My Plans')
+    : (isPremium 
+      ? (locale === 'zh' ? '我的方案' : 'My Plans')
+      : (locale === 'zh' ? '免费诊断' : 'Start Free')
+    );
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button 
         onClick={handleAuthClick}
         className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg text-white font-medium hover:from-cyan-400 hover:to-blue-500 transition-all shadow-lg shadow-cyan-500/20"
       >
-        {isPremium 
-          ? (locale === 'zh' ? '我的方案' : 'My Plans')
-          : (locale === 'zh' ? '免费诊断' : 'Start Free')
-        }
+        {buttonText}
         <svg 
           className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} 
           fill="none" 
