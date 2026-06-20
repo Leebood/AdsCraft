@@ -185,34 +185,34 @@ function QuizContent() {
   // 渲染选项（带tooltip说明）
   const renderOptions = (step: QuizStep) => {
     return step.options.map((option) => {
-      // 获取选项说明（使用英文label匹配配置）
-      const tooltipText = getOptionDescription(step.id, platform, option.label) || option.description;
+      // 获取选项说明（根据语言获取对应文案）
+      const tooltipText = getOptionDescription(step.id, option.label, platform, locale) || 
+        (locale === 'zh' ? option.descriptionZh : option.description);
       const optionLabel = locale === 'zh' ? option.labelZh || option.label : option.label;
       
       return (
         <div 
           key={option.id} 
-          className="group relative flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
-          title={tooltipText || ''}
+          className="group relative flex items-center p-3 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
         >
           <RadioGroupItem 
             value={option.value} 
             id={option.id} 
-            className="border-cyan-400 text-cyan-400" 
+            className="border-cyan-400 text-cyan-400 mr-3" 
           />
           <Label htmlFor={option.id} className="flex-1 cursor-pointer">
             <span className="text-blue-100 hover:text-cyan-400 transition-colors">
               {optionLabel}
             </span>
           </Label>
-          {/* Tooltip */}
+          {/* Tooltip - 悬浮在选项下方 */}
           {tooltipText && (
-            <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 
+            <div className="absolute left-0 top-full mt-1 
               bg-slate-800/95 border border-cyan-400/30 rounded-lg px-3 py-2 
-              text-sm text-cyan-100 whitespace-nowrap
+              text-sm text-cyan-100 min-w-[200px] max-w-[300px]
               opacity-0 group-hover:opacity-100 group-focus-within:opacity-100
               transition-opacity duration-200 pointer-events-none
-              shadow-lg shadow-cyan-500/10 z-50">
+              shadow-lg shadow-cyan-500/10 z-50 whitespace-normal">
               {tooltipText}
             </div>
           )}
