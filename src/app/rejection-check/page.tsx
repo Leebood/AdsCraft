@@ -6,6 +6,7 @@ import { useI18n } from '@/lib/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { TK_REVIEW_TOOLTIPS, getTKReviewTooltip } from '@/lib/tk-review-tooltips';
 
 // ========== 类型定义 ==========
 
@@ -524,15 +525,26 @@ export default function TikTokReviewPage() {
             { id: 'website_traffic', zh: '网站流量', en: 'Website Traffic' },
             { id: 'dm', zh: '私信', en: 'Direct Message' },
             { id: 'live', zh: '直播引流', en: 'Live Stream' }
-          ].map(opt => (
-            <button
-              key={opt.id}
-              onClick={() => { setFormData(prev => ({ ...prev, objective: opt.id as any })); }}
-              className={`px-3 py-2 rounded-lg border text-sm ${formData.objective === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
-            >
-              {locale === 'zh' ? opt.zh : opt.en}
-            </button>
-          ))}
+          ].map(opt => {
+            const tooltipText = getTKReviewTooltip('objective', opt.id, locale);
+            return (
+              <div key={opt.id} className="relative group">
+                <button
+                  onClick={() => { setFormData(prev => ({ ...prev, objective: opt.id as any })); }}
+                  className={`w-full px-3 py-2 rounded-lg border text-sm ${formData.objective === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+                >
+                  {locale === 'zh' ? opt.zh : opt.en}
+                </button>
+                {tooltipText && (
+                  <div className="absolute left-0 top-full mt-1 z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                    <div className="bg-slate-800/95 border border-cyan-400/50 rounded-lg px-3 py-2 text-sm text-blue-100 max-w-xs whitespace-normal shadow-lg">
+                      {tooltipText}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -594,15 +606,26 @@ export default function TikTokReviewPage() {
           {[
             { id: 'new', zh: '新账户', en: 'New Account' },
             { id: 'mature', zh: '成熟账户', en: 'Mature Account' }
-          ].map(opt => (
-            <button
-              key={opt.id}
-              onClick={() => setFormData(prev => ({ ...prev, accountType: opt.id as any }))}
-              className={`px-4 py-2 rounded-lg border ${formData.accountType === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
-            >
-              {locale === 'zh' ? opt.zh : opt.en}
-            </button>
-          ))}
+          ].map(opt => {
+            const tooltipText = getTKReviewTooltip('account_type', opt.id, locale);
+            return (
+              <div key={opt.id} className="relative group">
+                <button
+                  onClick={() => setFormData(prev => ({ ...prev, accountType: opt.id as any }))}
+                  className={`px-4 py-2 rounded-lg border ${formData.accountType === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+                >
+                  {locale === 'zh' ? opt.zh : opt.en}
+                </button>
+                {tooltipText && (
+                  <div className="absolute left-0 top-full mt-1 z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                    <div className="bg-slate-800/95 border border-cyan-400/50 rounded-lg px-3 py-2 text-sm text-blue-100 max-w-xs whitespace-normal shadow-lg">
+                      {tooltipText}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
