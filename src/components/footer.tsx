@@ -15,7 +15,7 @@ export function Footer() {
         </p>
         
         {/* 链接 */}
-        <div className="flex justify-center gap-4">
+        <div className="flex justify-center gap-4 mb-4">
           <Link href="/terms" className="text-sm text-blue-300/70 hover:text-cyan-400 transition-colors">
             {t('nav.terms')}
           </Link>
@@ -23,6 +23,11 @@ export function Footer() {
             {t('nav.privacy')}
           </Link>
         </div>
+        
+        {/* 技术支持 */}
+        <p className="text-blue-300/50 text-sm">
+          {locale === 'zh' ? '技术支持' : 'Support'}: <a href="mailto:leo.tikboost@gmail.com" className="text-cyan-400 hover:text-cyan-300 transition-colors">leo.tikboost@gmail.com</a>
+        </p>
       </div>
     </footer>
   );
