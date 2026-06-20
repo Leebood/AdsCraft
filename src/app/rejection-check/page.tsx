@@ -6,6 +6,7 @@ import { useI18n } from '@/lib/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { TK_REVIEW_TOOLTIPS, getTKReviewTooltip } from '@/lib/tk-review-tooltips';
 
 // ========== 类型定义 ==========
@@ -725,19 +726,30 @@ export default function TikTokReviewPage() {
 
       {/* 效果承诺 */}
       <div>
-        <label className="text-blue-200 mb-2 block">{t('是否包含效果承诺', 'Contains Effect Promise')}</label>
+        <label className="text-blue-200 mb-2 block">
+          {t('是否包含效果承诺', 'Contains Effect Promise')}
+          <span className="text-xs text-blue-300/60 ml-2">
+            {getTKReviewTooltip('effect_claims', 'label', locale)}
+          </span>
+        </label>
         <div className="flex gap-3">
           {[
             { id: 'yes', zh: '是', en: 'Yes' },
             { id: 'no', zh: '否', en: 'No' }
           ].map(opt => (
-            <button
-              key={opt.id}
-              onClick={() => setFormData(prev => ({ ...prev, hasEffectPromise: opt.id as any }))}
-              className={`px-4 py-2 rounded-lg border ${formData.hasEffectPromise === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
-            >
-              {locale === 'zh' ? opt.zh : opt.en}
-            </button>
+            <Tooltip key={opt.id}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setFormData(prev => ({ ...prev, hasEffectPromise: opt.id as any }))}
+                  className={`px-4 py-2 rounded-lg border ${formData.hasEffectPromise === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+                >
+                  {locale === 'zh' ? opt.zh : opt.en}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-xs">
+                {getTKReviewTooltip('effect_claims', opt.id, locale)}
+              </TooltipContent>
+            </Tooltip>
           ))}
         </div>
         {formData.hasEffectPromise === 'yes' && (
@@ -751,20 +763,31 @@ export default function TikTokReviewPage() {
 
       {/* 前后对比 */}
       <div>
-        <label className="text-blue-200 mb-2 block">{t('是否使用前后对比', 'Uses Before/After')}</label>
+        <label className="text-blue-200 mb-2 block">
+          {t('是否使用前后对比', 'Uses Before/After')}
+          <span className="text-xs text-blue-300/60 ml-2">
+            {getTKReviewTooltip('before_after', 'label', locale)}
+          </span>
+        </label>
         <div className="flex gap-3">
           {[
             { id: 'before_after', zh: '前后对比图', en: 'Before/After' },
             { id: 'body_part', zh: '身体局部特写', en: 'Body Part Focus' },
             { id: 'none', zh: '都没有', en: 'None' }
           ].map(opt => (
-            <button
-              key={opt.id}
-              onClick={() => setFormData(prev => ({ ...prev, hasBeforeAfter: [opt.id] }))}
-              className={`px-4 py-2 rounded-lg border ${formData.hasBeforeAfter.includes(opt.id) ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
-            >
-              {locale === 'zh' ? opt.zh : opt.en}
-            </button>
+            <Tooltip key={opt.id}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setFormData(prev => ({ ...prev, hasBeforeAfter: [opt.id] }))}
+                  className={`px-4 py-2 rounded-lg border ${formData.hasBeforeAfter.includes(opt.id) ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+                >
+                  {locale === 'zh' ? opt.zh : opt.en}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-xs">
+                {getTKReviewTooltip('before_after', opt.id, locale)}
+              </TooltipContent>
+            </Tooltip>
           ))}
         </div>
       </div>
@@ -1009,19 +1032,28 @@ export default function TikTokReviewPage() {
             <label className="text-blue-200 mb-2 block">
               {t('表单类型', 'Form Type')}
               {formTypeVisibility === 'required' && <span className="text-red-400 ml-1">*</span>}
+              <span className="text-xs text-blue-300/60 ml-2">
+                {getTKReviewTooltip('form_type', 'label', locale)}
+              </span>
             </label>
             <div className="flex gap-3">
               {[
                 { id: 'native', zh: '原生表单（TikTok内）', en: 'Native Form (In-App)' },
                 { id: 'external', zh: '站外表单（独立页）', en: 'External Form (Web)' }
               ].map(opt => (
-                <button
-                  key={opt.id}
-                  onClick={() => setFormData(prev => ({ ...prev, formType: opt.id as any }))}
-                  className={`px-3 py-2 rounded-lg border text-sm ${formData.formType === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
-                >
-                  {locale === 'zh' ? opt.zh : opt.en}
-                </button>
+                <Tooltip key={opt.id}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setFormData(prev => ({ ...prev, formType: opt.id as any }))}
+                      className={`px-3 py-2 rounded-lg border text-sm ${formData.formType === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+                    >
+                      {locale === 'zh' ? opt.zh : opt.en}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs">
+                    {getTKReviewTooltip('form_type', opt.id, locale)}
+                  </TooltipContent>
+                </Tooltip>
               ))}
             </div>
           </div>
@@ -1063,7 +1095,12 @@ export default function TikTokReviewPage() {
 
         {/* 点击目的地 */}
         <div>
-          <label className="text-blue-200 mb-2 block">{t('点击后进入什么', 'Click Destination')}</label>
+          <label className="text-blue-200 mb-2 block">
+            {t('点击后进入什么', 'Click Destination')}
+            <span className="text-xs text-blue-300/60 ml-2">
+              {getTKReviewTooltip('click_destination', 'label', locale)}
+            </span>
+          </label>
           <div className="flex gap-3">
             {[
               { id: 'product', zh: '商品页', en: 'Product Page' },
@@ -1071,33 +1108,50 @@ export default function TikTokReviewPage() {
               { id: 'profile', zh: '主页', en: 'Profile' },
               { id: 'app', zh: 'App下载页', en: 'App Download' }
             ].map(opt => (
-              <button
-                key={opt.id}
-                onClick={() => setFormData(prev => ({ ...prev, clickDestination: opt.id }))}
-                className={`px-3 py-2 rounded-lg border text-sm ${formData.clickDestination === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
-              >
-                {locale === 'zh' ? opt.zh : opt.en}
-              </button>
+              <Tooltip key={opt.id}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setFormData(prev => ({ ...prev, clickDestination: opt.id }))}
+                    className={`px-3 py-2 rounded-lg border text-sm ${formData.clickDestination === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+                  >
+                    {locale === 'zh' ? opt.zh : opt.en}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-xs">
+                  {getTKReviewTooltip('click_destination', opt.id, locale)}
+                </TooltipContent>
+              </Tooltip>
             ))}
           </div>
         </div>
 
         {/* 首屏产品可见 */}
         <div>
-          <label className="text-blue-200 mb-2 block">{t('首屏能否看到广告中的产品和优惠', 'Product Visible on First Screen')}</label>
+          <label className="text-blue-200 mb-2 block">
+            {t('首屏能否看到广告中的产品和优惠', 'Product Visible on First Screen')}
+            <span className="text-xs text-blue-300/60 ml-2">
+              {getTKReviewTooltip('first_screen', 'label', locale)}
+            </span>
+          </label>
           <div className="flex gap-3">
             {[
               { id: 'yes', zh: '能', en: 'Yes' },
               { id: 'no', zh: '不能', en: 'No' },
               { id: 'unknown', zh: '不确定', en: 'Unknown' }
             ].map(opt => (
-              <button
-                key={opt.id}
-                onClick={() => setFormData(prev => ({ ...prev, firstScreenProductVisible: opt.id as any }))}
-                className={`px-3 py-2 rounded-lg border text-sm ${formData.firstScreenProductVisible === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
-              >
-                {locale === 'zh' ? opt.zh : opt.en}
-              </button>
+              <Tooltip key={opt.id}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setFormData(prev => ({ ...prev, firstScreenProductVisible: opt.id as any }))}
+                    className={`px-3 py-2 rounded-lg border text-sm ${formData.firstScreenProductVisible === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+                  >
+                    {locale === 'zh' ? opt.zh : opt.en}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-xs">
+                  {getTKReviewTooltip('first_screen', opt.id, locale)}
+                </TooltipContent>
+              </Tooltip>
             ))}
           </div>
         </div>
@@ -1144,40 +1198,62 @@ export default function TikTokReviewPage() {
 
       {/* 受众规模 */}
       <div>
-        <label className="text-blue-200 mb-2 block">{t('受众规模', 'Audience Size')}</label>
+        <label className="text-blue-200 mb-2 block">
+          {t('受众规模', 'Audience Size')}
+          <span className="text-xs text-blue-300/60 ml-2">
+            {getTKReviewTooltip('audience_size', 'label', locale)}
+          </span>
+        </label>
         <div className="flex gap-3">
           {[
             { id: 'broad', zh: '宽泛', en: 'Broad' },
             { id: 'medium', zh: '适中', en: 'Medium' },
             { id: 'narrow', zh: '窄', en: 'Narrow' }
           ].map(opt => (
-            <button
-              key={opt.id}
-              onClick={() => setFormData(prev => ({ ...prev, audienceSize: opt.id as any }))}
-              className={`px-3 py-2 rounded-lg border text-sm ${formData.audienceSize === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
-            >
-              {locale === 'zh' ? opt.zh : opt.en}
-            </button>
+            <Tooltip key={opt.id}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setFormData(prev => ({ ...prev, audienceSize: opt.id as any }))}
+                  className={`px-3 py-2 rounded-lg border text-sm ${formData.audienceSize === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+                >
+                  {locale === 'zh' ? opt.zh : opt.en}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-xs">
+                {getTKReviewTooltip('audience_size', opt.id, locale)}
+              </TooltipContent>
+            </Tooltip>
           ))}
         </div>
       </div>
 
       {/* 出价策略 */}
       <div>
-        <label className="text-blue-200 mb-2 block">{t('出价策略', 'Bid Strategy')}</label>
+        <label className="text-blue-200 mb-2 block">
+          {t('出价策略', 'Bid Strategy')}
+          <span className="text-xs text-blue-300/60 ml-2">
+            {getTKReviewTooltip('bid_strategy', 'label', locale)}
+          </span>
+        </label>
         <div className="flex gap-3">
           {[
             { id: 'lowest_cost', zh: '最低成本', en: 'Lowest Cost' },
             { id: 'cost_cap', zh: '成本上限', en: 'Cost Cap' },
             { id: 'roas_target', zh: 'ROAS控制', en: 'ROAS Target' }
           ].map(opt => (
-            <button
-              key={opt.id}
-              onClick={() => setFormData(prev => ({ ...prev, bidStrategy: opt.id }))}
-              className={`px-3 py-2 rounded-lg border text-sm ${formData.bidStrategy === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
-            >
-              {locale === 'zh' ? opt.zh : opt.en}
-            </button>
+            <Tooltip key={opt.id}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setFormData(prev => ({ ...prev, bidStrategy: opt.id }))}
+                  className={`px-3 py-2 rounded-lg border text-sm ${formData.bidStrategy === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+                >
+                  {locale === 'zh' ? opt.zh : opt.en}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-xs">
+                {getTKReviewTooltip('bid_strategy', opt.id, locale)}
+              </TooltipContent>
+            </Tooltip>
           ))}
         </div>
       </div>
