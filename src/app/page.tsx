@@ -903,16 +903,6 @@ export default function HomePage() {
             ))}
           </div>
         </div>
-
-        {/* ========== Footer ========== */}
-        <div className="mt-20 pt-8 border-t border-white/10 text-center bg-slate-900/80 -mx-4 px-4 pb-8 rounded-b-xl">
-          <p className="text-slate-400 text-sm mb-4">
-            © 2026 AdsCraft. {locale === 'zh' ? 'AI Ad Decision Engine for Facebook & TikTok' : 'AI Ad Decision Engine for Facebook & TikTok'}
-          </p>
-          <p className="text-slate-500 text-sm">
-            {t('footer.support')}: <a href="mailto:leo.tikboost@gmail.com" className="text-cyan-400 hover:text-cyan-300 transition-colors">leo.tikboost@gmail.com</a>
-          </p>
-        </div>
       </div>
     </div>
   );

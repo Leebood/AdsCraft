@@ -23,11 +23,6 @@ export function Footer() {
             {t('nav.privacy')}
           </Link>
         </div>
-        
-        {/* 联系 */}
-        <p className="text-blue-300/50 text-sm mt-4">
-          {t('footer.support')}: <a href="mailto:leo.tikboost@gmail.com" className="text-cyan-400 hover:text-cyan-300 transition-colors">leo.tikboost@gmail.com</a>
-        </p>
       </div>
     </footer>
   );
