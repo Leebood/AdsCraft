@@ -9,16 +9,9 @@ export function Footer() {
   return (
     <footer className="border-t border-white/10 bg-gradient-to-br from-slate-900 to-blue-900 py-8">
       <div className="max-w-7xl mx-auto px-4 text-center">
-        {/* 标语 */}
-        <p className="text-blue-300/70 text-sm mb-2">
-          {locale === 'zh'
-            ? 'AI Ad Decision Engine for Facebook & TikTok'
-            : 'AI Ad Decision Engine for Facebook & TikTok'}
-        </p>
-        
         {/* 版权 */}
         <p className="text-blue-300/50 text-sm mb-4">
-          &copy; 2026 AdsCraft. {t('footer.rights')}
+          &copy; 2026 AdsCraft. AI Ad Decision Engine for Facebook & TikTok
         </p>
         
         {/* 链接 */}
