@@ -13,6 +13,7 @@ import { tiktokPixel } from '@/lib/tiktok-pixel';
 import { PLATFORM_CONFIGS, PlatformId, QuizStep, ComplianceItem, TIKTOK_ROUTE_QUIZ_CONFIGS, FACEBOOK_QUIZ_CONFIG, RouteQuizConfig } from '@/lib/platforms/registry';
 import { ComplianceChecklist } from '@/components/compliance-checklist';
 import { ACCOUNT_STAGE_QUIZ } from '@/lib/platforms/tiktok-account-diagnosis';
+import { getOptionDescription, OptionTooltip } from '@/lib/option-tooltips';
 
 // 线路 ID 映射到 Quiz 配置 key
 const TIKTOK_ROUTE_MAP: Record<string, string> = {
@@ -181,27 +182,43 @@ function QuizContent() {
     }
   };
 
-  // 渲染选项
+  // 渲染选项（带tooltip说明）
   const renderOptions = (step: QuizStep) => {
-    return step.options.map((option) => (
-      <div key={option.id} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
-        <RadioGroupItem 
-          value={option.value} 
-          id={option.id} 
-          className="border-cyan-400 text-cyan-400" 
-        />
-        <Label htmlFor={option.id} className="flex-1 cursor-pointer">
-          <span className="text-blue-100 hover:text-cyan-400 transition-colors">
-            {locale === 'zh' ? option.labelZh || option.label : option.label}
-          </span>
-          {option.description && (
-            <span className="text-blue-300/60 text-sm ml-2">
-              ({locale === 'zh' ? option.descriptionZh || option.description : option.description})
+    return step.options.map((option) => {
+      // 获取选项说明（使用英文label匹配配置）
+      const tooltipText = getOptionDescription(step.id, platform, option.label) || option.description;
+      const optionLabel = locale === 'zh' ? option.labelZh || option.label : option.label;
+      
+      return (
+        <div 
+          key={option.id} 
+          className="group relative flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+          title={tooltipText || ''}
+        >
+          <RadioGroupItem 
+            value={option.value} 
+            id={option.id} 
+            className="border-cyan-400 text-cyan-400" 
+          />
+          <Label htmlFor={option.id} className="flex-1 cursor-pointer">
+            <span className="text-blue-100 hover:text-cyan-400 transition-colors">
+              {optionLabel}
             </span>
+          </Label>
+          {/* Tooltip */}
+          {tooltipText && (
+            <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 
+              bg-slate-800/95 border border-cyan-400/30 rounded-lg px-3 py-2 
+              text-sm text-cyan-100 whitespace-nowrap
+              opacity-0 group-hover:opacity-100 group-focus-within:opacity-100
+              transition-opacity duration-200 pointer-events-none
+              shadow-lg shadow-cyan-500/10 z-50">
+              {tooltipText}
+            </div>
           )}
-        </Label>
-      </div>
-    ));
+        </div>
+      );
+    });
   };
 
   // 获取线路名称
