@@ -246,26 +246,29 @@ interface ReviewResult {
 
 // ========== 行业选项 ==========
 
-// 一级行业分类（对齐TikTok官方）
+// 子类别类型（支持中英文）
+type SubCategory = { zh: string; en: string };
+
+// 一级行业分类（对齐TikTok官方，支持中英文）
 const INDUSTRIES = [
-  { id: 'retail_ecommerce', labelZh: '电商/零售', labelEn: 'Retail & E-commerce', restricted: false, subCategories: ['实体商品', '虚拟商品', '平台型'] },
-  { id: 'clothing_accessories', labelZh: '服装/配饰', labelEn: 'Clothing & Accessories', restricted: false, subCategories: ['服饰', '鞋包', '珠宝饰品'] },
-  { id: 'beauty_personal', labelZh: '美容/个护', labelEn: 'Beauty & Personal Care', restricted: 'partial', subCategories: ['护肤彩妆', '美发美甲', '工具仪器'] },
-  { id: 'food_beverage', labelZh: '餐饮/食品饮料', labelEn: 'Food & Beverage', restricted: false, subCategories: [] },
-  { id: 'consumer_electronics', labelZh: '科技/消费电子', labelEn: 'Consumer Electronics', restricted: false, subCategories: ['3C数码', '智能家居', '配件'] },
-  { id: 'utility_software', labelZh: '工具软件/App', labelEn: 'Utility Software', restricted: false, subCategories: [] },
-  { id: 'education_training', labelZh: '教育/培训', labelEn: 'Education & Training', restricted: false, subCategories: [] },
-  { id: 'healthcare_pharma', labelZh: '健康/医疗', labelEn: 'Healthcare & Pharmaceutical', restricted: true, subCategories: ['保健品', '医疗器械', '诊所服务'] },
-  { id: 'finance_business', labelZh: '金融/商业服务', labelEn: 'Finance & Business', restricted: true, subCategories: ['银行保险', '投资加密', 'B2B服务'] },
-  { id: 'real_estate', labelZh: '房地产', labelEn: 'Real Estate', restricted: false, subCategories: [] },
-  { id: 'travel', labelZh: '旅游', labelEn: 'Travel', restricted: false, subCategories: [] },
-  { id: 'automotive', labelZh: '汽车', labelEn: 'Automotive', restricted: false, subCategories: [] },
-  { id: 'gaming', labelZh: '游戏', labelEn: 'Gaming', restricted: false, subCategories: [] },
-  { id: 'entertainment_media', labelZh: '娱乐/媒体', labelEn: 'Entertainment & Media', restricted: false, subCategories: [] },
-  { id: 'sports_fitness', labelZh: '运动/健身', labelEn: 'Sports & Fitness', restricted: 'partial', subCategories: [] },
-  { id: 'home_garden', labelZh: '家居/园艺', labelEn: 'Home & Garden', restricted: false, subCategories: [] },
-  { id: 'local_services', labelZh: '本地服务', labelEn: 'Local Services', restricted: false, subCategories: ['到店型', '上门型', '线上预约'] },
-  { id: 'other', labelZh: '其他', labelEn: 'Other', restricted: false, subCategories: [] }
+  { id: 'retail_ecommerce', labelZh: '电商/零售', labelEn: 'Retail & E-commerce', restricted: false, subCategories: [{ zh: '实体商品', en: 'Physical Products' }, { zh: '虚拟商品', en: 'Virtual Products' }, { zh: '平台型', en: 'Platform-based' }] },
+  { id: 'clothing_accessories', labelZh: '服装/配饰', labelEn: 'Clothing & Accessories', restricted: false, subCategories: [{ zh: '服饰', en: 'Apparel' }, { zh: '鞋包', en: 'Shoes & Bags' }, { zh: '珠宝饰品', en: 'Jewelry & Accessories' }] },
+  { id: 'beauty_personal', labelZh: '美容/个护', labelEn: 'Beauty & Personal Care', restricted: 'partial', subCategories: [{ zh: '护肤彩妆', en: 'Skincare & Makeup' }, { zh: '美发美甲', en: 'Hair & Nail' }, { zh: '工具仪器', en: 'Tools & Devices' }] },
+  { id: 'food_beverage', labelZh: '餐饮/食品饮料', labelEn: 'Food & Beverage', restricted: false, subCategories: [] as SubCategory[] },
+  { id: 'consumer_electronics', labelZh: '科技/消费电子', labelEn: 'Consumer Electronics', restricted: false, subCategories: [{ zh: '3C数码', en: '3C Digital' }, { zh: '智能家居', en: 'Smart Home' }, { zh: '配件', en: 'Accessories' }] },
+  { id: 'utility_software', labelZh: '工具软件/App', labelEn: 'Utility Software', restricted: false, subCategories: [] as SubCategory[] },
+  { id: 'education_training', labelZh: '教育/培训', labelEn: 'Education & Training', restricted: false, subCategories: [] as SubCategory[] },
+  { id: 'healthcare_pharma', labelZh: '健康/医疗', labelEn: 'Healthcare & Pharmaceutical', restricted: true, subCategories: [{ zh: '保健品', en: 'Health Supplements' }, { zh: '医疗器械', en: 'Medical Devices' }, { zh: '诊所服务', en: 'Clinic Services' }] },
+  { id: 'finance_business', labelZh: '金融/商业服务', labelEn: 'Finance & Business', restricted: true, subCategories: [{ zh: '银行保险', en: 'Banking & Insurance' }, { zh: '投资加密', en: 'Investment & Crypto' }, { zh: 'B2B服务', en: 'B2B Services' }] },
+  { id: 'real_estate', labelZh: '房地产', labelEn: 'Real Estate', restricted: false, subCategories: [] as SubCategory[] },
+  { id: 'travel', labelZh: '旅游', labelEn: 'Travel', restricted: false, subCategories: [] as SubCategory[] },
+  { id: 'automotive', labelZh: '汽车', labelEn: 'Automotive', restricted: false, subCategories: [] as SubCategory[] },
+  { id: 'gaming', labelZh: '游戏', labelEn: 'Gaming', restricted: false, subCategories: [] as SubCategory[] },
+  { id: 'entertainment_media', labelZh: '娱乐/媒体', labelEn: 'Entertainment & Media', restricted: false, subCategories: [] as SubCategory[] },
+  { id: 'sports_fitness', labelZh: '运动/健身', labelEn: 'Sports & Fitness', restricted: 'partial', subCategories: [] as SubCategory[] },
+  { id: 'home_garden', labelZh: '家居/园艺', labelEn: 'Home & Garden', restricted: false, subCategories: [] as SubCategory[] },
+  { id: 'local_services', labelZh: '本地服务', labelEn: 'Local Services', restricted: false, subCategories: [{ zh: '到店型', en: 'In-store' }, { zh: '上门型', en: 'On-site' }, { zh: '线上预约', en: 'Online Booking' }] },
+  { id: 'other', labelZh: '其他', labelEn: 'Other', restricted: false, subCategories: [] as SubCategory[] }
 ];
 
 const SENSITIVE_CATEGORIES = [
@@ -587,11 +590,11 @@ export default function TikTokReviewPage() {
             <div className="flex gap-2 flex-wrap">
               {selectedIndustry.subCategories.map(sub => (
                 <button
-                  key={sub}
-                  onClick={() => setFormData(prev => ({ ...prev, subCategory: sub }))}
-                  className={`px-3 py-1.5 rounded-lg border text-sm ${formData.subCategory === sub ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+                  key={sub.zh}
+                  onClick={() => setFormData(prev => ({ ...prev, subCategory: locale === 'zh' ? sub.zh : sub.en }))}
+                  className={`px-3 py-1.5 rounded-lg border text-sm ${formData.subCategory === (locale === 'zh' ? sub.zh : sub.en) ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
                 >
-                  {sub}
+                  {locale === 'zh' ? sub.zh : sub.en}
                 </button>
               ))}
             </div>
