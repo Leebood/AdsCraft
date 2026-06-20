@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 import { tiktokPixel } from '@/lib/tiktok-pixel';
+import { SmartDiagnosisButton } from '@/components/smart-diagnosis-button';
 
 export function Navigation() {
   const { t, locale } = useI18n();
@@ -40,44 +41,18 @@ export function Navigation() {
 
   const activeTab = getActiveTab();
 
-  // 处理免费诊断按钮点击
-  const handleStartFree = () => {
-    tiktokPixel.track('ClickStartFree');
-    router.push('/rejection-check');
-  };
-
-  // 未登录时显示 Login + Start Free
+  // 未登录时显示智能诊断按钮（点击跳转登录页）
   if (!loading && !user) {
-    return (
-      <nav className="flex gap-3 items-center">
-        <Link 
-          href="/login" 
-          className="text-blue-200/80 hover:text-cyan-300 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-white/5"
-        >
-          {locale === 'zh' ? '登录' : 'Login'}
-        </Link>
-        <button 
-          onClick={handleStartFree}
-          className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg text-white font-medium hover:from-cyan-400 hover:to-blue-500 transition-all shadow-lg shadow-cyan-500/20"
-        >
-          {locale === 'zh' ? '免费诊断' : 'Start Free'}
-        </button>
-      </nav>
-    );
+    return <SmartDiagnosisButton />;
   }
 
   // 首页时显示简化导航（避免与首页线路选择重复）
   if (isHomePage) {
     return (
       <nav className="flex items-center gap-4">
-        <Link 
-          href="/dashboard" 
-          className="text-blue-200/80 hover:text-cyan-300 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-white/5"
-        >
-          {locale === 'zh' ? '概览' : 'Overview'}
-        </Link>
+        <SmartDiagnosisButton />
         <div className="w-px h-6 bg-white/20" />
-        {!loading && (
+        {!loading && user && (
           <button 
             onClick={signOut}
             className="text-blue-200/60 hover:text-red-400 transition-colors font-medium px-3 py-2 rounded-lg hover:bg-red-500/10"
