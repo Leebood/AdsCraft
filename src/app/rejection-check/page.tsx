@@ -1541,8 +1541,8 @@ export default function TikTokReviewPage() {
               {sections.map((section) => (
                 <Card
                   key={section.num}
-                  className={`bg-white/5 backdrop-blur-sm border-white/20 transition-all duration-300 ${
-                    expandedSection === section.num ? 'border-cyan-400/50' : ''
+                  className={`bg-white/10 backdrop-blur-sm border-white/30 transition-all duration-300 ${
+                    expandedSection === section.num ? 'border-cyan-400 shadow-lg shadow-cyan-500/20' : ''
                   } ${expandedSection < section.num && !canExpandSection(section.num) ? 'opacity-50' : ''}`}
                 >
                   <CardContent className="p-4">
@@ -1587,7 +1587,7 @@ export default function TikTokReviewPage() {
                         {section.num === 6 && (
                           <Button
                             onClick={handleSubmit}
-                            disabled={isAnalyzing || formData.landingPageUrl.length < 5}
+                            disabled={isAnalyzing}
                             className="mt-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500"
                           >
                             {isAnalyzing ? t('正在审查...', 'Reviewing...') : t('开始审查', 'Start Review')}
