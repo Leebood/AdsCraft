@@ -19,10 +19,17 @@ export function Navigation() {
     pathname.startsWith('/rejection-check') ||
     pathname.startsWith('/saved') ||
     pathname.startsWith('/platform') ||
-    pathname.startsWith('/plan');
+    pathname.startsWith('/plan') &&
+    !pathname.startsWith('/dashboard/plans');
   
   // Tab 配置（仅仪表盘和设置页显示）
   const tabs = [
+    { 
+      id: 'plans', 
+      label: locale === 'zh' ? '我的方案' : 'My Plans', 
+      href: '/dashboard/plans',
+      icon: `<svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>`
+    },
     { 
       id: 'overview', 
       label: locale === 'zh' ? '概览' : 'Overview', 
@@ -39,9 +46,10 @@ export function Navigation() {
 
   // 判断当前激活的 Tab
   const getActiveTab = () => {
+    if (pathname.startsWith('/dashboard/plans')) return 'plans';
     if (pathname === '/' || pathname === '/dashboard') return 'overview';
     if (pathname.startsWith('/settings')) return 'settings';
-    return 'overview';
+    return 'plans'; // 默认显示我的方案
   };
 
   const activeTab = getActiveTab();
