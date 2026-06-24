@@ -155,8 +155,8 @@ export function SmartDiagnosisButton({ isHomePage = false }: SmartDiagnosisButto
   }
 
   // 已登录状态：显示下拉菜单
-  // 按钮文字统一为"方案快速诊断"
-  const buttonText = locale === 'zh' ? '方案快速诊断' : 'Quick Diagnosis';
+  // 按钮文字恢复为"我的方案"
+  const buttonText = locale === 'zh' ? '我的方案' : 'My Plans';
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -177,33 +177,50 @@ export function SmartDiagnosisButton({ isHomePage = false }: SmartDiagnosisButto
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-64 bg-slate-900/95 border border-white/20 rounded-xl shadow-xl z-50 overflow-hidden">
-          {/* 快速诊断入口 */}
+          {/* 账户信息 */}
+          <div className="px-4 py-3 border-b border-white/10 bg-white/5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold">
+                {user?.email?.charAt(0).toUpperCase() || 'U'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-white font-medium truncate">{user?.email || 'User'}</p>
+                <p className="text-xs text-blue-300/60 truncate">
+                  {subscription?.route || 'free'} · {locale === 'zh' ? '已订阅' : 'Subscribed'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* FB/TK方案详情 */}
           <div className="px-4 py-3 border-b border-white/10">
             <p className="text-xs text-blue-300/60 uppercase tracking-wider mb-2">
-              {locale === 'zh' ? '快速诊断' : 'Quick Diagnosis'}
+              {locale === 'zh' ? '方案详情' : 'Plan Details'}
             </p>
-            {/* FB方案快速诊断 */}
+            {/* FB方案详情 */}
             <Link 
-              href="/questions?route=free&platform=facebook"
+              href="/dashboard/plans"
               onClick={() => setIsOpen(false)}
               className="w-full py-2 text-sm text-blue-200 hover:text-cyan-300 font-medium text-left flex items-center gap-2 rounded-lg hover:bg-white/5 transition-colors"
             >
-              <svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              <svg className="w-4 h-4 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              {locale === 'zh' ? 'FB 方案快速诊断' : 'FB Quick Diagnosis'}
+              {locale === 'zh' ? 'FB/TK 方案详情' : 'FB/TK Plan Details'}
             </Link>
-            {/* TK方案快速诊断 */}
-            <Link 
+          </div>
+
+          {/* 开始新诊断 */}
+          <div className="px-4 py-2 border-b border-white/10">
+            <Link
               href="/rejection-check"
               onClick={() => setIsOpen(false)}
-              className="w-full py-2 text-sm text-blue-200 hover:text-cyan-300 font-medium text-left flex items-center gap-2 rounded-lg hover:bg-white/5 transition-colors"
+              className="w-full py-2 text-sm text-cyan-400 hover:text-cyan-300 font-medium text-left flex items-center gap-2 rounded-lg hover:bg-white/5 transition-colors"
             >
-              <svg className="w-4 h-4 text-pink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              {locale === 'zh' ? 'TK 方案快速诊断' : 'TK Quick Diagnosis'}
+              {locale === 'zh' ? '+ 开始新诊断' : '+ Start New Diagnosis'}
             </Link>
           </div>
 
