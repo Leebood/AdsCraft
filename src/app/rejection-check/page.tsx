@@ -16,122 +16,152 @@ import { getSupabaseBrowserClientAsync } from '@/lib/supabase-browser';
 // 字段显隐规则类型
 type FieldVisibility = 'required' | 'optional' | 'hidden' | 'conditional';
 
-// 根据广告目标的字段显隐规则
-type ObjectiveId = 'purchase' | 'leads' | 'app_install' | 'website_traffic' | 'dm' | 'live';
+// 根据推广目标的字段显隐规则
+// 三层漏斗结构：品牌认知、受众意向、行为转化
+type ObjectiveId = 'reach' | 'traffic' | 'video_views' | 'engagement' | 'app_promotion' | 'lead_collection' | 'sales';
+
+// 推广目标分组（三层漏斗）
+const OBJECTIVE_GROUPS = [
+  {
+    id: 'brand_awareness',
+    labelZh: '品牌认知',
+    labelEn: 'Brand Awareness',
+    objectives: [
+      { id: 'reach', zh: '覆盖人数', en: 'Reach' }
+    ]
+  },
+  {
+    id: 'audience_intent',
+    labelZh: '受众意向',
+    labelEn: 'Audience Intent',
+    objectives: [
+      { id: 'traffic', zh: '访问量', en: 'Traffic' },
+      { id: 'video_views', zh: '视频播放量', en: 'Video Views' },
+      { id: 'engagement', zh: '社区互动', en: 'Engagement' }
+    ]
+  },
+  {
+    id: 'conversion',
+    labelZh: '行为转化',
+    labelEn: 'Conversion',
+    objectives: [
+      { id: 'app_promotion', zh: '应用推广', en: 'App Promotion' },
+      { id: 'lead_collection', zh: '线索收集', en: 'Lead Collection' },
+      { id: 'sales', zh: '销量', en: 'Sales' }
+    ]
+  }
+];
 
 const OBJECTIVE_FIELD_RULES: Record<ObjectiveId, Record<string, FieldVisibility>> = {
-  purchase: {
-    // Section 1
-    target_roas: 'required',
+  // 品牌认知 - 覆盖人数
+  reach: {
+    target_roas: 'hidden',
+    target_cpa: 'hidden',
+    cta_button: 'optional',
+    landing_page_url: 'optional',
+    app_store_url: 'hidden',
+    form_type: 'hidden',
+    pixel_status: 'optional',
+    events_api: 'optional',
+    event_verification: 'optional',
+    event_duplication: 'optional',
+    mmp_integration: 'hidden',
+  },
+  // 受众意向 - 访问量
+  traffic: {
+    target_roas: 'optional',
     target_cpa: 'optional',
-    // Section 3 - CTA
-    cta_button: 'required', // 默认 Shop Now
-    // Section 4 - 落地页
+    cta_button: 'required',
     landing_page_url: 'required',
     app_store_url: 'hidden',
     form_type: 'hidden',
-    // Section 6 - 数据追踪
     pixel_status: 'required',
     events_api: 'required',
     event_verification: 'required',
     event_duplication: 'required',
     mmp_integration: 'hidden',
   },
-  leads: {
-    // Section 1
+  // 受众意向 - 视频播放量
+  video_views: {
     target_roas: 'optional',
-    target_cpa: 'required',
-    // Section 3 - CTA
-    cta_button: 'required', // 默认 Learn More
-    // Section 4 - 落地页
-    landing_page_url: 'conditional', // form_type=external时required
+    target_cpa: 'optional',
+    cta_button: 'optional',
+    landing_page_url: 'optional',
     app_store_url: 'hidden',
-    form_type: 'required', // 原生表单/站外表单
-    // Section 6 - 数据追踪
-    pixel_status: 'conditional', // form_type=external时检测
-    events_api: 'conditional',
+    form_type: 'hidden',
+    pixel_status: 'optional',
+    events_api: 'optional',
     event_verification: 'optional',
     event_duplication: 'optional',
     mmp_integration: 'hidden',
   },
-  app_install: {
-    // Section 1
+  // 受众意向 - 社区互动
+  engagement: {
+    target_roas: 'optional',
+    target_cpa: 'optional',
+    cta_button: 'optional',
+    landing_page_url: 'optional',
+    app_store_url: 'hidden',
+    form_type: 'hidden',
+    pixel_status: 'optional',
+    events_api: 'optional',
+    event_verification: 'optional',
+    event_duplication: 'optional',
+    mmp_integration: 'hidden',
+  },
+  // 行为转化 - 应用推广
+  app_promotion: {
     target_roas: 'optional',
     target_cpa: 'required',
-    // Section 3 - CTA
-    cta_button: 'required', // 默认 Install Now
-    // Section 4 - 落地页
+    cta_button: 'required',
     landing_page_url: 'hidden',
     app_store_url: 'required',
     form_type: 'hidden',
-    // Section 6 - 数据追踪
     pixel_status: 'hidden',
     events_api: 'hidden',
     event_verification: 'hidden',
     event_duplication: 'hidden',
     mmp_integration: 'required',
   },
-  website_traffic: {
-    // Section 1
+  // 行为转化 - 线索收集
+  lead_collection: {
     target_roas: 'optional',
+    target_cpa: 'required',
+    cta_button: 'required',
+    landing_page_url: 'conditional',
+    app_store_url: 'hidden',
+    form_type: 'required',
+    pixel_status: 'conditional',
+    events_api: 'conditional',
+    event_verification: 'optional',
+    event_duplication: 'optional',
+    mmp_integration: 'hidden',
+  },
+  // 行为转化 - 销量
+  sales: {
+    target_roas: 'required',
     target_cpa: 'optional',
-    // Section 3 - CTA
-    cta_button: 'required', // 默认 Learn More
-    // Section 4 - 落地页
+    cta_button: 'required',
     landing_page_url: 'required',
     app_store_url: 'hidden',
     form_type: 'hidden',
-    // Section 6 - 数据追踪
     pixel_status: 'required',
     events_api: 'required',
     event_verification: 'required',
     event_duplication: 'required',
     mmp_integration: 'hidden',
   },
-  dm: {
-    // Section 1
-    target_roas: 'optional',
-    target_cpa: 'optional',
-    // Section 3 - CTA
-    cta_button: 'required', // 默认 Send Message
-    // Section 4 - 落地页
-    landing_page_url: 'hidden',
-    app_store_url: 'hidden',
-    form_type: 'hidden',
-    // Section 6 - 数据追踪
-    pixel_status: 'hidden',
-    events_api: 'hidden',
-    event_verification: 'hidden',
-    event_duplication: 'hidden',
-    mmp_integration: 'hidden',
-  },
-  live: {
-    // Section 1
-    target_roas: 'optional',
-    target_cpa: 'optional',
-    // Section 3 - CTA
-    cta_button: 'required', // 默认 Watch Now
-    // Section 4 - 落地页
-    landing_page_url: 'hidden',
-    app_store_url: 'hidden',
-    form_type: 'hidden',
-    // Section 6 - 数据追踪
-    pixel_status: 'hidden',
-    events_api: 'hidden',
-    event_verification: 'hidden',
-    event_duplication: 'hidden',
-    mmp_integration: 'hidden',
-  },
 };
 
 // CTA按钮默认值
 const CTA_DEFAULTS: Record<ObjectiveId, { value: string; labelZh: string; labelEn: string }> = {
-  purchase: { value: 'shop_now', labelZh: '立即购买', labelEn: 'Shop Now' },
-  leads: { value: 'learn_more', labelZh: '了解更多', labelEn: 'Learn More' },
-  app_install: { value: 'install_now', labelZh: '立即安装', labelEn: 'Install Now' },
-  website_traffic: { value: 'learn_more', labelZh: '了解更多', labelEn: 'Learn More' },
-  dm: { value: 'send_message', labelZh: '发送私信', labelEn: 'Send Message' },
-  live: { value: 'watch_now', labelZh: '立即观看', labelEn: 'Watch Now' },
+  reach: { value: 'learn_more', labelZh: '了解更多', labelEn: 'Learn More' },
+  traffic: { value: 'learn_more', labelZh: '了解更多', labelEn: 'Learn More' },
+  video_views: { value: 'watch_now', labelZh: '立即观看', labelEn: 'Watch Now' },
+  engagement: { value: 'send_message', labelZh: '发送私信', labelEn: 'Send Message' },
+  app_promotion: { value: 'install_now', labelZh: '立即安装', labelEn: 'Install Now' },
+  lead_collection: { value: 'learn_more', labelZh: '了解更多', labelEn: 'Learn More' },
+  sales: { value: 'shop_now', labelZh: '立即购买', labelEn: 'Shop Now' },
 };
 
 // 获取字段显隐状态
@@ -272,6 +302,103 @@ const INDUSTRIES = [
   { id: 'home_garden', labelZh: '家居/园艺', labelEn: 'Home & Garden', restricted: false, subCategories: [] as SubCategory[] },
   { id: 'local_services', labelZh: '本地服务', labelEn: 'Local Services', restricted: false, subCategories: [{ zh: '到店型', en: 'In-store' }, { zh: '上门型', en: 'On-site' }, { zh: '线上预约', en: 'Online Booking' }] },
   { id: 'other', labelZh: '其他', labelEn: 'Other', restricted: false, subCategories: [] as SubCategory[] }
+];
+
+// 授权用户补充问题选项
+
+// Q1: 行业细分（根据一级行业展示细分选项）
+const INDUSTRY_SUBCATEGORIES: Record<string, { id: string; zh: string; en: string }[]> = {
+  // 电商
+  retail_ecommerce: [
+    { id: 'fashion_apparel', zh: '服饰鞋包', en: 'Fashion & Apparel' },
+    { id: 'beauty_cosmetics', zh: '美妆个护', en: 'Beauty & Cosmetics' },
+    { id: 'electronics_digital', zh: '3C数码', en: 'Electronics & Digital' },
+    { id: 'home_furnishing', zh: '家居家装', en: 'Home & Furnishing' },
+    { id: 'food_beverage', zh: '食品饮料', en: 'Food & Beverage' },
+    { id: 'jewelry_accessories', zh: '珠宝配饰', en: 'Jewelry & Accessories' },
+    { id: 'other', zh: '其他', en: 'Other' }
+  ],
+  // 应用
+  utility_software: [
+    { id: 'gaming', zh: '游戏', en: 'Gaming' },
+    { id: 'tools', zh: '工具', en: 'Tools' },
+    { id: 'social', zh: '社交', en: 'Social' },
+    { id: 'education', zh: '教育', en: 'Education' },
+    { id: 'finance', zh: '金融', en: 'Finance' },
+    { id: 'other', zh: '其他', en: 'Other' }
+  ],
+  // 本地服务
+  local_services: [
+    { id: 'restaurant', zh: '餐饮', en: 'Restaurant' },
+    { id: 'beauty_salon', zh: '美业', en: 'Beauty Salon' },
+    { id: 'fitness', zh: '健身', en: 'Fitness' },
+    { id: 'education_training', zh: '教育培训', en: 'Education & Training' },
+    { id: 'medical_dental', zh: '医疗牙科', en: 'Medical & Dental' },
+    { id: 'real_estate', zh: '房产', en: 'Real Estate' },
+    { id: 'other', zh: '其他', en: 'Other' }
+  ],
+  // 品牌制造
+  consumer_electronics: [
+    { id: 'consumer_electronics', zh: '消费电子', en: 'Consumer Electronics' },
+    { id: 'maternal_baby', zh: '母婴', en: 'Maternal & Baby' },
+    { id: 'automotive', zh: '汽车', en: 'Automotive' },
+    { id: 'daily_chemical', zh: '日化', en: 'Daily Chemical' },
+    { id: 'other', zh: '其他', en: 'Other' }
+  ]
+};
+
+// Q2: 痛点目标（根据推广目标动态展示）
+const PAIN_POINT_OPTIONS: Record<string, { id: string; zh: string; en: string }[]> = {
+  // 品牌认知类
+  reach: [
+    { id: 'low_impression', zh: '曝光量不够', en: 'Low impression' },
+    { id: 'narrow_audience', zh: '受众太窄', en: 'Audience too narrow' },
+    { id: 'no_reach', zh: '花钱没触达', en: 'No reach despite spending' }
+  ],
+  // 受众意向类
+  traffic: [
+    { id: 'high_cpc', zh: '点击成本高', en: 'High CPC' },
+    { id: 'low_completion', zh: '视频没人看完', en: 'Low video completion' },
+    { id: 'no_engagement', zh: '没人互动私信', en: 'No engagement or DM' }
+  ],
+  video_views: [
+    { id: 'high_cpc', zh: '点击成本高', en: 'High CPC' },
+    { id: 'low_completion', zh: '视频没人看完', en: 'Low video completion' },
+    { id: 'no_engagement', zh: '没人互动私信', en: 'No engagement or DM' }
+  ],
+  engagement: [
+    { id: 'high_cpc', zh: '点击成本高', en: 'High CPC' },
+    { id: 'low_completion', zh: '视频没人看完', en: 'Low video completion' },
+    { id: 'no_engagement', zh: '没人互动私信', en: 'No engagement or DM' }
+  ],
+  // 行为转化类
+  app_promotion: [
+    { id: 'high_cpa', zh: '转化成本高', en: 'High CPA' },
+    { id: 'no_conversion', zh: '有点击没购买注册', en: 'Clicks but no purchase/signup' },
+    { id: 'low_roi', zh: 'ROI太低', en: 'Low ROI' },
+    { id: 'pixel_issue', zh: 'Pixel数据不准', en: 'Pixel data inaccurate' }
+  ],
+  lead_collection: [
+    { id: 'high_cpa', zh: '转化成本高', en: 'High CPA' },
+    { id: 'no_conversion', zh: '有点击没购买注册', en: 'Clicks but no purchase/signup' },
+    { id: 'low_roi', zh: 'ROI太低', en: 'Low ROI' },
+    { id: 'pixel_issue', zh: 'Pixel数据不准', en: 'Pixel data inaccurate' }
+  ],
+  sales: [
+    { id: 'high_cpa', zh: '转化成本高', en: 'High CPA' },
+    { id: 'no_conversion', zh: '有点击没购买注册', en: 'Clicks but no purchase/signup' },
+    { id: 'low_roi', zh: 'ROI太低', en: 'Low ROI' },
+    { id: 'pixel_issue', zh: 'Pixel数据不准', en: 'Pixel data inaccurate' }
+  ]
+};
+
+// Q3: 客单价范围
+const PRICE_RANGE_OPTIONS = [
+  { id: 'under_20', zh: '＜$20', en: '＜$20' },
+  { id: '20_50', zh: '$20-$50', en: '$20-$50' },
+  { id: '50_200', zh: '$50-$200', en: '$50-$200' },
+  { id: 'over_200', zh: '＞$200', en: '＞$200' },
+  { id: 'prefer_not', zh: '不方便透露', en: 'Prefer not to say' }
 ];
 
 const SENSITIVE_CATEGORIES = [
@@ -428,6 +555,11 @@ export default function TikTokReviewPage() {
   const [selectedTimeRange, setSelectedTimeRange] = useState<number>(7); // 默认7天
   const [diagnosisMode, setDiagnosisMode] = useState<'light' | 'full'>('light');
 
+  // 授权用户补充问题状态
+  const [industrySubcategory, setIndustrySubcategory] = useState<string>(''); // Q1: 行业细分
+  const [painPointGoal, setPainPointGoal] = useState<string[]>([]); // Q2: 痛点目标
+  const [priceRange, setPriceRange] = useState<string>(''); // Q3: 客单价范围
+
   // 检查TikTok授权状态
   useEffect(() => {
     const checkTikTokConnection = async () => {
@@ -460,6 +592,11 @@ export default function TikTokReviewPage() {
 
   // 检查 Section 是否可以展开
   const canExpandSection = (sectionNum: number): boolean => {
+    // 已授权用户：只有补充问题，直接可以展开
+    if (isTikTokConnected) {
+      return sectionNum === 1;
+    }
+    // 未授权用户：完整的6个Section逻辑
     if (sectionNum === 1) return true;
     if (sectionNum === 2) return formData.platform !== '' && formData.objective !== '';
     if (sectionNum === 3) return formData.sensitiveCategories.length > 0;
@@ -470,7 +607,11 @@ export default function TikTokReviewPage() {
   };
   // 手动展开下一个 Section（点击"继续下一步"按钮时调用）
   const goToNextSection = (currentSection: number) => {
-    // 直接展开下一个 Section，不检查条件
+    // 已授权用户：只有补充问题，不需要跳转
+    if (isTikTokConnected) {
+      return;
+    }
+    // 未授权用户：完整的6个Section逻辑
     const nextSection = currentSection + 1;
     if (nextSection <= 6) {
       setExpandedSection(nextSection);
@@ -615,37 +756,39 @@ export default function TikTokReviewPage() {
         </div>
       </div>
 
-      {/* 广告目标 */}
+      {/* 推广目标 - 三层漏斗结构 */}
       <div>
-        <label className="text-blue-200 mb-2 block">{t('广告目标', 'Campaign Objective')}</label>
-        <div className="grid grid-cols-3 gap-2">
-          {[
-            { id: 'purchase', zh: '转化/销售', en: 'Conversions' },
-            { id: 'leads', zh: '线索/留资', en: 'Leads' },
-            { id: 'app_install', zh: 'App安装', en: 'App Install' },
-            { id: 'website_traffic', zh: '网站流量', en: 'Website Traffic' },
-            { id: 'dm', zh: '私信', en: 'Direct Message' },
-            { id: 'live', zh: '直播引流', en: 'Live Stream' }
-          ].map(opt => {
-            const tooltipText = getTKReviewTooltip('objective', opt.id, locale);
-            return (
-              <div key={opt.id} className="relative group">
-                <button
-                  onClick={() => { setFormData(prev => ({ ...prev, objective: opt.id as any })); }}
-                  className={`w-full px-3 py-2 rounded-lg border text-sm ${formData.objective === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
-                >
-                  {locale === 'zh' ? opt.zh : opt.en}
-                </button>
-                {tooltipText && (
-                  <div className="absolute left-0 top-full mt-1 z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                    <div className="bg-slate-800/95 border border-cyan-400/50 rounded-lg px-3 py-2 text-sm text-blue-100 max-w-xs whitespace-normal shadow-lg">
-                      {tooltipText}
+        <label className="text-blue-200 mb-3 block">{t('推广目标', 'Campaign Objective')}</label>
+        <div className="space-y-3">
+          {OBJECTIVE_GROUPS.map(group => (
+            <div key={group.id} className="bg-white/5 border border-white/10 rounded-lg p-3">
+              <p className="text-xs text-blue-300/60 uppercase tracking-wider mb-2">
+                {locale === 'zh' ? group.labelZh : group.labelEn}
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {group.objectives.map(opt => {
+                  const tooltipText = getTKReviewTooltip('objective', opt.id, locale);
+                  return (
+                    <div key={opt.id} className="relative group">
+                      <button
+                        onClick={() => { setFormData(prev => ({ ...prev, objective: opt.id as any })); }}
+                        className={`w-full px-3 py-2 rounded-lg border text-sm ${formData.objective === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'}`}
+                      >
+                        {locale === 'zh' ? opt.zh : opt.en}
+                      </button>
+                      {tooltipText && (
+                        <div className="absolute left-0 top-full mt-1 z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                          <div className="bg-slate-800/95 border border-cyan-400/50 rounded-lg px-3 py-2 text-sm text-blue-100 max-w-xs whitespace-normal shadow-lg">
+                            {tooltipText}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
+                  );
+                })}
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </div>
 
@@ -787,6 +930,119 @@ export default function TikTokReviewPage() {
               />
             </div>
           )}
+        </div>
+      </div>
+    </div>
+  );
+
+  // 授权用户补充问题渲染
+  const renderAuthorizedSupplementaryQuestions = () => (
+    <div className="space-y-6">
+      <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-400/30 rounded-xl p-6">
+        <h3 className="text-lg font-semibold text-white mb-2">
+          {t('补充信息', 'Supplementary Information')}
+        </h3>
+        <p className="text-blue-200/80 text-sm mb-6">
+          {t('已连接TikTok账号，部分信息将自动获取。请补充以下信息以获得更精准的诊断。', 
+             'TikTok account connected. Some info will be auto-filled. Please provide the following for more accurate diagnosis.')}
+        </p>
+
+        {/* Q1: 行业细分（必选） */}
+        <div className="mb-6">
+          <label className="text-blue-200 mb-3 block">
+            {t('Q1. 行业细分', 'Q1. Industry Subcategory')}
+            <span className="text-red-400 ml-1">*</span>
+          </label>
+          <p className="text-blue-300/60 text-xs mb-3">
+            {t('API只能获取注册大类，需要您补充具体细分领域', 
+               'API only provides main category, please specify subcategory')}
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {Object.entries(INDUSTRY_SUBCATEGORIES).map(([industryId, subcategories]) => (
+              <div key={industryId} className="bg-white/5 border border-white/10 rounded-lg p-3">
+                <p className="text-xs text-blue-300/60 mb-2">
+                  {INDUSTRIES.find(i => i.id === industryId)?.[locale === 'zh' ? 'labelZh' : 'labelEn']}
+                </p>
+                <div className="space-y-1">
+                  {subcategories.map(sub => (
+                    <button
+                      key={sub.id}
+                      onClick={() => setIndustrySubcategory(sub.id)}
+                      className={`w-full text-left px-3 py-1.5 rounded text-sm ${
+                        industrySubcategory === sub.id 
+                          ? 'bg-cyan-500/20 border border-cyan-400 text-cyan-300' 
+                          : 'bg-white/5 border border-white/10 text-blue-200 hover:bg-white/10'
+                      }`}
+                    >
+                      {locale === 'zh' ? sub.zh : sub.en}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Q2: 痛点目标（必选，根据推广目标动态展示） */}
+        <div className="mb-6">
+          <label className="text-blue-200 mb-3 block">
+            {t('Q2. 痛点目标', 'Q2. Pain Points')}
+            <span className="text-red-400 ml-1">*</span>
+          </label>
+          <p className="text-blue-300/60 text-xs mb-3">
+            {t('选择您当前最想解决的问题（可多选）', 
+               'Select the issues you want to solve most (multiple choice)')}
+          </p>
+          {formData.objective ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {(PAIN_POINT_OPTIONS[formData.objective] || []).map(pain => (
+                <button
+                  key={pain.id}
+                  onClick={() => {
+                    setPainPointGoal(prev => 
+                      prev.includes(pain.id) 
+                        ? prev.filter(id => id !== pain.id)
+                        : [...prev, pain.id]
+                    );
+                  }}
+                  className={`px-4 py-2 rounded-lg border text-sm ${
+                    painPointGoal.includes(pain.id) 
+                      ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' 
+                      : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'
+                  }`}
+                >
+                  {locale === 'zh' ? pain.zh : pain.en}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="text-yellow-400 text-sm">
+              {t('请先选择推广目标', 'Please select campaign objective first')}
+            </p>
+          )}
+        </div>
+
+        {/* Q3: 客单价范围（选填） */}
+        <div>
+          <label className="text-blue-200 mb-3 block">
+            {t('Q3. 客单价范围', 'Q3. Price Range')}
+            <span className="text-blue-300/60 text-xs ml-2">({t('选填', 'Optional')})</span>
+          </label>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {PRICE_RANGE_OPTIONS.map(price => (
+              <button
+                key={price.id}
+                onClick={() => setPriceRange(price.id)}
+                className={`px-4 py-2 rounded-lg border text-sm ${
+                  priceRange === price.id 
+                    ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' 
+                    : 'bg-white/5 border-white/20 text-blue-200 hover:bg-white/10'
+                }`}
+              >
+                {locale === 'zh' ? price.zh : price.en}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -1066,9 +1322,9 @@ export default function TikTokReviewPage() {
         </div>
       </div>
 
-      {/* CTA */}
+      {/* 行动引导文案 */}
       <div>
-        <label className="text-blue-200 mb-2 block">{t('是否包含明确CTA', 'Has Clear CTA')}</label>
+        <label className="text-blue-200 mb-2 block">{t('是否包含明确行动引导文案', 'Has Clear Call-to-Action')}</label>
         <div className="flex gap-3">
           {[
             { id: 'yes', zh: '是', en: 'Yes' },
@@ -1507,14 +1763,21 @@ export default function TikTokReviewPage() {
 
   // ========== 主渲染 ==========
 
-  const sections = [
-    { num: 1, title: t('Section 1：基础信息', 'Section 1: Basic Info'), render: renderSection1 },
-    { num: 2, title: t('Section 2：产品与合规风险', 'Section 2: Compliance'), render: renderSection2 },
-    { num: 3, title: t('Section 3：用户与需求判断', 'Section 3: User Needs'), render: renderSection3 },
-    { num: 4, title: t('Section 4：素材审查', 'Section 4: Creative'), render: renderSection4 },
-    { num: 5, title: t('Section 5：落地页与转化路径', 'Section 5: Landing Page'), render: renderSection5 },
-    { num: 6, title: t('Section 6：数据与投放设置', 'Section 6: Settings'), render: renderSection6 },
-  ];
+  // 根据授权状态决定显示的表单内容
+  const sections = isTikTokConnected
+    ? [
+        // 已授权用户：只显示补充问题
+        { num: 1, title: t('补充信息', 'Supplementary Info'), render: renderAuthorizedSupplementaryQuestions },
+      ]
+    : [
+        // 未授权用户：显示完整的6个Section
+        { num: 1, title: t('Section 1：基础信息', 'Section 1: Basic Info'), render: renderSection1 },
+        { num: 2, title: t('Section 2：产品与合规风险', 'Section 2: Compliance'), render: renderSection2 },
+        { num: 3, title: t('Section 3：用户与需求判断', 'Section 3: User Needs'), render: renderSection3 },
+        { num: 4, title: t('Section 4：素材审查', 'Section 4: Creative'), render: renderSection4 },
+        { num: 5, title: t('Section 5：落地页与转化路径', 'Section 5: Landing Page'), render: renderSection5 },
+        { num: 6, title: t('Section 6：数据与投放设置', 'Section 6: Settings'), render: renderSection6 },
+      ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">

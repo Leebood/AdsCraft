@@ -19,15 +19,19 @@ export const TK_REVIEW_TOOLTIPS: TooltipConfig[] = [
   // Section 1: 基础信息
   {
     questionId: 'objective',
-    questionZh: '广告目标',
+    questionZh: '推广目标',
     questionEn: 'Campaign Objective',
     options: [
-      { id: 'purchase', zh: '转化/销售', en: 'Conversions', descZh: '让用户在你的网站下单购买', descEn: 'Drive purchases on your website' },
-      { id: 'leads', zh: '线索/留资', en: 'Leads', descZh: '收集用户联系方式（表单/咨询）', descEn: 'Collect user contact info (form/inquiry)' },
-      { id: 'app_install', zh: 'App安装', en: 'App Install', descZh: '引导用户下载你的App', descEn: 'Drive app downloads' },
-      { id: 'website_traffic', zh: '网站流量', en: 'Website Traffic', descZh: '引导用户访问你的网站', descEn: 'Drive traffic to your website' },
-      { id: 'dm', zh: '私信', en: 'Direct Message', descZh: '让用户在TikTok内和你聊天', descEn: 'Start conversations in TikTok' },
-      { id: 'live', zh: '直播引流', en: 'Live Stream', descZh: '把用户拉进你的TikTok直播间', descEn: 'Drive viewers to your live stream' }
+      // 品牌认知
+      { id: 'reach', zh: '覆盖人数', en: 'Reach', descZh: '最大化广告触达的用户数量', descEn: 'Maximize the number of users who see your ad' },
+      // 受众意向
+      { id: 'traffic', zh: '访问量', en: 'Traffic', descZh: '引导用户访问你的网站或App', descEn: 'Drive traffic to your website or app' },
+      { id: 'video_views', zh: '视频播放量', en: 'Video Views', descZh: '增加视频观看次数', descEn: 'Increase video watch time' },
+      { id: 'engagement', zh: '社区互动', en: 'Community Interaction', descZh: '增加点赞、评论、分享等互动', descEn: 'Increase likes, comments, shares' },
+      // 行为转化
+      { id: 'app_promotion', zh: '应用推广', en: 'App Promotion', descZh: '引导用户下载或使用你的App', descEn: 'Drive app downloads or usage' },
+      { id: 'lead_collection', zh: '线索收集', en: 'Lead Collection', descZh: '收集用户联系方式和意向信息', descEn: 'Collect user contact info and intent' },
+      { id: 'sales', zh: '销量', en: 'Sales', descZh: '直接促进产品销售转化', descEn: 'Drive direct product sales' }
     ]
   },
   {
