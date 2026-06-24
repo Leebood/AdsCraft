@@ -155,13 +155,8 @@ export function SmartDiagnosisButton({ isHomePage = false }: SmartDiagnosisButto
   }
 
   // 已登录状态：显示下拉菜单
-  // 首页已有免费诊断入口，按钮文字统一为"我的方案"
-  const buttonText = isHomePage 
-    ? (locale === 'zh' ? '我的方案' : 'My Plans')
-    : (isPremium 
-      ? (locale === 'zh' ? '我的方案' : 'My Plans')
-      : (locale === 'zh' ? '免费诊断' : 'Start Free')
-    );
+  // 按钮文字统一为"方案快速诊断"
+  const buttonText = locale === 'zh' ? '方案快速诊断' : 'Quick Diagnosis';
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -182,62 +177,31 @@ export function SmartDiagnosisButton({ isHomePage = false }: SmartDiagnosisButto
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-64 bg-slate-900/95 border border-white/20 rounded-xl shadow-xl z-50 overflow-hidden">
-          {/* 用户信息 */}
+          {/* 快速诊断入口 */}
           <div className="px-4 py-3 border-b border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white font-bold text-sm">
-                {user.email?.[0]?.toUpperCase() || 'U'}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-white font-medium truncate">{user.email}</p>
-                <p className="text-xs text-blue-300/70">
-                  {isPremium 
-                    ? `${getRouteName(subscription.route)} · ${locale === 'zh' ? '已订阅' : 'Subscribed'}`
-                    : (locale === 'zh' ? '免费用户' : 'Free User')
-                  }
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* 未订阅用户：升级提示 */}
-          {!isPremium && (
-            <div className="px-4 py-3 border-b border-white/10 bg-gradient-to-r from-cyan-500/10 to-blue-500/10">
-              <p className="text-sm text-blue-200/80 mb-2">
-                {locale === 'zh' ? '升级获取更多诊断额度和深度归因' : 'Upgrade for more credits & deep attribution'}
-              </p>
-              <Link 
-                href="/#pricing"
-                onClick={() => setIsOpen(false)}
-                className="inline-flex items-center gap-1 text-sm text-cyan-400 hover:text-cyan-300 font-medium"
-              >
-                {locale === 'zh' ? '查看套餐 →' : 'View Plans →'}
-              </Link>
-            </div>
-          )}
-
-          {/* 操作按钮 */}
-          <div className="px-4 py-2 border-b border-white/10">
-            {/* 跳转到方案页面 */}
+            {/* FB方案快速诊断 */}
             <Link 
-              href="/dashboard/plans"
+              href="/questions?route=free&platform=facebook"
               onClick={() => setIsOpen(false)}
               className="w-full py-2 text-sm text-white hover:text-cyan-300 font-medium text-left flex items-center gap-2 rounded-lg hover:bg-white/5 transition-colors"
             >
-              <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              <svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              {locale === 'zh' ? 'FB/TK 方案详情' : 'FB/TK Plans'}
+              {locale === 'zh' ? 'FB 方案快速诊断' : 'FB Quick Diagnosis'}
             </Link>
-            <button 
-              onClick={handleStartDiagnosis}
-              className="w-full py-2 text-sm text-cyan-400 hover:text-cyan-300 font-medium text-left flex items-center gap-2"
+            {/* TK方案快速诊断 */}
+            <Link 
+              href="/rejection-check"
+              onClick={() => setIsOpen(false)}
+              className="w-full py-2 text-sm text-white hover:text-cyan-300 font-medium text-left flex items-center gap-2 rounded-lg hover:bg-white/5 transition-colors"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <svg className="w-4 h-4 text-pink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              {locale === 'zh' ? '开始新诊断' : 'New Diagnosis'}
-            </button>
+              {locale === 'zh' ? 'TK 方案快速诊断' : 'TK Quick Diagnosis'}
+            </Link>
           </div>
 
           {/* 方案记录 */}

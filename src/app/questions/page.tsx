@@ -230,9 +230,8 @@ function QuizContent() {
   // 渲染合规检查弹窗
   if (showCompliance) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden flex items-center justify-center">
-        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
-        <Card className="w-full max-w-2xl bg-white/5 border-white/20 backdrop-blur-sm shadow-xl relative z-10">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+        <Card className="w-full max-w-2xl bg-white/5 border-white/20 backdrop-blur-sm shadow-xl">
           <CardContent className="p-6">
             <h2 className="text-2xl font-bold text-white mb-4 text-center">
               {locale === 'zh' ? '合规预检' : 'Compliance Checklist'}
