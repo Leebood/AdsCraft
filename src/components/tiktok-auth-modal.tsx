@@ -15,6 +15,37 @@ interface AuthModalProps {
   source?: 'questionnaire' | 'result_page' | 'tk_tab';
 }
 
+// 抽象SVG图标组件
+const ChartIcon = () => (
+  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <rect x="3" y="3" width="4" height="18" rx="1" className="fill-cyan-500/30 stroke-cyan-400" />
+    <rect x="10" y="8" width="4" height="13" rx="1" className="fill-purple-500/30 stroke-purple-400" />
+    <rect x="17" y="13" width="4" height="8" rx="1" className="fill-pink-500/30 stroke-pink-400" />
+  </svg>
+);
+
+const SearchIcon = () => (
+  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <circle cx="11" cy="11" r="7" className="stroke-blue-400" />
+    <path d="M21 21l-4.35-4.35" className="stroke-blue-400" strokeLinecap="round" />
+  </svg>
+);
+
+const TrendIcon = () => (
+  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <path d="M3 17l6-6 4 4 8-8" className="stroke-emerald-400" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M17 7h4v4" className="stroke-emerald-400" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const TargetIcon = () => (
+  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <circle cx="12" cy="12" r="9" className="stroke-rose-400" />
+    <circle cx="12" cy="12" r="5" className="stroke-rose-400" />
+    <circle cx="12" cy="12" r="1" className="fill-rose-400" />
+  </svg>
+);
+
 export function TikTokAuthModal({ 
   isOpen, 
   onClose, 
@@ -115,22 +146,30 @@ export function TikTokAuthModal({
 
   const getFeatures = () => [
     {
-      icon: '📊',
+      icon: <ChartIcon />,
+      bgColor: 'from-cyan-500/20 to-blue-500/20',
+      borderColor: 'border-cyan-400/30',
       title: locale === 'zh' ? '真实广告数据' : 'Real Ad Data',
       desc: locale === 'zh' ? '自动获取花费、曝光、转化等数据' : 'Auto fetch spend, impressions, conversions'
     },
     {
-      icon: '🔍',
+      icon: <SearchIcon />,
+      bgColor: 'from-purple-500/20 to-violet-500/20',
+      borderColor: 'border-purple-400/30',
       title: locale === 'zh' ? '完整四层审查' : 'Full 4-Layer Review',
       desc: locale === 'zh' ? '政策合规+风险评分+AI审查+技术验证' : 'Policy + Risk + AI + Tech validation'
     },
     {
-      icon: '📈',
+      icon: <TrendIcon />,
+      bgColor: 'from-emerald-500/20 to-green-500/20',
+      borderColor: 'border-emerald-400/30',
       title: locale === 'zh' ? '数据趋势分析' : 'Trend Analysis',
       desc: locale === 'zh' ? '7/14/30天数据对比分析' : '7/14/30 day comparison'
     },
     {
-      icon: '🎯',
+      icon: <TargetIcon />,
+      bgColor: 'from-rose-500/20 to-pink-500/20',
+      borderColor: 'border-rose-400/30',
       title: locale === 'zh' ? '深度归因' : 'Deep Attribution',
       desc: locale === 'zh' ? '归因失败原因，精准优化建议' : 'Attribute failure, precise optimization'
     }
@@ -162,7 +201,7 @@ export function TikTokAuthModal({
         {/* 内容 */}
         <div className="p-6">
           {/* TikTok图标 */}
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
             <span className="text-2xl font-bold text-white">TK</span>
           </div>
 
@@ -179,9 +218,14 @@ export function TikTokAuthModal({
           {/* 功能列表 */}
           <div className="grid grid-cols-2 gap-3 mb-6">
             {getFeatures().map((feature, i) => (
-              <div key={i} className="bg-white/5 rounded-lg p-3 border border-white/10">
-                <span className="text-lg">{feature.icon}</span>
-                <p className="text-white font-medium text-sm mt-1">{feature.title}</p>
+              <div 
+                key={i} 
+                className={`bg-gradient-to-br ${feature.bgColor || feature.bgColor} rounded-lg p-3 border ${feature.borderColor}`}
+              >
+                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center mb-2">
+                  {feature.icon}
+                </div>
+                <p className="text-white font-medium text-sm">{feature.title}</p>
                 <p className="text-blue-300/70 text-xs">{feature.desc}</p>
               </div>
             ))}

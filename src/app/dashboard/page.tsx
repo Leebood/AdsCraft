@@ -8,35 +8,35 @@ import { useI18n } from '@/lib/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 import { getSupabaseBrowserClientAsync } from '@/lib/supabase-browser';
 
-interface SavedPlan {
-  id: number;
-  route: string;
-  budget: string;
-  goal: string;
+interface DiagnosisRecord {
+  id: string;
+  platform: 'facebook' | 'tiktok';
+  diagnosis_type: 'full' | 'light';
+  status: string;
   created_at: string;
-  updated_at: string;
+  config_summary?: string;
 }
 
-const routeLabels: Record<string, { en: string; zh: string; icon: string }> = {
-  retailer: { en: 'Retailer', zh: '零售商', icon: '🛍️' },
-  manufacturer: { en: 'Manufacturer', zh: '制造商', icon: '⚙️' },
-  local_service: { en: 'Local Service', zh: '本地服务商', icon: '📍' },
-  brand: { en: 'Brand', zh: '品牌方', icon: '⭐' }
+const routeLabels: Record<string, { en: string; zh: string }> = {
+  retailer: { en: 'Retailer', zh: '零售商' },
+  manufacturer: { en: 'Manufacturer', zh: '制造商' },
+  local_service: { en: 'Local Service', zh: '本地服务商' },
+  brand: { en: 'Brand', zh: '品牌方' }
 };
 
 export default function DashboardPage() {
   const { t, locale } = useI18n();
   const { user, isPremium, signOut } = useAuth();
-  const [plans, setPlans] = useState<SavedPlan[]>([]);
+  const [records, setRecords] = useState<DiagnosisRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (user) {
-      fetchPlans();
+      fetchRecords();
     }
   }, [user]);
 
-  const fetchPlans = async () => {
+  const fetchRecords = async () => {
     try {
       const client = await getSupabaseBrowserClientAsync();
       const { data } = await client.auth.getSession();
@@ -47,16 +47,16 @@ export default function DashboardPage() {
         return;
       }
 
-      const response = await fetch('/api/plans', {
+      const response = await fetch('/api/diagnosis-records', {
         headers: { 'x-session': token }
       });
       
       if (response.ok) {
         const data = await response.json();
-        setPlans(data.plans || []);
+        setRecords(data.records || []);
       }
     } catch (error) {
-      console.error('Fetch plans error:', error);
+      console.error('Fetch records error:', error);
     } finally {
       setLoading(false);
     }
@@ -70,36 +70,9 @@ export default function DashboardPage() {
     }
   };
 
-  const deletePlan = async (planId: number) => {
-    try {
-      const client = await getSupabaseBrowserClientAsync();
-      const { data } = await client.auth.getSession();
-      const token = data.session?.access_token;
-      
-      if (!token) return;
-
-      const response = await fetch(`/api/plans/${planId}`, {
-        method: 'DELETE',
-        headers: { 'x-session': token }
-      });
-      
-      if (response.ok) {
-        setPlans(plans.filter(p => p.id !== planId));
-      }
-    } catch (error) {
-      console.error('Delete plan error:', error);
-    }
-  };
-
-  const getRouteLabel = (route: string) => {
-    const info = routeLabels[route] || routeLabels.retailer;
-    return locale === 'zh' ? info.zh : info.en;
-  };
-
-  const getRouteIcon = (route: string) => {
-    const info = routeLabels[route] || routeLabels.retailer;
-    return info.icon;
-  };
+  // 分离FB和TK记录
+  const fbRecords = records.filter(r => r.platform === 'facebook');
+  const tkRecords = records.filter(r => r.platform === 'tiktok');
 
   if (!user) {
     return (
@@ -155,94 +128,113 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* 功能入口 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            {/* 分析功能 */}
-            <Link href="/dashboard/analysis">
-              <Card className="bg-white/5 border-white/20 backdrop-blur-sm shadow-xl hover:border-cyan-400/50 hover:bg-white/10 transition-all cursor-pointer">
-                <CardContent className="py-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-cyan-500/30 to-blue-500/30 rounded-xl flex items-center justify-center border border-cyan-400/30">
-                      <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 002-2h2a2 2 0 002 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 002-2h2a2 2 0 002 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="text-white font-semibold">{locale === 'zh' ? '截图分析' : 'Screenshot Analysis'}</h3>
-                      <p className="text-blue-300 text-sm">{locale === 'zh' ? '上传广告截图，AI分析诊断' : 'Upload ad screenshots for AI analysis'}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-
-            {/* 我的方案 */}
-            <Link href="/dashboard/plans">
-              <Card className="bg-white/5 border-white/20 backdrop-blur-sm shadow-xl hover:border-purple-400/50 hover:bg-white/10 transition-all cursor-pointer">
-                <CardContent className="py-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-purple-500/30 to-pink-500/30 rounded-xl flex items-center justify-center border border-purple-400/30">
-                      <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="text-white font-semibold">{locale === 'zh' ? '我的方案' : 'My Plans'}</h3>
-                      <p className="text-blue-300 text-sm">{locale === 'zh' ? 'FB/TK诊断记录与方案详情' : 'FB/TK diagnosis records and plans'}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          </div>
-
-          {/* Saved Plans */}
+          {/* Facebook 方案记录 */}
           <Card className="bg-white/5 border-white/20 backdrop-blur-sm shadow-xl mb-6">
-            <CardHeader>
-              <CardTitle className="text-white">{locale === 'zh' ? '已保存的方案' : 'Saved Plans'}</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500/30 to-indigo-500/30 rounded-xl flex items-center justify-center border border-blue-400/30">
+                  <svg className="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                </div>
+                <CardTitle className="text-white">
+                  {locale === 'zh' ? 'Facebook 方案记录' : 'Facebook Records'}
+                </CardTitle>
+              </div>
+              <Link href="/questions?route=free&platform=facebook">
+                <Button size="sm" className="bg-blue-500/20 border-blue-400/30 text-blue-400 hover:bg-blue-500/30">
+                  {locale === 'zh' ? '开始诊断' : 'Start Diagnosis'}
+                </Button>
+              </Link>
             </CardHeader>
             <CardContent>
               {loading ? (
-                <p className="text-blue-200 text-center">{locale === 'zh' ? '加载中...' : 'Loading...'}</p>
-              ) : plans.length === 0 ? (
-                <div className="text-center">
-                  <p className="text-blue-200 mb-4">{locale === 'zh' ? '暂无已保存的方案' : 'No saved plans yet'}</p>
-                  <Link href="/">
-                    <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/30">
-                      {locale === 'zh' ? '创建新方案' : 'Create New Plan'}
-                    </Button>
-                  </Link>
-                </div>
+                <p className="text-blue-200 text-center py-4">{locale === 'zh' ? '加载中...' : 'Loading...'}</p>
+              ) : fbRecords.length === 0 ? (
+                <p className="text-blue-200/70 text-center py-4">{locale === 'zh' ? '暂无Facebook诊断记录' : 'No Facebook records'}</p>
               ) : (
-                <div className="space-y-4">
-                  {plans.map((plan) => (
-                    <div key={plan.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
-                      <div className="flex items-center gap-4">
-                        <span className="text-2xl">{getRouteIcon(plan.route)}</span>
+                <div className="space-y-3">
+                  {fbRecords.map((record) => (
+                    <div key={record.id} className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                          <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
                         <div>
-                          <p className="text-white font-medium">{getRouteLabel(plan.route)}</p>
-                          <p className="text-blue-300 text-sm">
-                            {locale === 'zh' ? `预算: ${plan.budget} | 目标: ${plan.goal}` : `Budget: ${plan.budget} | Goal: ${plan.goal}`}
+                          <p className="text-white font-medium">
+                            {record.diagnosis_type === 'full' 
+                              ? (locale === 'zh' ? '完整诊断' : 'Full Diagnosis')
+                              : (locale === 'zh' ? '截图分析' : 'Screenshot Analysis')}
                           </p>
-                          <p className="text-blue-400 text-xs">
-                            {new Date(plan.created_at).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US')}
+                          <p className="text-blue-300 text-xs">
+                            {new Date(record.created_at).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US')}
                           </p>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Link href={`/saved/${plan.id}`}>
-                          <Button size="sm" className="bg-cyan-500/20 border-cyan-400/30 text-cyan-400 hover:bg-cyan-500/30">
-                            {locale === 'zh' ? '查看' : 'View'}
-                          </Button>
-                        </Link>
-                        <Button 
-                          size="sm" 
-                          onClick={() => deletePlan(plan.id)}
-                          className="bg-red-500/20 border-red-400/30 text-red-400 hover:bg-red-500/30"
-                        >
-                          {locale === 'zh' ? '删除' : 'Delete'}
+                      <Link href={`/dashboard/plans?tab=fb&record=${record.id}`}>
+                        <Button size="sm" variant="ghost" className="text-blue-400 hover:text-blue-300">
+                          {locale === 'zh' ? '查看' : 'View'}
                         </Button>
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* TikTok 方案记录 */}
+          <Card className="bg-white/5 border-white/20 backdrop-blur-sm shadow-xl mb-6">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-pink-500/30 to-purple-500/30 rounded-xl flex items-center justify-center border border-pink-400/30">
+                  <svg className="w-5 h-5 text-pink-400" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13a2.89 2.89 0 0 1-5.89 0c0-.06 0-.12 0-.17a2.89 2.89 0 0 1 2.89-2.72c.24 0 .48.03.71.08V8.32a6.23 6.23 0 0 0-3.6.34A6.19 6.19 0 0 0 5 14.5a6.19 6.19 0 0 0 6.19 6.19h.1a6.19 6.19 0 0 0 6.18-6.19V9.12a9.5 9.5 0 0 0 3.77.83V6.69h-.65z"/>
+                  </svg>
+                </div>
+                <CardTitle className="text-white">
+                  {locale === 'zh' ? 'TikTok 方案记录' : 'TikTok Records'}
+                </CardTitle>
+              </div>
+              <Link href="/rejection-check">
+                <Button size="sm" className="bg-pink-500/20 border-pink-400/30 text-pink-400 hover:bg-pink-500/30">
+                  {locale === 'zh' ? '开始诊断' : 'Start Diagnosis'}
+                </Button>
+              </Link>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <p className="text-blue-200 text-center py-4">{locale === 'zh' ? '加载中...' : 'Loading...'}</p>
+              ) : tkRecords.length === 0 ? (
+                <p className="text-blue-200/70 text-center py-4">{locale === 'zh' ? '暂无TikTok诊断记录' : 'No TikTok records'}</p>
+              ) : (
+                <div className="space-y-3">
+                  {tkRecords.map((record) => (
+                    <div key={record.id} className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-pink-500/20 rounded-lg flex items-center justify-center">
+                          <svg className="w-4 h-4 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="text-white font-medium">
+                            {record.diagnosis_type === 'full' 
+                              ? (locale === 'zh' ? '完整四层审查' : 'Full 4-Layer Review')
+                              : (locale === 'zh' ? '轻量建议' : 'Light Advice')}
+                          </p>
+                          <p className="text-blue-300 text-xs">
+                            {new Date(record.created_at).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US')}
+                          </p>
+                        </div>
                       </div>
+                      <Link href={`/dashboard/plans?tab=tk&record=${record.id}`}>
+                        <Button size="sm" variant="ghost" className="text-pink-400 hover:text-pink-300">
+                          {locale === 'zh' ? '查看' : 'View'}
+                        </Button>
+                      </Link>
                     </div>
                   ))}
                 </div>

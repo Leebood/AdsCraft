@@ -47,6 +47,9 @@ export default function PlansPage() {
   const [tkRecords, setTkRecords] = useState<DiagnosisRecord[]>([]);
   const [adDataOverview, setAdDataOverview] = useState<AdDataOverview | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showTimeRangeModal, setShowTimeRangeModal] = useState(false);
+  const [selectedTimeRange, setSelectedTimeRange] = useState<'7' | '14' | '30'>('7');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // 获取TikTok连接状态和诊断记录
   useEffect(() => {
@@ -125,12 +128,61 @@ export default function PlansPage() {
     }
   };
 
-  // 开始诊断
+  // 开始诊断（未授权用户走问卷）
   const handleStartDiagnosis = () => {
     if (activeTab === 'fb') {
       router.push('/questions?route=free&platform=facebook');
     } else {
       router.push('/rejection-check');
+    }
+  };
+
+  // 重新诊断（已授权用户直接分析，无问卷）
+  const handleTKRediagnosis = () => {
+    setShowTimeRangeModal(true);
+  };
+
+  // 时间范围选择后执行诊断
+  const handleConfirmTimeRange = async () => {
+    setShowTimeRangeModal(false);
+    setIsAnalyzing(true);
+    
+    try {
+      const client = await getSupabaseBrowserClientAsync();
+      const { data: { session } } = await client.auth.getSession();
+      const token = session?.access_token;
+      
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+
+      // 调用诊断API，直接分析（复用上次问卷配置）
+      const res = await fetch('/api/tiktok-review', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-session': token
+        },
+        body: JSON.stringify({
+          mode: 'full',
+          time_range: selectedTimeRange,
+          use_saved_config: true  // 使用保存的配置，跳过问卷
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        // 跳转到结果页面或刷新记录
+        fetchData();
+      } else {
+        const error = await res.json();
+        console.error('Diagnosis error:', error);
+      }
+    } catch (error) {
+      console.error('Diagnosis error:', error);
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -313,13 +365,13 @@ export default function PlansPage() {
             <Card className="bg-white/5 border-white/10">
               <CardContent className="py-8 text-center">
                 <p className="text-blue-200/70 mb-4">
-                  {locale === 'zh' ? '已连接TikTok账号，可以开始完整诊断' : 'TikTok connected, ready for full diagnosis'}
+                  {locale === 'zh' ? '已连接TikTok账号，可直接进行完整诊断' : 'TikTok connected, ready for full diagnosis'}
                 </p>
                 <Button 
-                  onClick={handleStartDiagnosis}
+                  onClick={handleTKRediagnosis}
                   className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-400 hover:to-pink-500 text-white"
                 >
-                  {locale === 'zh' ? '开始诊断' : 'Start Diagnosis'}
+                  {locale === 'zh' ? '重新诊断' : 'Re-Diagnosis'}
                 </Button>
               </CardContent>
             </Card>
@@ -470,6 +522,71 @@ export default function PlansPage() {
           </div>
         </div>
       </main>
+
+      {/* 时间范围选择弹窗 */}
+      {showTimeRangeModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-slate-800 to-indigo-900 rounded-2xl p-6 max-w-md w-full border border-white/20 shadow-xl">
+            {/* 图标 */}
+            <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center border border-purple-400/30">
+              <svg className="w-7 h-7 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 002-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            
+            {/* 标题 */}
+            <h3 className="text-xl font-semibold text-white text-center mb-2">
+              {locale === 'zh' ? '选择数据时间范围' : 'Select Data Time Range'}
+            </h3>
+            <p className="text-blue-200/70 text-center mb-6">
+              {locale === 'zh' ? '选择要分析的广告数据时间范围' : 'Select the time range for ad data analysis'}
+            </p>
+
+            {/* 时间选项 */}
+            <div className="grid grid-cols-3 gap-3 mb-6">
+              {(['7', '14', '30'] as const).map((days) => (
+                <button
+                  key={days}
+                  onClick={() => setSelectedTimeRange(days)}
+                  className={`p-4 rounded-xl border transition-all ${
+                    selectedTimeRange === days 
+                      ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-400 shadow-lg shadow-purple-500/20 scale-105' 
+                      : 'bg-white/5 border-white/20 hover:border-purple-400/50 hover:bg-white/10'
+                  }`}
+                >
+                  <div className={`text-2xl font-bold ${selectedTimeRange === days ? 'text-purple-300' : 'text-white'}`}>
+                    {days}
+                  </div>
+                  <div className={`text-sm ${selectedTimeRange === days ? 'text-purple-200' : 'text-blue-200/70'}`}>
+                    {locale === 'zh' ? '天' : 'days'}
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* 按钮 */}
+            <div className="space-y-3">
+              <Button 
+                onClick={handleConfirmTimeRange}
+                disabled={isAnalyzing}
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-400 hover:to-pink-500 text-white py-3"
+              >
+                {isAnalyzing 
+                  ? (locale === 'zh' ? '分析中...' : 'Analyzing...') 
+                  : (locale === 'zh' ? '开始诊断' : 'Start Diagnosis')
+                }
+              </Button>
+              <Button 
+                onClick={() => setShowTimeRangeModal(false)}
+                variant="outline"
+                className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20"
+              >
+                {locale === 'zh' ? '取消' : 'Cancel'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
