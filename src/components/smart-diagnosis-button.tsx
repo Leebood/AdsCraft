@@ -83,12 +83,6 @@ export function SmartDiagnosisButton({ isHomePage = false }: SmartDiagnosisButto
     setIsOpen(!isOpen);
   };
 
-  // 开始新诊断
-  const handleStartDiagnosis = () => {
-    setIsOpen(false);
-    router.push('/rejection-check');
-  };
-
   // 获取线路名称
   const getRouteName = (route: string): string => {
     const routeNames: Record<string, string> = {
