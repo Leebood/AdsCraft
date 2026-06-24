@@ -128,10 +128,10 @@ export default function PlansPage() {
     }
   };
 
-  // 开始诊断（未授权用户走问卷）
+  // 开始诊断（FB跳转截图上传，TK跳转审查问卷）
   const handleStartDiagnosis = () => {
     if (activeTab === 'fb') {
-      router.push('/questions?route=free&platform=facebook');
+      router.push('/dashboard/analysis');
     } else {
       router.push('/rejection-check');
     }
