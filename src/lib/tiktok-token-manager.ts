@@ -14,6 +14,9 @@ import { getTikTokFullConfig } from '@/storage/database/supabase-client';
 
 const TIKTOK_API_BASE = 'https://business-api.tiktok.com/open_api/v1.3';
 
+// 系统级Token的用户ID标识
+const SYSTEM_USER_ID = 'system_tiktok';
+
 interface TikTokTokenData {
   access_token: string;
   refresh_token: string;
@@ -30,11 +33,13 @@ interface TikTokRefreshResponse {
 
 interface StoredToken {
   id: string;
+  user_id: string;
+  platform: string;
   access_token: string;
   refresh_token: string;
-  expires_at: string;
-  last_refresh_at: string | null;
-  advertiser_id: string;
+  token_expires_at: string;
+  platform_user_id: string;
+  is_active: boolean;
 }
 
 /**
@@ -68,17 +73,17 @@ export async function refreshTikTokAccessToken(
 }
 
 /**
- * 从Supabase获取存储的Token
+ * 从Supabase获取存储的系统Token
  */
 export async function getStoredToken(): Promise<StoredToken | null> {
   const supabase = createServerSupabaseClient();
 
   const { data, error } = await supabase
-    .from('tiktok_tokens')
+    .from('platform_connections')
     .select('*')
-    .eq('status', 'active')
-    .order('created_at', { ascending: false })
-    .limit(1)
+    .eq('user_id', SYSTEM_USER_ID)
+    .eq('platform', 'tiktok')
+    .eq('is_active', true)
     .single();
 
   if (error || !data) {
@@ -89,7 +94,7 @@ export async function getStoredToken(): Promise<StoredToken | null> {
 }
 
 /**
- * 初始化Token到Supabase（从环境变量读取）
+ * 初始化系统Token到Supabase（从环境变量读取）
  */
 export async function initializeTokenFromEnv(): Promise<boolean> {
   const config = getTikTokFullConfig();
@@ -111,14 +116,19 @@ export async function initializeTokenFromEnv(): Promise<boolean> {
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
   const { error } = await supabase
-    .from('tiktok_tokens')
-    .insert({
+    .from('platform_connections')
+    .upsert({
+      user_id: SYSTEM_USER_ID,
+      platform: 'tiktok',
       access_token: config.accessToken,
       refresh_token: config.accessToken, // TikTok用access_token作为refresh_token
-      expires_at: expiresAt.toISOString(),
-      advertiser_id: config.advertiserId,
-      status: 'active',
-      created_at: new Date().toISOString(),
+      token_expires_at: expiresAt.toISOString(),
+      platform_user_id: config.advertiserId,
+      is_active: true,
+      scopes: [],
+      updated_at: new Date().toISOString(),
+    }, {
+      onConflict: 'user_id,platform'
     });
 
   if (error) {
@@ -172,7 +182,7 @@ export async function refreshTokenIfNeeded(): Promise<{
     }
 
     // 检查是否需要刷新
-    if (!needsRefresh(storedToken.expires_at)) {
+    if (!needsRefresh(storedToken.token_expires_at)) {
       console.log('Token does not need refresh yet');
       return { success: true, newToken: storedToken.access_token };
     }
@@ -191,12 +201,11 @@ export async function refreshTokenIfNeeded(): Promise<{
     // 更新Supabase
     const supabase = createServerSupabaseClient();
     const { error: updateError } = await supabase
-      .from('tiktok_tokens')
+      .from('platform_connections')
       .update({
         access_token: newTokenData.access_token,
         refresh_token: newTokenData.refresh_token,
-        expires_at: newExpiresAt.toISOString(),
-        last_refresh_at: new Date().toISOString(),
+        token_expires_at: newExpiresAt.toISOString(),
         updated_at: new Date().toISOString(),
       })
       .eq('id', storedToken.id);
@@ -233,7 +242,7 @@ export async function getAdvertiserId(): Promise<string | null> {
   }
 
   const storedToken = await getStoredToken();
-  return storedToken?.advertiser_id ?? null;
+  return storedToken?.platform_user_id ?? null;
 }
 
 /**
@@ -245,11 +254,12 @@ export async function markTokenAsNeedsReauth(reason: string): Promise<void> {
 
   const supabase = createServerSupabaseClient();
   await supabase
-    .from('tiktok_tokens')
+    .from('platform_connections')
     .update({
-      status: 'needs_reauth',
-      error_message: reason,
+      is_active: false,
       updated_at: new Date().toISOString(),
     })
     .eq('id', storedToken.id);
+  
+  console.log('Token marked as needing reauth:', reason);
 }

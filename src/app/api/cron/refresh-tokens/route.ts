@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       
       // 检查是否需要刷新
       const storedToken = await getStoredToken();
-      if (storedToken && needsRefresh(storedToken.expires_at)) {
+      if (storedToken && needsRefresh(storedToken.token_expires_at)) {
         const refreshResult = await refreshTokenIfNeeded();
         if (refreshResult.success) {
           tiktokRefreshed = true;
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
             platform: 'tiktok',
             type: 'system_token',
             status: 'success',
-            new_expires_at: storedToken.expires_at,
+            new_expires_at: storedToken.token_expires_at,
           });
         } else {
           tiktokError = refreshResult.error ?? 'Unknown error';
@@ -86,9 +86,10 @@ export async function GET(request: NextRequest) {
     const { data: connections, error: fetchError } = await supabase
       .from('platform_connections')
       .select('*')
-      .eq('status', 'active')
-      .lt('expires_at', twelveHoursFromNow.toISOString())
-      .gt('expires_at', new Date().toISOString()); // 还未过期
+      .eq('is_active', true)
+      .eq('platform', 'tiktok')
+      .lt('token_expires_at', twelveHoursFromNow.toISOString())
+      .gt('token_expires_at', new Date().toISOString()); // 还未过期
     
     if (fetchError) {
       console.error('Failed to fetch connections:', fetchError);
