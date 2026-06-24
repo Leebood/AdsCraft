@@ -177,20 +177,6 @@ export function SmartDiagnosisButton({ isHomePage = false }: SmartDiagnosisButto
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-64 bg-slate-900/95 border border-white/20 rounded-xl shadow-xl z-50 overflow-hidden">
-          {/* 我的方案入口 */}
-          <div className="px-4 py-3 border-b border-white/10">
-            <Link 
-              href="/dashboard/plans"
-              onClick={() => setIsOpen(false)}
-              className="w-full py-2 text-sm text-white hover:text-cyan-300 font-medium text-left flex items-center gap-2 rounded-lg hover:bg-white/5 transition-colors"
-            >
-              <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-              {locale === 'zh' ? '我的方案' : 'My Plans'}
-            </Link>
-          </div>
-
           {/* 快速诊断入口 */}
           <div className="px-4 py-3 border-b border-white/10">
             <p className="text-xs text-blue-300/60 uppercase tracking-wider mb-2">
