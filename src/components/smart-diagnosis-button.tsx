@@ -209,31 +209,16 @@ export function SmartDiagnosisButton({ isHomePage = false }: SmartDiagnosisButto
           )}
 
           {/* FB/TK方案快速诊断 */}
-          <div className="px-4 py-3 border-b border-white/10">
-            <p className="text-xs text-blue-300/60 uppercase tracking-wider mb-2">
-              {locale === 'zh' ? '快速诊断' : 'Quick Diagnosis'}
-            </p>
-            {/* FB方案快速诊断 */}
+          <div className="px-4 py-2 border-b border-white/10">
             <Link 
-              href="/questions?route=free&platform=facebook"
-              onClick={() => setIsOpen(false)}
-              className="w-full py-2 text-sm text-blue-200 hover:text-cyan-300 font-medium text-left flex items-center gap-2 rounded-lg hover:bg-white/5 transition-colors"
-            >
-              <svg className="w-4 h-4 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              {locale === 'zh' ? 'FB 方案快速诊断' : 'FB Quick Diagnosis'}
-            </Link>
-            {/* TK方案快速诊断 */}
-            <Link 
-              href="/rejection-check?platform=tiktok"
+              href="/dashboard/plans"
               onClick={() => setIsOpen(false)}
               className="w-full py-2 text-sm text-blue-200 hover:text-cyan-300 font-medium text-left flex items-center gap-2 rounded-lg hover:bg-white/5 transition-colors"
             >
               <svg className="w-4 h-4 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
               </svg>
-              {locale === 'zh' ? 'TK 方案快速诊断' : 'TK Quick Diagnosis'}
+              {locale === 'zh' ? 'FB/TK 方案快速诊断' : 'FB/TK Quick Diagnosis'}
             </Link>
           </div>
 
