@@ -22,14 +22,8 @@ export function Navigation() {
     pathname.startsWith('/plan') &&
     !pathname.startsWith('/dashboard/plans');
   
-  // Tab 配置（仅仪表盘和设置页显示）
+  // Tab 配置（仅仪表盘页面显示）
   const tabs = [
-    { 
-      id: 'plans', 
-      label: locale === 'zh' ? '我的方案' : 'My Plans', 
-      href: '/dashboard/plans',
-      icon: `<svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>`
-    },
     { 
       id: 'overview', 
       label: locale === 'zh' ? '概览' : 'Overview', 
@@ -37,19 +31,18 @@ export function Navigation() {
       icon: `<svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>`
     },
     { 
-      id: 'settings', 
-      label: locale === 'zh' ? '设置' : 'Settings', 
-      href: '/settings',
-      icon: `<svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>`
+      id: 'plans', 
+      label: locale === 'zh' ? '我的方案' : 'My Plans', 
+      href: '/dashboard/plans',
+      icon: `<svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>`
     },
   ];
 
   // 判断当前激活的 Tab
   const getActiveTab = () => {
-    if (pathname.startsWith('/dashboard/plans')) return 'plans';
     if (pathname === '/' || pathname === '/dashboard') return 'overview';
-    if (pathname.startsWith('/settings')) return 'settings';
-    return 'plans'; // 默认显示我的方案
+    if (pathname.startsWith('/dashboard/plans')) return 'plans';
+    return 'overview'; // 默认显示概览
   };
 
   const activeTab = getActiveTab();

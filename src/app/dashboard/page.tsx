@@ -176,19 +176,19 @@ export default function DashboardPage() {
               </Card>
             </Link>
 
-            {/* TikTok 连接 */}
-            <Link href="/dashboard/connections">
+            {/* 我的方案 */}
+            <Link href="/dashboard/plans">
               <Card className="bg-white/5 border-white/20 backdrop-blur-sm shadow-xl hover:border-purple-400/50 hover:bg-white/10 transition-all cursor-pointer">
                 <CardContent className="py-6">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-gradient-to-br from-purple-500/30 to-pink-500/30 rounded-xl flex items-center justify-center border border-purple-400/30">
                       <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                       </svg>
                     </div>
                     <div>
-                      <h3 className="text-white font-semibold">{locale === 'zh' ? '平台连接' : 'Platform Connections'}</h3>
-                      <p className="text-blue-300 text-sm">{locale === 'zh' ? '连接TikTok广告账户' : 'Connect TikTok ad accounts'}</p>
+                      <h3 className="text-white font-semibold">{locale === 'zh' ? '我的方案' : 'My Plans'}</h3>
+                      <p className="text-blue-300 text-sm">{locale === 'zh' ? 'FB/TK诊断记录与方案详情' : 'FB/TK diagnosis records and plans'}</p>
                     </div>
                   </div>
                 </CardContent>

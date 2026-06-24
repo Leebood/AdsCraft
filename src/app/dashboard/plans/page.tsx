@@ -128,7 +128,7 @@ export default function PlansPage() {
   // 开始诊断
   const handleStartDiagnosis = () => {
     if (activeTab === 'fb') {
-      router.push('/diagnosis/facebook');
+      router.push('/questions?route=free&platform=facebook');
     } else {
       router.push('/rejection-check');
     }
