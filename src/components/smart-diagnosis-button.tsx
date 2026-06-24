@@ -156,7 +156,7 @@ export function SmartDiagnosisButton({ isHomePage = false }: SmartDiagnosisButto
 
   // 已登录状态：显示下拉菜单
   // 按钮文字恢复为"我的方案"
-  const buttonText = locale === 'zh' ? '我的方案' : 'My Plans';
+  const buttonText = locale === 'zh' ? '方案快速诊断' : 'Quick Diagnosis';
 
   return (
     <div className="relative" ref={dropdownRef}>
