@@ -150,4 +150,25 @@ function getTikTokConfig(): { appId: string; appSecret: string } | null {
   return { appId, appSecret };
 }
 
-export { loadEnv, getSupabaseCredentials, getSupabaseServiceRoleKey, getSupabaseClient, getTikTokConfig };
+// TikTok 完整配置获取（包含access_token和advertiser_id）
+function getTikTokFullConfig(): {
+  appId: string;
+  appSecret: string;
+  accessToken: string;
+  advertiserId: string;
+  callbackUrl: string;
+} | null {
+  loadEnv();
+  const appId = process.env.TIKTOK_APP_ID;
+  const appSecret = process.env.TIKTOK_APP_SECRET;
+  const accessToken = process.env.TIKTOK_ACCESS_TOKEN;
+  const advertiserId = process.env.TIKTOK_ADVERTISER_ID;
+  const callbackUrl = process.env.TIKTOK_CALLBACK_URL || 'https://adscraft.cn/api/tiktok/callback';
+  
+  if (!appId || !appSecret || !accessToken || !advertiserId) {
+    return null;
+  }
+  return { appId, appSecret, accessToken, advertiserId, callbackUrl };
+}
+
+export { loadEnv, getSupabaseCredentials, getSupabaseServiceRoleKey, getSupabaseClient, getTikTokConfig, getTikTokFullConfig };
