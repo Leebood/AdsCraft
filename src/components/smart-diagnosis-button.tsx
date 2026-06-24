@@ -178,7 +178,7 @@ export function SmartDiagnosisButton({ isHomePage = false }: SmartDiagnosisButto
       {isOpen && (
         <div className="absolute right-0 mt-2 w-64 bg-slate-900/95 border border-white/20 rounded-xl shadow-xl z-50 overflow-hidden">
           {/* 账户信息 */}
-          <div className="px-4 py-3 border-b border-white/10 bg-white/5">
+          <div className="px-4 py-3 border-b border-white/10">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold">
                 {user?.email?.charAt(0).toUpperCase() || 'U'}
@@ -256,7 +256,7 @@ export function SmartDiagnosisButton({ isHomePage = false }: SmartDiagnosisButto
           </div>
 
           {/* 查看全部 */}
-          <div className="px-4 py-2 border-t border-white/10 bg-white/5">
+          <div className="px-4 py-2 border-t border-white/10">
             <Link
               href="/dashboard/plans"
               onClick={() => setIsOpen(false)}
