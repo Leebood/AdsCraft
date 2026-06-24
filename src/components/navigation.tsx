@@ -22,11 +22,17 @@ export function Navigation() {
     pathname.startsWith('/plan') &&
     !pathname.startsWith('/dashboard/plans');
   
-  // Tab 配置（仅仪表盘页面显示）
+  // Tab 配置（仪表盘页面显示）
   const tabs = [
     { 
+      id: 'overview', 
+      label: locale === 'zh' ? '概览' : 'Overview', 
+      href: '/dashboard',
+      icon: `<svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>`
+    },
+    { 
       id: 'plans', 
-      label: locale === 'zh' ? '方案快速诊断' : 'Quick Diagnosis', 
+      label: locale === 'zh' ? '我的方案' : 'My Plans', 
       href: '/dashboard/plans',
       icon: `<svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>`
     },
@@ -34,8 +40,9 @@ export function Navigation() {
 
   // 判断当前激活的 Tab
   const getActiveTab = () => {
-    if (pathname.startsWith('/dashboard')) return 'plans';
-    return 'plans';
+    if (pathname === '/dashboard' || pathname === '/dashboard/overview') return 'overview';
+    if (pathname.startsWith('/dashboard/plans')) return 'plans';
+    return 'overview';
   };
 
   const activeTab = getActiveTab();

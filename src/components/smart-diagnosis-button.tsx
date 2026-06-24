@@ -177,13 +177,30 @@ export function SmartDiagnosisButton({ isHomePage = false }: SmartDiagnosisButto
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-64 bg-slate-900/95 border border-white/20 rounded-xl shadow-xl z-50 overflow-hidden">
+          {/* 我的方案入口 */}
+          <div className="px-4 py-3 border-b border-white/10">
+            <Link 
+              href="/dashboard/plans"
+              onClick={() => setIsOpen(false)}
+              className="w-full py-2 text-sm text-white hover:text-cyan-300 font-medium text-left flex items-center gap-2 rounded-lg hover:bg-white/5 transition-colors"
+            >
+              <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              {locale === 'zh' ? '我的方案' : 'My Plans'}
+            </Link>
+          </div>
+
           {/* 快速诊断入口 */}
           <div className="px-4 py-3 border-b border-white/10">
+            <p className="text-xs text-blue-300/60 uppercase tracking-wider mb-2">
+              {locale === 'zh' ? '快速诊断' : 'Quick Diagnosis'}
+            </p>
             {/* FB方案快速诊断 */}
             <Link 
               href="/questions?route=free&platform=facebook"
               onClick={() => setIsOpen(false)}
-              className="w-full py-2 text-sm text-white hover:text-cyan-300 font-medium text-left flex items-center gap-2 rounded-lg hover:bg-white/5 transition-colors"
+              className="w-full py-2 text-sm text-blue-200 hover:text-cyan-300 font-medium text-left flex items-center gap-2 rounded-lg hover:bg-white/5 transition-colors"
             >
               <svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -195,7 +212,7 @@ export function SmartDiagnosisButton({ isHomePage = false }: SmartDiagnosisButto
             <Link 
               href="/rejection-check"
               onClick={() => setIsOpen(false)}
-              className="w-full py-2 text-sm text-white hover:text-cyan-300 font-medium text-left flex items-center gap-2 rounded-lg hover:bg-white/5 transition-colors"
+              className="w-full py-2 text-sm text-blue-200 hover:text-cyan-300 font-medium text-left flex items-center gap-2 rounded-lg hover:bg-white/5 transition-colors"
             >
               <svg className="w-4 h-4 text-pink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
