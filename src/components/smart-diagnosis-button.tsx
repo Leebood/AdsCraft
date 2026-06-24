@@ -192,35 +192,48 @@ export function SmartDiagnosisButton({ isHomePage = false }: SmartDiagnosisButto
             </div>
           </div>
 
-          {/* FB/TK方案详情 */}
+          {/* 未订阅用户升级提示 */}
+          {(!isPremium || !subscription?.route) && (
+            <div className="px-4 py-2 border-b border-white/10 bg-gradient-to-r from-violet-500/10 to-cyan-500/10">
+              <Link 
+                href="/pricing"
+                onClick={() => setIsOpen(false)}
+                className="w-full py-2 text-sm text-violet-300 hover:text-violet-200 font-medium text-left flex items-center gap-2 rounded-lg hover:bg-white/5 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                </svg>
+                {locale === 'zh' ? '升级订阅获取更多功能' : 'Upgrade for more features'}
+              </Link>
+            </div>
+          )}
+
+          {/* FB/TK方案快速诊断 */}
           <div className="px-4 py-3 border-b border-white/10">
             <p className="text-xs text-blue-300/60 uppercase tracking-wider mb-2">
-              {locale === 'zh' ? '方案详情' : 'Plan Details'}
+              {locale === 'zh' ? '快速诊断' : 'Quick Diagnosis'}
             </p>
-            {/* FB方案详情 */}
+            {/* FB方案快速诊断 */}
             <Link 
-              href="/dashboard/plans"
+              href="/questions?route=free&platform=facebook"
               onClick={() => setIsOpen(false)}
               className="w-full py-2 text-sm text-blue-200 hover:text-cyan-300 font-medium text-left flex items-center gap-2 rounded-lg hover:bg-white/5 transition-colors"
             >
               <svg className="w-4 h-4 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              {locale === 'zh' ? 'FB/TK 方案详情' : 'FB/TK Plan Details'}
+              {locale === 'zh' ? 'FB 方案快速诊断' : 'FB Quick Diagnosis'}
             </Link>
-          </div>
-
-          {/* 开始新诊断 */}
-          <div className="px-4 py-2 border-b border-white/10">
-            <Link
-              href="/rejection-check"
+            {/* TK方案快速诊断 */}
+            <Link 
+              href="/rejection-check?platform=tiktok"
               onClick={() => setIsOpen(false)}
-              className="w-full py-2 text-sm text-cyan-400 hover:text-cyan-300 font-medium text-left flex items-center gap-2 rounded-lg hover:bg-white/5 transition-colors"
+              className="w-full py-2 text-sm text-blue-200 hover:text-cyan-300 font-medium text-left flex items-center gap-2 rounded-lg hover:bg-white/5 transition-colors"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <svg className="w-4 h-4 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
-              {locale === 'zh' ? '+ 开始新诊断' : '+ Start New Diagnosis'}
+              {locale === 'zh' ? 'TK 方案快速诊断' : 'TK Quick Diagnosis'}
             </Link>
           </div>
 
@@ -253,17 +266,22 @@ export function SmartDiagnosisButton({ isHomePage = false }: SmartDiagnosisButto
                     </div>
                   </Link>
                 ))}
-                {plans.length > 5 && (
-                  <Link
-                    href="/dashboard/plans"
-                    onClick={() => setIsOpen(false)}
-                    className="block py-1.5 px-2 rounded-lg hover:bg-white/5 transition-colors text-sm text-cyan-400"
-                  >
-                    {locale === 'zh' ? `查看全部 (${plans.length})` : `View All (${plans.length})`}
-                  </Link>
-                )}
               </div>
             )}
+          </div>
+
+          {/* 查看全部 */}
+          <div className="px-4 py-2 border-t border-white/10 bg-white/5">
+            <Link
+              href="/dashboard/plans"
+              onClick={() => setIsOpen(false)}
+              className="w-full py-2 text-sm text-cyan-400 hover:text-cyan-300 font-medium text-left flex items-center justify-center gap-2 rounded-lg hover:bg-white/5 transition-colors"
+            >
+              {locale === 'zh' ? '查看全部' : 'View All'}
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
           </div>
         </div>
       )}
