@@ -8,6 +8,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { TK_REVIEW_TOOLTIPS, getTKReviewTooltip } from '@/lib/tk-review-tooltips';
+import { TikTokAuthModal } from '@/components/tiktok-auth-modal';
+import { getSupabaseBrowserClientAsync } from '@/lib/supabase-browser';
 
 // ========== 类型定义 ==========
 
@@ -419,6 +421,41 @@ export default function TikTokReviewPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<ReviewResult | null>(null);
 
+  // 授权相关状态
+  const [isTikTokConnected, setIsTikTokConnected] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showTimeRangeSelector, setShowTimeRangeSelector] = useState(false);
+  const [selectedTimeRange, setSelectedTimeRange] = useState<number>(7); // 默认7天
+  const [diagnosisMode, setDiagnosisMode] = useState<'light' | 'full'>('light');
+
+  // 检查TikTok授权状态
+  useEffect(() => {
+    const checkTikTokConnection = async () => {
+      if (!user) return;
+      
+      try {
+        const client = await getSupabaseBrowserClientAsync();
+        const { data: { session } } = await client.auth.getSession();
+        const token = session?.access_token;
+        
+        if (!token) return;
+        
+        const res = await fetch('/api/tiktok/connection-status', {
+          headers: { 'x-session': token }
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          setIsTikTokConnected(data.is_connected);
+        }
+      } catch (error) {
+        console.error('Check TikTok connection error:', error);
+      }
+    };
+    
+    checkTikTokConnection();
+  }, [user]);
+
   const t = (zh: string, en: string) => locale === 'zh' ? zh : en;
 
   // 检查 Section 是否可以展开
@@ -440,24 +477,84 @@ export default function TikTokReviewPage() {
     }
   };
 
-  // 提交审查
-  const handleSubmit = async () => {
+  // 提交审查前的处理（检查授权状态）
+  const handlePreSubmit = async () => {
+    if (isTikTokConnected) {
+      // 已授权：显示时间范围选择器
+      setShowTimeRangeSelector(true);
+    } else {
+      // 未授权：显示授权引导弹窗
+      setShowAuthModal(true);
+    }
+  };
+
+  // 时间范围选择后开始完整诊断
+  const handleStartFullDiagnosis = async () => {
+    setShowTimeRangeSelector(false);
+    setDiagnosisMode('full');
     setIsAnalyzing(true);
+    
     try {
+      const client = await getSupabaseBrowserClientAsync();
+      const { data: { session } } = await client.auth.getSession();
+      const token = session?.access_token;
+      
       const response = await fetch('/api/tiktok-review', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-session': token || ''
+        },
+        body: JSON.stringify({
+          ...formData,
+          diagnosis_mode: 'full',
+          time_range: selectedTimeRange
+        })
       });
       const data = await response.json();
       setResult(data);
-      setExpandedSection(7); // 展开结果 Section
+      setExpandedSection(7);
     } catch (error) {
       console.error('Review error:', error);
       alert(t('审查失败，请重试', 'Review failed, please try again'));
     }
     setIsAnalyzing(false);
   };
+
+  // 跳过授权，使用轻量建议
+  const handleSkipAuth = async () => {
+    setShowAuthModal(false);
+    setDiagnosisMode('light');
+    setIsAnalyzing(true);
+    
+    try {
+      const response = await fetch('/api/tiktok-review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          diagnosis_mode: 'light'
+        })
+      });
+      const data = await response.json();
+      setResult(data);
+      setExpandedSection(7);
+    } catch (error) {
+      console.error('Review error:', error);
+      alert(t('审查失败，请重试', 'Review failed, please try again'));
+    }
+    setIsAnalyzing(false);
+  };
+
+  // 授权成功后开始完整诊断
+  const handleAuthSuccess = () => {
+    setShowAuthModal(false);
+    setIsTikTokConnected(true);
+    setShowTimeRangeSelector(true);
+  };
+
+  // 提交审查（保留原有函数名，但改为调用handlePreSubmit）
+  const handleSubmit = handlePreSubmit;
 
   // ========== Section 渲染 ==========
 
@@ -1366,6 +1463,24 @@ export default function TikTokReviewPage() {
           </div>
         </div>
 
+        {/* 轻量建议提示（跳过授权时显示） */}
+        {diagnosisMode === 'light' && (
+          <div className="bg-gradient-to-r from-orange-500/20 to-yellow-500/20 rounded-lg p-4 border border-orange-400/30 mb-4">
+            <p className="text-orange-300 text-center mb-3">
+              {t('⚠️ 以上分析基于问卷信息，仅供参考。连接TikTok账号可获取真实广告数据进行完整四层审查。', 
+                '⚠️ Analysis based on questionnaire only. Connect TikTok account for full 4-layer review with real ad data.')}
+            </p>
+            <div className="flex justify-center">
+              <Button
+                onClick={() => setShowAuthModal(true)}
+                className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-400 hover:to-yellow-400 text-white"
+              >
+                {t('连接TikTok账号', 'Connect TikTok Account')}
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* 付费提示 */}
         <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-lg p-4 border border-purple-400/30 text-center">
           <p className="text-purple-300">{t('💡 深度优化与持续追踪 → 订阅付费方案', '💡 Deep optimization & tracking → Subscribe to premium')}</p>
@@ -1488,6 +1603,58 @@ export default function TikTokReviewPage() {
 
           {/* 结果显示 */}
           {expandedSection === 7 && renderResult()}
+
+          {/* 时间范围选择器（已授权用户） */}
+          {showTimeRangeSelector && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowTimeRangeSelector(false)} />
+              <div className="relative bg-gradient-to-br from-slate-900 to-indigo-900 border border-white/20 rounded-2xl shadow-xl max-w-md w-full p-6">
+                <h2 className="text-xl font-bold text-white mb-4 text-center">
+                  {t('选择数据时间范围', 'Select Data Time Range')}
+                </h2>
+                <p className="text-blue-200/80 text-center mb-6">
+                  {t('选择要分析的广告数据时间范围', 'Select the time range for ad data analysis')}
+                </p>
+                
+                <div className="grid grid-cols-3 gap-3 mb-6">
+                  {[7, 14, 30].map(days => (
+                    <button
+                      key={days}
+                      onClick={() => setSelectedTimeRange(days)}
+                      className={`py-4 rounded-xl border transition-all ${
+                        selectedTimeRange === days
+                          ? 'bg-gradient-to-r from-purple-500/30 to-pink-500/30 border-purple-400 text-white'
+                          : 'bg-white/5 border-white/20 text-blue-200 hover:border-white/40'
+                      }`}
+                    >
+                      <p className="text-lg font-bold">{days}</p>
+                      <p className="text-sm">{t('天', 'days')}</p>
+                    </button>
+                  ))}
+                </div>
+                
+                <Button
+                  onClick={handleStartFullDiagnosis}
+                  disabled={isAnalyzing}
+                  className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-400 hover:to-pink-500 text-white py-3 rounded-xl"
+                >
+                  {isAnalyzing 
+                    ? t('正在分析...', 'Analyzing...')
+                    : t('开始完整诊断', 'Start Full Diagnosis')
+                  }
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* 授权引导弹窗 */}
+          <TikTokAuthModal
+            isOpen={showAuthModal}
+            onClose={() => setShowAuthModal(false)}
+            onSkip={handleSkipAuth}
+            onSuccess={handleAuthSuccess}
+            source="questionnaire"
+          />
         </div>
       </main>
     </div>
