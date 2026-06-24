@@ -218,6 +218,17 @@ export function SmartDiagnosisButton({ isHomePage = false }: SmartDiagnosisButto
 
           {/* 操作按钮 */}
           <div className="px-4 py-2 border-b border-white/10">
+            {/* 跳转到方案页面 */}
+            <Link 
+              href="/dashboard/plans"
+              onClick={() => setIsOpen(false)}
+              className="w-full py-2 text-sm text-white hover:text-cyan-300 font-medium text-left flex items-center gap-2 rounded-lg hover:bg-white/5 transition-colors"
+            >
+              <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              {locale === 'zh' ? 'FB/TK 方案详情' : 'FB/TK Plans'}
+            </Link>
             <button 
               onClick={handleStartDiagnosis}
               className="w-full py-2 text-sm text-cyan-400 hover:text-cyan-300 font-medium text-left flex items-center gap-2"
@@ -260,7 +271,7 @@ export function SmartDiagnosisButton({ isHomePage = false }: SmartDiagnosisButto
                 ))}
                 {plans.length > 5 && (
                   <Link
-                    href="/dashboard"
+                    href="/dashboard/plans"
                     onClick={() => setIsOpen(false)}
                     className="block py-1.5 px-2 rounded-lg hover:bg-white/5 transition-colors text-sm text-cyan-400"
                   >
