@@ -77,7 +77,7 @@ export function TikTokAuthModal({
       }
 
       // 获取授权URL
-      const res = await fetch('/api/auth/tiktok', {
+      const res = await fetch('/api/auth/tiktok?returnTo=/rejection-check', {
         headers: { 'x-session': token }
       });
 

@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 解析 state 获取用户 session
-    let stateData: { sessionToken: string; timestamp: number };
+    let stateData: { sessionToken: string; timestamp: number; returnTo?: string };
     try {
       stateData = JSON.parse(Buffer.from(state, 'base64url').toString());
     } catch {
@@ -141,9 +141,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 成功，重定向到连接管理页面
+    // 成功，重定向到审查页面（从审查页面发起的授权）
+    // 或者重定向到连接管理页面（从其他页面发起的授权）
+    const returnTo = stateData.returnTo || '/dashboard/connections';
     return NextResponse.redirect(
-      new URL('/dashboard/connections?success=tiktok_connected', request.url)
+      new URL(`${returnTo}?success=tiktok_connected`, request.url)
     );
 
   } catch (error) {

@@ -39,9 +39,11 @@ export async function GET(request: NextRequest) {
     }
 
     // 生成 state 参数（用于防 CSRF 和关联用户）
+    const returnTo = request.nextUrl.searchParams.get('returnTo') || '/dashboard/connections';
     const state = Buffer.from(JSON.stringify({
       sessionToken,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      returnTo
     })).toString('base64url');
 
     // 构建 TikTok 授权 URL

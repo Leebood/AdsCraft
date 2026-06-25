@@ -579,6 +579,14 @@ export default function TikTokReviewPage() {
         if (res.ok) {
           const data = await res.json();
           setIsTikTokConnected(data.is_connected);
+          
+          // 检查URL参数，如果是授权成功回调，显示时间范围选择器
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.get('success') === 'tiktok_connected') {
+            setShowTimeRangeSelector(true);
+            // 清除URL参数
+            window.history.replaceState({}, '', '/rejection-check');
+          }
         }
       } catch (error) {
         console.error('Check TikTok connection error:', error);
