@@ -29,9 +29,9 @@ export default function SignupPage() {
     try {
       await signUp(email, password, fullName);
       setSuccess(true);
-      // 注册成功后跳转到登录页
+      // 注册成功后跳转到登录页，携带成功参数
       setTimeout(() => {
-        router.push('/login');
+        router.push('/login?registered=true');
       }, 2000);
     } catch (err) {
       setError(t('signup.error'));

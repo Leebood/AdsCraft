@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +14,8 @@ export default function LoginPage() {
   const { t } = useI18n();
   const { signIn } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const registered = searchParams.get('registered') === 'true';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -71,6 +73,10 @@ export default function LoginPage() {
                   className="bg-white/10 border-white/30 text-white placeholder:text-blue-300/50 focus:border-cyan-400"
                 />
               </div>
+              
+              {registered && (
+                <p className="text-green-400 text-sm text-center">注册成功，请登录</p>
+              )}
               
               {error && (
                 <p className="text-red-400 text-sm text-center">{error}</p>
