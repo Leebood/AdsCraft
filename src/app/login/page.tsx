@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { useI18n } from '@/lib/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 
-export default function LoginPage() {
+function LoginForm() {
   const { t } = useI18n();
   const { signIn } = useAuth();
   const router = useRouter();
@@ -38,16 +38,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
-      {/* 网格纹理背景 */}
-      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
-      
-      <main className="container mx-auto px-4 py-12 relative z-10 flex items-center justify-center">
-        <Card className="w-full max-w-md bg-white/5 border-white/20 backdrop-blur-sm shadow-xl">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl text-white">{t('login.title')}</CardTitle>
-            <p className="text-blue-200 mt-2">{t('login.subtitle')}</p>
-          </CardHeader>
+    <Card className="w-full max-w-md bg-white/5 border-white/20 backdrop-blur-sm shadow-xl">
+      <CardHeader className="text-center">
+        <CardTitle className="text-2xl text-white">{t('login.title')}</CardTitle>
+        <p className="text-blue-200 mt-2">{t('login.subtitle')}</p>
+      </CardHeader>
           <CardContent className="space-y-4">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
@@ -109,6 +104,23 @@ export default function LoginPage() {
             </div>
           </CardContent>
         </Card>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
+      {/* 网格纹理背景 */}
+      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
+      
+      <main className="container mx-auto px-4 py-12 relative z-10 flex items-center justify-center">
+        <Suspense fallback={
+          <div className="w-full max-w-md bg-white/5 border-white/20 backdrop-blur-sm shadow-xl rounded-lg p-8">
+            <div className="text-white text-lg text-center">Loading...</div>
+          </div>
+        }>
+          <LoginForm />
+        </Suspense>
       </main>
     </div>
   );
