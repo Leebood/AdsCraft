@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/platforms/tiktok-adapter';
+import { getValidAccessToken } from '@/lib/tiktok-token-manager';
 
 interface TikTokCampaign {
   campaign_id: string;
@@ -85,10 +86,12 @@ export async function GET(request: NextRequest) {
       }, { status: 404 });
     }
     
-    // 检查 token 是否过期
-    if (new Date(connection.expires_at) < new Date()) {
+    // 获取有效的 access token（自动刷新如果需要）
+    const accessToken = await getValidAccessToken();
+    
+    if (!accessToken) {
       return NextResponse.json({ 
-        error: 'Token expired',
+        error: 'No valid access token',
         message: 'Please reconnect your TikTok account'
       }, { status: 401 });
     }
@@ -108,7 +111,7 @@ export async function GET(request: NextRequest) {
     
     for (const advertiserId of advertiserIds) {
       try {
-        const campaigns = await fetchTikTokCampaigns(connection.access_token, advertiserId);
+        const campaigns = await fetchTikTokCampaigns(accessToken, advertiserId);
         allCampaigns.push(...campaigns);
       } catch (error) {
         console.error(`Failed to fetch campaigns for advertiser ${advertiserId}:`, error);

@@ -112,11 +112,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'TikTok not connected' }, { status: 400 });
     }
 
-    // 获取有效的access token（从连接记录中获取）
-    const accessToken = connection.access_token;
+    // 获取有效的access token（自动刷新如果需要）
+    const accessToken = await getValidAccessToken();
     
     if (!accessToken) {
-      return NextResponse.json({ error: 'No access token found' }, { status: 500 });
+      return NextResponse.json({ error: 'No valid access token found' }, { status: 500 });
     }
 
     // 获取报表数据
