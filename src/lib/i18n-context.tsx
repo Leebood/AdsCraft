@@ -242,6 +242,7 @@ const translations = {
     'login.success': 'Login successful!',
     'login.error': 'Login failed. Please check your credentials.',
     'login.loading': 'Logging in...',
+    'login.registerSuccess': 'Registration successful, please login',
     
     // 注册页
     'signup.title': 'Sign Up',
@@ -587,6 +588,7 @@ const translations = {
     'login.success': '登录成功！',
     'login.error': '登录失败，请检查你的登录信息。',
     'login.loading': '正在登录...',
+    'login.registerSuccess': '注册成功，请登录',
     
     // 注册页
     'signup.title': '注册',

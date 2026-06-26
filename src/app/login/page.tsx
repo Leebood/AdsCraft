@@ -70,7 +70,7 @@ function LoginForm() {
               </div>
               
               {registered && (
-                <p className="text-green-400 text-sm text-center">注册成功，请登录</p>
+                <p className="text-green-400 text-sm text-center">{t('login.registerSuccess')}</p>
               )}
               
               {error && (
