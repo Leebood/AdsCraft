@@ -17,33 +17,58 @@ interface SubscriptionStatus {
 
 // Hero 动态模拟组件
 function HeroSimulation() {
+  const [phase, setPhase] = useState<'facebook' | 'tiktok' | 'pause'>('facebook');
   const [step, setStep] = useState(0);
   
   useEffect(() => {
     const timer = setInterval(() => {
-      setStep(s => (s + 1) % 12);
-    }, 800);
+      setStep(s => {
+        if (phase === 'facebook') {
+          if (s >= 4) {
+            setPhase('tiktok');
+            return 0;
+          }
+          return s + 1;
+        } else if (phase === 'tiktok') {
+          if (s >= 4) {
+            setPhase('pause');
+            return 0;
+          }
+          return s + 1;
+        } else {
+          setPhase('facebook');
+          return 0;
+        }
+      });
+    }, 500);
     return () => clearInterval(timer);
-  }, []);
+  }, [phase]);
 
   const facebookSteps = [
-    { text: 'Screenshot Uploaded', done: step >= 1 },
-    { text: 'Reading Campaign', done: step >= 2 },
-    { text: 'Checking Metrics', done: step >= 3 },
-    { text: 'Building Report', done: step >= 4 },
+    { text: 'Screenshot Uploaded', done: step >= 1 || phase !== 'facebook' },
+    { text: 'Reading Campaign', done: step >= 2 || phase !== 'facebook' },
+    { text: 'Checking Metrics', done: step >= 3 || phase !== 'facebook' },
+    { text: 'Building Report', done: step >= 4 || phase !== 'facebook' },
   ];
 
   const tiktokSteps = [
-    { text: 'Compliance', done: step >= 6 },
-    { text: 'Creative', done: step >= 7 },
-    { text: 'Landing Page', done: step >= 8 },
-    { text: 'Tracking', done: step >= 9 },
+    { text: 'Compliance', done: step >= 1 || phase === 'pause' },
+    { text: 'Creative', done: step >= 2 || phase === 'pause' },
+    { text: 'Landing Page', done: step >= 3 || phase === 'pause' },
+    { text: 'Tracking', done: step >= 4 || phase === 'pause' },
   ];
+
+  const showFacebook = phase === 'facebook' || phase === 'pause';
+  const showTiktok = phase === 'tiktok' || phase === 'pause';
 
   return (
     <div className="space-y-4">
       {/* Facebook Section */}
-      <div className="rounded-xl border border-white/10 bg-[#101827] p-4">
+      <motion.div 
+        animate={{ opacity: showFacebook ? 1 : 0.3 }}
+        transition={{ duration: 0.3 }}
+        className="rounded-xl border border-white/10 bg-[#101827] p-4"
+      >
         <div className="flex items-center gap-2 mb-3">
           <div className="w-5 h-5" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.facebook.icon }} />
           <span className="text-sm font-medium text-white/80">Facebook</span>
@@ -52,15 +77,23 @@ function HeroSimulation() {
           {facebookSteps.map((s, i) => (
             <motion.div 
               key={i}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: s.done ? 1 : 0.3, x: 0 }}
-              transition={{ duration: 0.3 }}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: s.done ? 1 : 0.3, y: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
               className="flex items-center gap-2"
             >
               {s.done ? (
-                <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <motion.svg 
+                  initial={{ scale: 0.5 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.2 }}
+                  className="w-4 h-4 text-green-400" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
+                </motion.svg>
               ) : (
                 <div className="w-4 h-4 rounded-full border border-white/20" />
               )}
@@ -68,10 +101,14 @@ function HeroSimulation() {
             </motion.div>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {/* TikTok Section */}
-      <div className="rounded-xl border border-white/10 bg-[#101827] p-4">
+      <motion.div 
+        animate={{ opacity: showTiktok ? 1 : 0.3 }}
+        transition={{ duration: 0.3 }}
+        className="rounded-xl border border-white/10 bg-[#101827] p-4"
+      >
         <div className="flex items-center gap-2 mb-3">
           <div className="w-5 h-5" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.tiktok.icon }} />
           <span className="text-sm font-medium text-white/80">TikTok 6-Step Audit</span>
@@ -80,15 +117,23 @@ function HeroSimulation() {
           {tiktokSteps.map((s, i) => (
             <motion.div 
               key={i}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: s.done ? 1 : 0.3, x: 0 }}
-              transition={{ duration: 0.3 }}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: s.done ? 1 : 0.3, y: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
               className="flex items-center gap-2"
             >
               {s.done ? (
-                <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <motion.svg 
+                  initial={{ scale: 0.5 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.2 }}
+                  className="w-4 h-4 text-green-400" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
+                </motion.svg>
               ) : (
                 <div className="w-4 h-4 rounded-full border border-white/20" />
               )}
@@ -96,7 +141,7 @@ function HeroSimulation() {
             </motion.div>
           ))}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
@@ -465,11 +510,12 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Score Bars */}
+          {/* Score Bars - 5 Dimensions */}
           <div className="p-6 space-y-4 border-b border-white/10">
             {[
-              { label: locale === 'zh' ? '合规性' : 'Compliance', value: 92, color: 'bg-green-500' },
-              { label: locale === 'zh' ? '创意' : 'Creative', value: 74, color: 'bg-blue-500' },
+              { label: locale === 'zh' ? '合规' : 'Compliance', value: 92, color: 'bg-green-500' },
+              { label: locale === 'zh' ? '投放策略' : 'Campaign Strategy', value: 65, color: 'bg-orange-500' },
+              { label: locale === 'zh' ? '素材' : 'Creative', value: 74, color: 'bg-blue-500' },
               { label: locale === 'zh' ? '落地页' : 'Landing Page', value: 68, color: 'bg-orange-500' },
               { label: locale === 'zh' ? '追踪' : 'Tracking', value: 81, color: 'bg-blue-500' },
             ].map((item, i) => (
@@ -483,13 +529,22 @@ export default function HomePage() {
             ))}
           </div>
 
+          {/* Optimization Level */}
+          <div className="px-6 py-3 border-b border-white/10">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-[#94A3B8]">Optimization Level:</span>
+              <span className="text-sm font-medium text-[#F59E0B]">High Priority</span>
+            </div>
+          </div>
+
           {/* Next Actions */}
           <div className="p-6">
             <h4 className="text-sm font-semibold text-white mb-4">Next Actions</h4>
             <div className="space-y-3">
               {[
-                locale === 'zh' ? '修复结账页面的像素触发' : 'Fix pixel firing on checkout page',
-                locale === 'zh' ? '降低频率 — 当前 4.2x' : 'Reduce frequency — currently 4.2x',
+                locale === 'zh' ? '修复结账页面的像素触发 — 未检测到事件' : 'Fix pixel firing — checkout page event not detected',
+                locale === 'zh' ? '减少受众重叠 — 3个广告组重叠68%' : 'Reduce audience overlap — 3 ad sets share 68% overlap',
+                locale === 'zh' ? '视频前3秒添加钩子 — 提升完播率' : 'Add hook in first 3 seconds of video',
                 locale === 'zh' ? '为所有广告链接添加 UTM 参数' : 'Add UTM parameters to all ad links',
               ].map((action, i) => (
                 <motion.div

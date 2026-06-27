@@ -107,23 +107,91 @@ AdsCraft - Campaign Review Platform
 
 ### 全局原则
 - 所有动画用 Framer Motion
-- 缓动函数：`ease-out`（不要 `ease-in`，不要 `spring`）
-- 持续时间：0.2-0.3s（微交互），2-3s（入场动画）
-- 不要过度动画，克制比炫酷重要
+- 缓动函数：`ease-out`（禁止 `ease-in`、`spring`）
+- 微交互动画：0.2-0.3s
+- 入场动画：2-3s
+- 触发方式：Intersection Observer，进入视口时触发
+- 重复策略：营销区域只触发一次；用户操作结果每次都触发
 
-### 入场动画
-- 元素从下方淡入：`y: 20 → 0, opacity: 0 → 1`
-- 使用 Intersection Observer 触发，只播放一次
-- Section 之间不要有连锁动画
+### 动画1：Hero 产品模拟
+- 位置：首页第一屏右侧
+- 效果：模拟产品运行过程，逐行打勾
+- 内容序列：
+  - 第一轮（Facebook）：Screenshot Uploaded → Reading Campaign → Checking Metrics → Building Report
+  - 第二轮（TikTok）：TikTok 6-Step Audit → Compliance → Creative → Landing Page → Tracking
+- 技术细节：
+  - 每行出现：`opacity: 0→1, y: 5→0`，duration 0.3s
+  - 打勾动画：SVG path `stroke-dashoffset` 从完整到0，duration 0.3s
+  - 单轮总时长：约4秒
+  - 两轮间隔：1.5秒
+  - 循环播放，无限循环
+- 交互：纯展示，不需要点击
 
-### 数据动画
-- 分数/进度条：数字从0增长到目标值，2-3秒
-- 逐条淡入：间隔 0.3s
+### 动画2：Score 分数动画
+- 位置：首页第三屏（Sample Report）+ 诊断结果页
+- 效果：
+  - Overall Score 从 0 增长到目标值
+  - 5个维度进度条依次填充，间隔 0.15s
+  - Next Actions 逐条淡入，间隔 0.3s
+- 触发条件：
+  - 首页：Intersection Observer 进入视口，只触发一次
+  - 诊断结果页：报告数据加载完成，每次都播放
+
+### 动画3：卡片 Hover（全局）
+- 适用：所有 Card 组件
+- 效果：
+  - `translateY: 0 → -4px`（轻微上浮）
+  - `box-shadow` 加深
+  - `border-color: rgba(255,255,255,0.08) → rgba(255,255,255,0.15)`
+  - duration: 0.2s, ease-out
+
+### 动画4：Section 入场（全局）
+- 效果：`opacity: 0→1, y: 30→0`，duration 0.6s, ease-out
+- 触发：Intersection Observer，`threshold: 0.15`
+- 每个 Section 只触发一次
+
+### 动画5：按钮交互
+- Primary 按钮：Hover `bg #35E1FF, scale 1.02`，Active `scale 0.98`
+- Secondary 按钮：Hover `bg rgba(0,212,255,0.1)`，Active `scale 0.98`
+
+### 禁止的动画
+- Spring 弹性动画
+- 彩虹色渐变
+- 页面转场动画
+- 全屏 spinner（用骨架屏代替）
+- Parallax 滚动视差
+
+## 评分框架
+
+### 5维度通用框架（所有平台共用）
+| # | 维度 | 英文 | 核心问题 | 图标 |
+|---|------|------|----------|------|
+| 1 | 合规 | Compliance | 能不能投出去？ | shield-check |
+| 2 | 投放策略 | Campaign Strategy | 钱花得对不对？ | target |
+| 3 | 素材 | Creative | 素材够不够好？ | image |
+| 4 | 落地页 | Landing Page | 点了之后转不转化？ | layout |
+| 5 | 追踪 | Tracking | 数据准不准？ | activity |
+
+### 分数规则
+- 每个维度 0-100 分
+- Overall Score = 5个维度的加权平均（默认等权重）
+- 分数颜色：90+ 绿 / 70-89 蓝 / 50-69 橙 / <50 红
+- Next Actions 按优先级排序：High → Medium → Low
+
+### Next Actions 格式
+```
+① [High] 具体动作
+② [Medium] 具体动作
+③ [Low] 具体动作
+```
+- 最多显示 5 条
+- High 优先级永远排最前
+- 每条必须是可执行的具体动作
 
 ## 首页结构（8屏）
 1. **Hero** - 标题 + 右侧产品动态模拟
 2. **How AdsCraft Works** - 横向流程图
-3. **Sample Report** - 报告展示 + 分数动画
+3. **Sample Report** - 报告展示 + 5维度分数动画
 4. **Why AdsCraft Is Different** - 4张卡片
 5. **Platform Entry** - Facebook/TikTok 入口
 6. **Features** - 精简版功能列表
