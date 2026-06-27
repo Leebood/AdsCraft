@@ -17,6 +17,7 @@ interface SubscriptionStatus {
 
 // Hero 动态模拟组件
 function HeroSimulation() {
+  const { locale } = useI18n();
   const [phase, setPhase] = useState<'facebook' | 'tiktok' | 'pause'>('facebook');
   const [step, setStep] = useState(0);
   
@@ -45,17 +46,17 @@ function HeroSimulation() {
   }, [phase]);
 
   const facebookSteps = [
-    { text: 'Screenshot Uploaded', done: step >= 1 || phase !== 'facebook' },
-    { text: 'Reading Campaign', done: step >= 2 || phase !== 'facebook' },
-    { text: 'Checking Metrics', done: step >= 3 || phase !== 'facebook' },
-    { text: 'Building Report', done: step >= 4 || phase !== 'facebook' },
+    { text: locale === 'zh' ? '截图已上传' : 'Screenshot Uploaded', done: step >= 1 || phase !== 'facebook' },
+    { text: locale === 'zh' ? '读取广告系列' : 'Reading Campaign', done: step >= 2 || phase !== 'facebook' },
+    { text: locale === 'zh' ? '检查指标' : 'Checking Metrics', done: step >= 3 || phase !== 'facebook' },
+    { text: locale === 'zh' ? '生成报告' : 'Building Report', done: step >= 4 || phase !== 'facebook' },
   ];
 
   const tiktokSteps = [
-    { text: 'Compliance', done: step >= 1 || phase === 'pause' },
-    { text: 'Creative', done: step >= 2 || phase === 'pause' },
-    { text: 'Landing Page', done: step >= 3 || phase === 'pause' },
-    { text: 'Tracking', done: step >= 4 || phase === 'pause' },
+    { text: locale === 'zh' ? '合规检查' : 'Compliance', done: step >= 1 || phase === 'pause' },
+    { text: locale === 'zh' ? '素材审查' : 'Creative', done: step >= 2 || phase === 'pause' },
+    { text: locale === 'zh' ? '落地页检查' : 'Landing Page', done: step >= 3 || phase === 'pause' },
+    { text: locale === 'zh' ? '追踪验证' : 'Tracking', done: step >= 4 || phase === 'pause' },
   ];
 
   const showFacebook = phase === 'facebook' || phase === 'pause';
@@ -111,7 +112,7 @@ function HeroSimulation() {
       >
         <div className="flex items-center gap-2 mb-3">
           <div className="w-5 h-5 overflow-hidden flex-shrink-0" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.tiktok.icon.replace('w-10 h-10', 'w-5 h-5') }} />
-          <span className="text-sm font-medium text-white/80">TikTok 6-Step Audit</span>
+          <span className="text-sm font-medium text-white/80">{locale === 'zh' ? 'TikTok 6步审查' : 'TikTok 6-Step Audit'}</span>
         </div>
         <div className="space-y-2">
           {tiktokSteps.map((s, i) => (
@@ -504,9 +505,9 @@ export default function HomePage() {
         >
           {/* Report Header */}
           <div className="p-6 border-b border-white/10">
-            <h3 className="text-lg font-semibold text-white mb-4">Campaign Review</h3>
+            <h3 className="text-lg font-semibold text-white mb-4">{locale === 'zh' ? '广告系列审查' : 'Campaign Review'}</h3>
             <div className="flex items-center gap-4">
-              <span className="text-[#94A3B8]">Overall Score:</span>
+              <span className="text-[#94A3B8]">{locale === 'zh' ? '综合评分:' : 'Overall Score:'}</span>
               <span className="text-3xl font-bold text-[#3B82F6]">
                 <AnimatedScore target={78} />
                 <span className="text-[#94A3B8] text-lg">/100</span>
@@ -520,8 +521,8 @@ export default function HomePage() {
               { label: locale === 'zh' ? '合规' : 'Compliance', value: 92, color: 'bg-green-500' },
               { label: locale === 'zh' ? '投放策略' : 'Campaign Strategy', value: 65, color: 'bg-orange-500' },
               { label: locale === 'zh' ? '素材' : 'Creative', value: 74, color: 'bg-blue-500' },
-              { label: locale === 'zh' ? '落地页' : 'Landing Page', value: 68, color: 'bg-orange-500' },
-              { label: locale === 'zh' ? '追踪' : 'Tracking', value: 81, color: 'bg-blue-500' },
+              { label: locale === 'zh' ? '落地页' : 'Landing Page', value: 68, color: 'bg-purple-500' },
+              { label: locale === 'zh' ? '追踪' : 'Tracking', value: 81, color: 'bg-cyan-500' },
             ].map((item, i) => (
               <div key={i}>
                 <div className="flex justify-between mb-1">
@@ -536,14 +537,14 @@ export default function HomePage() {
           {/* Optimization Level */}
           <div className="px-6 py-3 border-b border-white/10">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-[#94A3B8]">Optimization Level:</span>
-              <span className="text-sm font-medium text-[#F59E0B]">High Priority</span>
+              <span className="text-sm text-[#94A3B8]">{locale === 'zh' ? '优化优先级:' : 'Optimization Level:'}</span>
+              <span className="text-sm font-medium text-[#F59E0B]">{locale === 'zh' ? '高优先级' : 'High Priority'}</span>
             </div>
           </div>
 
           {/* Next Actions */}
           <div className="p-6">
-            <h4 className="text-sm font-semibold text-white mb-4">Next Actions</h4>
+            <h4 className="text-sm font-semibold text-white mb-4">{locale === 'zh' ? '下一步行动' : 'Next Actions'}</h4>
             <div className="space-y-3">
               {[
                 locale === 'zh' ? '修复结账页面的像素触发 — 未检测到事件' : 'Fix pixel firing — checkout page event not detected',
