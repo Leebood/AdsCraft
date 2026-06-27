@@ -211,7 +211,7 @@ export async function POST(request: NextRequest) {
     // 调用 LLM
     const response = await Promise.race([
       llmClient.invoke(messages, {
-        model: 'gpt-4o-mini', // 使用 GPT-4o-mini 多模态模型
+        model: 'doubao-seed-2-0-mini-260215', // 使用豆包多模态模型
         temperature: 0.3, // 低温度保证稳定输出
       }),
       timeoutPromise,
