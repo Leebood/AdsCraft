@@ -311,7 +311,8 @@ export default function HomePage() {
     if (platform === 'tiktok') {
       handleAuthRequiredAction('/rejection-check');
     } else {
-      handleAuthRequiredAction('/questions?route=free&platform=facebook');
+      // Facebook 跳转截图上传页面
+      handleAuthRequiredAction('/dashboard/analysis');
     }
   };
 
