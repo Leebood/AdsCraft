@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     
     if (authError || !user) {
       return NextResponse.json(
-        { error: 'Invalid token' },
+        { error: 'Auth failed', detail: authError?.message, code: authError?.code },
         { status: 401 }
       );
     }
