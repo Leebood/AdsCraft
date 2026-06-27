@@ -441,12 +441,12 @@ export default function HomePage() {
         {/* 流程图 */}
         <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6 mb-8">
           {[
-            { icon: '📷', label: locale === 'zh' ? '广告系列' : 'Campaign', desc: locale === 'zh' ? '上传截图或完成引导审查' : 'Upload screenshots or complete a guided audit' },
-            { icon: '📋', label: locale === 'zh' ? '平台规则' : 'Platform Rules', desc: locale === 'zh' ? '检查 Facebook 和 TikTok 广告政策' : 'Check against Facebook and TikTok advertising policies' },
-            { icon: '🤖', label: locale === 'zh' ? 'AI 审查' : 'AI Review', desc: locale === 'zh' ? 'AI 分析广告结构和指标' : 'AI reasoning analyzes your campaign structure and metrics' },
-            { icon: '✅', label: locale === 'zh' ? '技术验证' : 'Technical Validation', desc: locale === 'zh' ? '验证追踪、像素和落地页健康' : 'Verify tracking, pixels, and landing page health' },
-            { icon: '⚙️', label: locale === 'zh' ? '优化引擎' : 'Optimization Engine', desc: locale === 'zh' ? '生成优先级建议' : 'Generate prioritized recommendations' },
-            { icon: '📊', label: locale === 'zh' ? '行动计划' : 'Action Plan', desc: locale === 'zh' ? '获取具体下一步行动' : 'Get specific next actions, not just problems' },
+            { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>, label: locale === 'zh' ? '广告系列' : 'Campaign', desc: locale === 'zh' ? '上传截图或完成引导审查' : 'Upload screenshots or complete a guided audit' },
+            { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>, label: locale === 'zh' ? '平台规则' : 'Platform Rules', desc: locale === 'zh' ? '检查 Facebook 和 TikTok 广告政策' : 'Check against Facebook and TikTok advertising policies' },
+            { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>, label: locale === 'zh' ? 'AI 审查' : 'AI Review', desc: locale === 'zh' ? 'AI 分析广告结构和指标' : 'AI reasoning analyzes your campaign structure and metrics' },
+            { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>, label: locale === 'zh' ? '技术验证' : 'Technical Validation', desc: locale === 'zh' ? '验证追踪、像素和落地页健康' : 'Verify tracking, pixels, and landing page health' },
+            { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>, label: locale === 'zh' ? '优化引擎' : 'Optimization Engine', desc: locale === 'zh' ? '生成优先级建议' : 'Generate prioritized recommendations' },
+            { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>, label: locale === 'zh' ? '行动计划' : 'Action Plan', desc: locale === 'zh' ? '获取具体下一步行动' : 'Get specific next actions, not just problems' },
           ].map((step, i) => (
             <motion.div
               key={i}
@@ -457,7 +457,7 @@ export default function HomePage() {
               className="group relative"
             >
               <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl bg-[#101827] border border-white/10 flex flex-col items-center justify-center hover:border-[#00D4FF]/50 transition-all">
-                <span className="text-2xl md:text-3xl mb-1">{step.icon}</span>
+                <div className="text-[#00D4FF] mb-1">{step.icon}</div>
                 <span className="text-xs md:text-sm text-white/80 font-medium">{step.label}</span>
               </div>
               {/* Tooltip */}
@@ -665,7 +665,9 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="p-8 rounded-xl bg-[#101827] border border-white/8 hover:border-[#1877F2]/30 transition-all text-center"
           >
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#1877F2]/10 flex items-center justify-center" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.facebook.icon }} />
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#1877F2]/10 flex items-center justify-center overflow-hidden">
+              <div className="w-10 h-10" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.facebook.icon }} />
+            </div>
             <h3 className="text-xl font-semibold text-white mb-2">Facebook</h3>
             <p className="text-[#94A3B8] text-sm mb-6">
               {locale === 'zh' 
@@ -689,7 +691,9 @@ export default function HomePage() {
             transition={{ delay: 0.1 }}
             className="p-8 rounded-xl bg-[#101827] border border-white/8 hover:border-[#FE2C55]/30 transition-all text-center"
           >
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.tiktok.icon }} />
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center overflow-hidden">
+              <div className="w-10 h-10" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.tiktok.icon }} />
+            </div>
             <h3 className="text-xl font-semibold text-white mb-2">TikTok</h3>
             <p className="text-[#94A3B8] text-sm mb-6">
               {locale === 'zh'
@@ -923,28 +927,6 @@ export default function HomePage() {
           ))}
         </div>
       </section>
-
-      {/* ========== Footer ========== */}
-      <footer className="relative z-10 border-t border-white/8 py-12">
-        <div className="max-w-[1200px] mx-auto px-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-bold text-white">AdsCraft</span>
-            </div>
-            <div className="flex items-center gap-6">
-              <Link href="/privacy" className="text-[#94A3B8] text-sm hover:text-white transition-colors">
-                {locale === 'zh' ? '隐私政策' : 'Privacy Policy'}
-              </Link>
-              <Link href="/terms" className="text-[#94A3B8] text-sm hover:text-white transition-colors">
-                {locale === 'zh' ? '服务条款' : 'Terms of Service'}
-              </Link>
-            </div>
-            <p className="text-[#94A3B8] text-sm">
-              © 2026 AdsCraft. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
 
       {/* Selected Route Action Button */}
       {selectedRoute && !selectedRoute.route.creemLink && (
