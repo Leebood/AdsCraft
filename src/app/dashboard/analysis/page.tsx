@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, Suspense } from 'react';
+import { useEffect, useState, useCallback, Suspense, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -118,7 +118,7 @@ function AnalysisContent() {
 
   // 获取历史数据和分析
   const fetchHistoryAndAnalysis = useCallback(async () => {
-    if (!user || !hasAccess) return;
+    if (!user) return;
     
     try {
       setLoading(true);
@@ -149,13 +149,17 @@ function AnalysisContent() {
     } finally {
       setLoading(false);
     }
-  }, [user, hasAccess, selectedDays]);
+  }, [user, selectedDays]);
+
+  // 使用 ref 跟踪是否已经执行过
+  const hasFetchedRef = useRef(false);
 
   useEffect(() => {
-    if (user && hasAccess && !checkingPlan) {
+    if (user && hasAccess && !checkingPlan && !hasFetchedRef.current) {
+      hasFetchedRef.current = true;
       fetchHistoryAndAnalysis();
     }
-  }, [user, hasAccess, checkingPlan, fetchHistoryAndAnalysis]);
+  }, [user, hasAccess, checkingPlan]);
 
   // 处理文件上传
   const handleFileUpload = async (file: File) => {
