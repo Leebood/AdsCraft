@@ -6,7 +6,6 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { S3Storage } from 'coze-coding-dev-sdk';
 import { getSupabaseServerClientAsync } from '@/storage/database/supabase-client';
 
 // 截图识别额度映射
@@ -149,22 +148,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 上传图片到对象存储
-    const storage = new S3Storage();
+    // 直接转 base64 给 OpenAI（跳过 S3）
     const fileBuffer = Buffer.from(await file.arrayBuffer());
-    const fileName = `screenshots/${user.id}/${Date.now()}_${file.name}`;
-    
-    const fileKey = await storage.uploadFile({
-      fileContent: fileBuffer,
-      fileName: fileName,
-      contentType: file.type,
-    });
-
-    // 获取图片访问URL
-    const imageUrl = await storage.generatePresignedUrl({
-      key: fileKey,
-      expireTime: 86400, // 24小时有效期
-    });
+    const base64Image = fileBuffer.toString('base64');
+    const dataUrl = `data:${file.type};base64,${base64Image}`;
 
     // 调用 OpenAI API 提取指标（使用 GPT-4o-mini 视觉模型）
     const openaiApiKey = process.env.OPENAI_API_KEY;
@@ -181,7 +168,7 @@ export async function POST(request: NextRequest) {
           {
             type: 'image_url' as const,
             image_url: {
-              url: imageUrl,
+              url: dataUrl,
               detail: 'high',
             },
           },
@@ -245,10 +232,6 @@ export async function POST(request: NextRequest) {
         raw_text: content,
       };
     }
-
-    // 添加图片URL到返回结果
-    extractedData.raw_image_url = imageUrl;
-    extractedData.file_key = fileKey;
 
     // 添加额度信息
     const { data: updatedUserData } = await supabase
