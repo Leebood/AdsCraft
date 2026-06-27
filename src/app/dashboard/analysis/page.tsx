@@ -106,7 +106,7 @@ function AnalysisContent() {
     } finally {
       setCheckingPlan(false);
     }
-  }, [user]);
+  }, [user?.id]);
 
   // 用户是否有访问权限（有方案 OR 有订阅）
   const hasAccess = userPlan !== null || isPremium;
@@ -133,14 +133,14 @@ function AnalysisContent() {
     } catch (err) {
       console.error('获取额度错误:', err);
     }
-  }, [user]);
+  }, [user?.id]);
 
   useEffect(() => {
     if (user) {
       checkUserPlan();
       fetchQuota();
     }
-  }, [user, checkUserPlan, fetchQuota]);
+  }, [user?.id]);
 
   // 获取历史数据和分析
   const fetchHistoryAndAnalysis = useCallback(async () => {
@@ -175,7 +175,7 @@ function AnalysisContent() {
     } finally {
       setLoading(false);
     }
-  }, [user, selectedDays]);
+  }, [user?.id, selectedDays]);
 
   // 使用 ref 跟踪是否已经执行过
   const hasFetchedRef = useRef(false);
@@ -185,7 +185,7 @@ function AnalysisContent() {
       hasFetchedRef.current = true;
       fetchHistoryAndAnalysis();
     }
-  }, [user, hasAccess, checkingPlan]);
+  }, [user?.id, hasAccess, checkingPlan]);
 
   // 处理文件上传
   const handleFileUpload = async (file: File) => {
