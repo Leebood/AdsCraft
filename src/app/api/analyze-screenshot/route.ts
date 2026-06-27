@@ -24,6 +24,15 @@ interface MultimodalMessage {
   content: string | ContentPart[];
 }
 
+// 截图识别额度映射
+const SCREENSHOT_LIMITS: Record<string, number> = {
+  free: 3,
+  local_service: 15,
+  retailer: 30,
+  manufacturer: 50,
+  brand: 50,
+};
+
 // 最大文件大小 5MB
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
@@ -71,6 +80,62 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
+
+    // 检查截图识别额度
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('screenshot_count_used, screenshot_count_limit, screenshot_reset_at')
+      .eq('id', user.id)
+      .single();
+
+    if (userError) {
+      console.error('Failed to fetch user screenshot quota:', userError);
+    }
+
+    // 获取用户订阅等级
+    const { data: subscriptionData } = await supabase
+      .from('subscriptions')
+      .select('plan_name, status')
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .single();
+
+    const planName = subscriptionData?.plan_name?.toLowerCase() || 'free';
+    const limit = SCREENSHOT_LIMITS[planName] || SCREENSHOT_LIMITS.free;
+    const used = userData?.screenshot_count_used || 0;
+    const resetAt = userData?.screenshot_reset_at ? new Date(userData.screenshot_reset_at) : null;
+    const now = new Date();
+
+    // 每月1号自动重置
+    if (!resetAt || resetAt <= now) {
+      const nextReset = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      await supabase
+        .from('users')
+        .update({
+          screenshot_count_used: 0,
+          screenshot_count_limit: limit,
+          screenshot_reset_at: nextReset.toISOString(),
+        })
+        .eq('id', user.id);
+    } else if (used >= limit) {
+      // 额度用完
+      return NextResponse.json(
+        {
+          error: "You've used all your campaign reviews this month. Upgrade your plan to continue.",
+          quota: { used, limit, remaining: 0 },
+        },
+        { status: 429 }
+      );
+    }
+
+    // 消耗1次额度（不论成功失败都计数）
+    await supabase
+      .from('users')
+      .update({
+        screenshot_count_used: used + 1,
+        screenshot_count_limit: limit,
+      })
+      .eq('id', user.id);
 
     // 解析 multipart/form-data
     const formData = await request.formData();
@@ -181,6 +246,19 @@ export async function POST(request: NextRequest) {
     // 添加图片URL到返回结果
     extractedData.raw_image_url = imageUrl;
     extractedData.file_key = fileKey;
+
+    // 添加额度信息
+    const { data: updatedUserData } = await supabase
+      .from('users')
+      .select('screenshot_count_used, screenshot_count_limit')
+      .eq('id', user.id)
+      .single();
+
+    extractedData.quota = {
+      used: updatedUserData?.screenshot_count_used || used + 1,
+      limit: updatedUserData?.screenshot_count_limit || limit,
+      remaining: (updatedUserData?.screenshot_count_limit || limit) - (updatedUserData?.screenshot_count_used || used + 1),
+    };
 
     return NextResponse.json(extractedData);
 

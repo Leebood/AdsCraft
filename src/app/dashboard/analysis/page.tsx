@@ -80,6 +80,7 @@ function AnalysisContent() {
   const [dragOver, setDragOver] = useState(false);
   const [userPlan, setUserPlan] = useState<UserPlan | null>(null);
   const [checkingPlan, setCheckingPlan] = useState(true);
+  const [quota, setQuota] = useState<{ used: number; limit: number; remaining: number } | null>(null);
 
   // 检查用户是否有保存的方案
   const checkUserPlan = useCallback(async () => {
@@ -110,11 +111,36 @@ function AnalysisContent() {
   // 用户是否有访问权限（有方案 OR 有订阅）
   const hasAccess = userPlan !== null || isPremium;
 
+  // 获取截图识别额度
+  const fetchQuota = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      const client = await getSupabaseBrowserClientAsync();
+      const { data: sessionData } = await client.auth.getSession();
+      const token = sessionData.session?.access_token;
+      
+      if (!token) return;
+
+      const response = await fetch('/api/screenshot-quota', {
+        headers: { 'x-session': token }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setQuota(data);
+      }
+    } catch (err) {
+      console.error('获取额度错误:', err);
+    }
+  }, [user]);
+
   useEffect(() => {
     if (user) {
       checkUserPlan();
+      fetchQuota();
     }
-  }, [user, checkUserPlan]);
+  }, [user, checkUserPlan, fetchQuota]);
 
   // 获取历史数据和分析
   const fetchHistoryAndAnalysis = useCallback(async () => {
@@ -207,9 +233,18 @@ function AnalysisContent() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || (locale === 'zh' ? '识别失败，请重试' : 'Recognition failed, please retry'));
+        if (data.code === 'QUOTA_EXCEEDED') {
+          // 额度用完，显示升级提示
+          setError(data.message || (locale === 'zh' ? '本月截图识别次数已用完，请升级套餐' : "You've used all your campaign reviews this month. Upgrade your plan to continue."));
+        } else {
+          setError(data.error || (locale === 'zh' ? '识别失败，请重试' : 'Recognition failed, please retry'));
+        }
       } else {
         setExtractedData(data);
+        // 更新额度信息
+        if (data.quota) {
+          setQuota(data.quota);
+        }
       }
     } catch (err) {
       console.error('上传错误:', err);
