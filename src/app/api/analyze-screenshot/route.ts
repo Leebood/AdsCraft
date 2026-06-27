@@ -185,17 +185,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(extractedData);
 
   } catch (error) {
-    console.error('截图识别错误:', error);
+    console.error('Screenshot analysis error:', error);
     
-    if (error instanceof Error && error.message.includes('超时')) {
+    if (error instanceof Error && error.message.includes('timeout')) {
       return NextResponse.json(
-        { error: '识别超时，请重试' },
+        { error: 'Recognition timeout, please retry' },
         { status: 504 }
       );
     }
 
     return NextResponse.json(
-      { error: '截图识别失败，请重试' },
+      { error: 'Screenshot recognition failed, please retry' },
       { status: 500 }
     );
   }
