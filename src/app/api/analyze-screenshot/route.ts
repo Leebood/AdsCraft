@@ -6,23 +6,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { S3Storage, LLMClient, Config, HeaderUtils } from 'coze-coding-dev-sdk';
+import { S3Storage } from 'coze-coding-dev-sdk';
 import { getSupabaseServerClientAsync } from '@/storage/database/supabase-client';
-
-// 多模态消息类型定义
-interface ContentPart {
-  type: 'text' | 'image_url';
-  text?: string;
-  image_url?: {
-    url: string;
-    detail?: 'high' | 'low';
-  };
-}
-
-interface MultimodalMessage {
-  role: 'user' | 'system' | 'assistant';
-  content: string | ContentPart[];
-}
 
 // 截图识别额度映射
 const SCREENSHOT_LIMITS: Record<string, number> = {
@@ -181,19 +166,20 @@ export async function POST(request: NextRequest) {
       expireTime: 86400, // 24小时有效期
     });
 
-    // 调用 LLM 提取指标（使用支持视觉的模型）
-    const customHeaders = HeaderUtils.extractForwardHeaders(request.headers);
-    const llmConfig = new Config();
-    const llmClient = new LLMClient(llmConfig, customHeaders);
+    // 调用 OpenAI API 提取指标（使用 GPT-4o-mini 视觉模型）
+    const openaiApiKey = process.env.OPENAI_API_KEY;
+    if (!openaiApiKey) {
+      throw new Error('OPENAI_API_KEY not configured');
+    }
 
     // 创建带图片的多模态消息
-    const messages: MultimodalMessage[] = [
+    const messages = [
       {
-        role: 'user',
+        role: 'user' as const,
         content: [
-          { type: 'text', text: EXTRACT_PROMPT },
+          { type: 'text' as const, text: EXTRACT_PROMPT },
           {
-            type: 'image_url',
+            type: 'image_url' as const,
             image_url: {
               url: imageUrl,
               detail: 'high',
@@ -208,24 +194,41 @@ export async function POST(request: NextRequest) {
       setTimeout(() => reject(new Error('识别超时，请重试')), TIMEOUT_MS);
     });
 
-    // 调用 LLM
-    const response = await Promise.race([
-      llmClient.invoke(messages, {
-        model: 'gpt-4o-mini', // 使用 GPT-4o-mini 多模态模型
-        temperature: 0.3, // 低温度保证稳定输出
+    // 调用 OpenAI API
+    const openaiResponse = await Promise.race([
+      fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${openaiApiKey}`,
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages,
+          temperature: 0.3,
+        }),
       }),
       timeoutPromise,
     ]);
+
+    if (!openaiResponse.ok) {
+      const error = await openaiResponse.text();
+      console.error('OpenAI API error:', error);
+      throw new Error('OpenAI API call failed');
+    }
+
+    const result = await openaiResponse.json();
+    const content = result.choices[0]?.message?.content || '';
 
     // 解析 LLM 返回的 JSON
     let extractedData;
     try {
       // 清理可能的 markdown 代码块标记
-      const content = response.content
+      const cleanContent = content
         .replace(/```json\n?/g, '')
         .replace(/```/g, '')
         .trim();
-      extractedData = JSON.parse(content);
+      extractedData = JSON.parse(cleanContent);
     } catch {
       // 如果解析失败，返回原始内容让用户手动填写
       extractedData = {
@@ -239,7 +242,7 @@ export async function POST(request: NextRequest) {
         conversions: null,
         cpa: null,
         roas: null,
-        raw_text: response.content,
+        raw_text: content,
       };
     }
 
