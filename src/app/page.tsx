@@ -70,7 +70,7 @@ function HeroSimulation() {
         className="rounded-xl border border-white/10 bg-[#101827] p-4"
       >
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-5 h-5" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.facebook.icon }} />
+          <div className="w-5 h-5 overflow-hidden flex-shrink-0" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.facebook.icon.replace('w-10 h-10', 'w-5 h-5') }} />
           <span className="text-sm font-medium text-white/80">Facebook</span>
         </div>
         <div className="space-y-2">
@@ -110,7 +110,7 @@ function HeroSimulation() {
         className="rounded-xl border border-white/10 bg-[#101827] p-4"
       >
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-5 h-5" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.tiktok.icon }} />
+          <div className="w-5 h-5 overflow-hidden flex-shrink-0" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.tiktok.icon.replace('w-10 h-10', 'w-5 h-5') }} />
           <span className="text-sm font-medium text-white/80">TikTok 6-Step Audit</span>
         </div>
         <div className="space-y-2">
@@ -398,7 +398,10 @@ export default function HomePage() {
               className="flex flex-wrap gap-4"
             >
               <button
-                onClick={() => handleFreeDiagnosis('facebook')}
+                onClick={() => {
+                  const platformSection = document.getElementById('platform-entry');
+                  platformSection?.scrollIntoView({ behavior: 'smooth' });
+                }}
                 disabled={loading}
                 className="px-6 py-3 bg-[#00D4FF] text-[#08111F] font-semibold rounded-lg hover:bg-[#35E1FF] transition-all disabled:opacity-50"
               >
@@ -647,7 +650,7 @@ export default function HomePage() {
       </section>
 
       {/* ========== 第五屏：Platform Entry ========== */}
-      <section className="relative z-10 max-w-[1200px] mx-auto px-6 py-24">
+      <section id="platform-entry" className="relative z-10 max-w-[1200px] mx-auto px-6 py-24">
         <motion.h2 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
