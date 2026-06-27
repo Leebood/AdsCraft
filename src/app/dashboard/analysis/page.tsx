@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { useI18n } from '@/lib/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 import { getSupabaseBrowserClientAsync } from '@/lib/supabase-browser';
-import { Download, BarChart3, LineChart, Lock, Target, Wallet } from 'lucide-react';
+import { Download, BarChart3, LineChart, Target, Wallet } from 'lucide-react';
 
 // 截图数据类型
 interface SnapshotData {
@@ -353,45 +353,6 @@ function AnalysisContent() {
                 {locale === 'zh' ? '登录' : 'Login'}
               </Button>
             </Link>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // 付费墙检查 - 需要有方案 OR 有订阅才能使用分析功能
-  if (!hasAccess) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden flex items-center justify-center">
-        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
-        <Card className="w-full max-w-lg bg-white/5 border-white/20 backdrop-blur-sm shadow-xl relative z-10">
-          <CardContent className="text-center py-12">
-            <Lock className="w-12 h-12 text-cyan-400 mx-auto mb-6" />
-            <h2 className="text-2xl font-bold text-white mb-4">
-              {locale === 'zh' ? '截图分析需要先完成设置' : 'Complete Setup to Unlock Analysis'}
-            </h2>
-            <p className="text-blue-200 mb-2">
-              {locale === 'zh' 
-                ? '截图分析是AI诊断的数据基础，让AI分析有据可依' 
-                : 'Screenshot analysis provides data foundation for AI diagnosis'}
-            </p>
-            <p className="text-blue-300/70 mb-6">
-              {locale === 'zh'
-                ? '请先完成广告策略设置，或订阅任意路线解锁此功能'
-                : 'Complete your ad strategy setup first, or subscribe to unlock this feature'}
-            </p>
-            <div className="flex gap-4 justify-center">
-              <Link href="/setup-checklist">
-                <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/30">
-                  {locale === 'zh' ? '开始设置' : 'Start Setup'}
-                </Button>
-              </Link>
-              <Link href="/pricing">
-                <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
-                  {locale === 'zh' ? '查看订阅' : 'View Plans'}
-                </Button>
-              </Link>
-            </div>
           </CardContent>
         </Card>
       </div>
