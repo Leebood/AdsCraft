@@ -30,8 +30,8 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024;
 // 支持的图片格式
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
-// 超时时间 7秒
-const TIMEOUT_MS = 7000;
+// 超时时间 30秒（多模态模型处理图片需要更长时间）
+const TIMEOUT_MS = 30000;
 
 // 截图识别 Prompt
 const EXTRACT_PROMPT = `这是一张Facebook Ads Manager的截图。请提取以下指标返回JSON格式：
