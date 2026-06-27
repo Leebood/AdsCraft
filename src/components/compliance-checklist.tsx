@@ -49,11 +49,26 @@ export function ComplianceChecklist({ platform, onComplete, onSkip }: Compliance
   const getSeverityStyle = (severity: 'high' | 'medium' | 'low') => {
     switch (severity) {
       case 'high':
-        return { icon: '🔴', color: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-400/30' };
+        return { 
+          icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>,
+          color: 'text-red-400', 
+          bg: 'bg-red-500/10', 
+          border: 'border-red-400/30' 
+        };
       case 'medium':
-        return { icon: '🟡', color: 'text-yellow-400', bg: 'bg-yellow-500/10', border: 'border-yellow-400/30' };
+        return { 
+          icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+          color: 'text-yellow-400', 
+          bg: 'bg-yellow-500/10', 
+          border: 'border-yellow-400/30' 
+        };
       case 'low':
-        return { icon: '🟢', color: 'text-green-400', bg: 'bg-green-500/10', border: 'border-green-400/30' };
+        return { 
+          icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+          color: 'text-green-400', 
+          bg: 'bg-green-500/10', 
+          border: 'border-green-400/30' 
+        };
     }
   };
   
@@ -61,17 +76,41 @@ export function ComplianceChecklist({ platform, onComplete, onSkip }: Compliance
   const getCategoryInfo = (category: string) => {
     switch (category) {
       case 'creative':
-        return { icon: '🎨', name: '素材合规', nameEn: 'Creative' };
+        return { 
+          icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>,
+          name: '素材合规', 
+          nameEn: 'Creative' 
+        };
       case 'copy':
-        return { icon: '📝', name: '文案合规', nameEn: 'Copy' };
+        return { 
+          icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>,
+          name: '文案合规', 
+          nameEn: 'Copy' 
+        };
       case 'landing_page':
-        return { icon: '🔗', name: '落地页', nameEn: 'Landing Page' };
+        return { 
+          icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>,
+          name: '落地页', 
+          nameEn: 'Landing Page' 
+        };
       case 'platform_specific':
-        return { icon: '⚙️', name: '平台要求', nameEn: 'Platform Rules' };
+        return { 
+          icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
+          name: '平台要求', 
+          nameEn: 'Platform Rules' 
+        };
       case 'industry':
-        return { icon: '📋', name: '行业资质', nameEn: 'Industry' };
+        return { 
+          icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
+          name: '行业资质', 
+          nameEn: 'Industry' 
+        };
       default:
-        return { icon: '❓', name: '其他', nameEn: 'Other' };
+        return { 
+          icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+          name: '其他', 
+          nameEn: 'Other' 
+        };
     }
   };
   
@@ -118,7 +157,7 @@ export function ComplianceChecklist({ platform, onComplete, onSkip }: Compliance
           {/* Warning if high severity items not checked */}
           {!allHighSeverityChecked && checkedCount > 0 && (
             <div className="mt-3 p-2 bg-red-500/10 border border-red-400/30 rounded-lg flex items-center gap-2">
-              <span className="text-red-400">⚠️</span>
+              <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
               <span className="text-red-300 text-sm">
                 请确保完成所有高风险项（红色标记）以降低拒审概率
               </span>
@@ -134,7 +173,7 @@ export function ComplianceChecklist({ platform, onComplete, onSkip }: Compliance
             return (
               <div key={category} className="mb-6 last:mb-0">
                 <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/5">
-                  <span className="text-lg">{categoryInfo.icon}</span>
+                  <span className="text-blue-300">{categoryInfo.icon}</span>
                   <h3 className="text-base font-medium text-blue-200">
                     {categoryInfo.name}
                   </h3>
@@ -174,7 +213,7 @@ export function ComplianceChecklist({ platform, onComplete, onSkip }: Compliance
                         {/* Content */}
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className={`text-sm ${severityStyle.color}`}>
+                            <span className={`${severityStyle.color}`}>
                               {severityStyle.icon}
                             </span>
                             <h4 className={`text-sm font-medium transition-colors ${
