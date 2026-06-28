@@ -746,7 +746,7 @@ function AnalysisContent() {
           </Card>
 
           {/* 区域3：分析区 */}
-          <Card className="bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border-cyan-400/30 backdrop-blur-sm shadow-xl">
+          <Card className="bg-slate-900/90 border-cyan-400/30 backdrop-blur-sm shadow-xl">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <LineChart className="w-5 h-5 text-cyan-400" />
