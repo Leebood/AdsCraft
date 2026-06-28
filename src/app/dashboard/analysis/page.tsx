@@ -862,7 +862,7 @@ function AnalysisContent() {
           </Card>
 
           {/* 区域3：分析区 - 渐变背景 */}
-          <Card className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-white/20 backdrop-blur-sm shadow-xl">
+          <Card className="!bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-white/20 backdrop-blur-sm shadow-xl">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <LineChart className="w-5 h-5 text-cyan-400" />
