@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { useI18n } from '@/lib/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 import { getSupabaseBrowserClientAsync } from '@/lib/supabase-browser';
-import { Download, BarChart3, LineChart, Target, Wallet } from 'lucide-react';
+import { Download, BarChart3, LineChart, Target, Wallet, AlertTriangle } from 'lucide-react';
 
 // 截图数据类型
 interface SnapshotData {
@@ -51,10 +51,24 @@ interface AnalysisResult {
     value: number | null;
     rating: string;
     benchmark: string;
+    level: string;
   }>;
   issues: string[];
   trends: string[];
   recommendations: string[];
+  risks?: Array<{
+    level: 'urgent' | 'warning' | 'info';
+    message: string;
+    metric: string;
+    value: number;
+    threshold: number;
+  }>;
+  action_priorities?: Array<{
+    priority: number;
+    metric: string;
+    action: string;
+    impact: 'high' | 'medium' | 'low';
+  }>;
 }
 
 // 用户方案类型
@@ -74,6 +88,108 @@ function getRouteName(route: string, locale: string): string {
     'basic': { zh: '基础通用方案', en: 'Basic Plan' },
   };
   return routeNames[route]?.[locale] || route;
+}
+
+// 翻译函数：将中文分析结果翻译为英文
+function translateAnalysisResult(result: AnalysisResult, locale: string): AnalysisResult {
+  if (locale === 'zh') return result;
+  
+  // 评分翻译
+  const ratingMap: Record<string, string> = {
+    '优秀': 'Excellent',
+    '好': 'Good',
+    '一般': 'Average',
+    '差': 'Poor',
+    '无数据': 'No Data',
+    '未知': 'Unknown',
+  };
+  
+  // 指标名称翻译
+  const metricNameMap: Record<string, string> = {
+    'CTR': 'CTR',
+    'CPC': 'CPC',
+    'CPA': 'CPA',
+    'ROAS': 'ROAS',
+    '转化率': 'Conv. Rate',
+    '频次': 'Frequency',
+  };
+  
+  // 翻译指标
+  const translatedMetrics = result.metrics.map(m => ({
+    ...m,
+    name: metricNameMap[m.name] || m.name,
+    rating: ratingMap[m.rating] || m.rating,
+  }));
+  
+  // 翻译问题
+  const translateIssue = (issue: string): string => {
+    if (issue.includes('CTR 表现良好但转化率偏低')) return 'CTR is good but conversion rate is low - creative works but landing page needs optimization';
+    if (issue.includes('CTR 低且 CPA 高')) return 'Low CTR and high CPA - creative/audience mismatch, consider pausing or adjusting';
+    if (issue.includes('CPA 高且 ROAS 低')) return 'High CPA and low ROAS - overall loss, need major strategy adjustment';
+    if (issue.includes('频次偏高')) return 'Frequency is high, consider expanding audience or refreshing creative';
+    if (issue.includes('CTR 偏低')) return 'CTR is low, optimize creative or adjust audience targeting';
+    if (issue.includes('ROAS 偏低')) return 'ROAS is low, ad return is insufficient, optimize conversion path';
+    return issue;
+  };
+  
+  // 翻译趋势
+  const translateTrend = (trend: string): string => {
+    return trend.replace('上升', 'increased').replace('下降', 'decreased')
+      .replace('表现改善', 'improvement').replace('需关注', 'needs attention')
+      .replace('较上期', 'vs previous period ');
+  };
+  
+  // 翻译建议
+  const translateRecommendation = (rec: string): string => {
+    if (rec.includes('CTR 表现良好')) return 'CTR is performing well, maintain current creative strategy';
+    if (rec.includes('CPA 控制得当')) return 'CPA is well controlled, consider increasing budget to scale';
+    if (rec.includes('ROAS 表现优秀')) return 'ROAS is excellent, ad return is healthy';
+    if (rec.includes('优化素材创意')) return 'Optimize creative, test different copy and visual elements';
+    if (rec.includes('CPA 偏高')) return 'CPA is high, optimize audience targeting or adjust bidding strategy';
+    if (rec.includes('ROAS 偏低')) return 'ROAS is low, optimize landing page conversion path';
+    if (rec.includes('持续监控')) return 'Continue monitoring key metrics and adjust strategy based on data changes';
+    return rec;
+  };
+  
+  // 翻译风险提示
+  const translateRisk = (risk: { level: 'urgent' | 'warning' | 'info'; message: string; metric: string; value: number; threshold: number }): { level: 'urgent' | 'warning' | 'info'; message: string; metric: string; value: number; threshold: number } => {
+    let message = risk.message;
+    if (risk.metric === 'CPC') message = `CPC $${risk.value.toFixed(2)} is high (benchmark $0.8-1.5), wasting budget daily`;
+    if (risk.metric === 'ROAS') message = `ROAS ${risk.value.toFixed(1)}x below 3x profitability line`;
+    if (risk.metric === 'CPA') message = `CPA $${risk.value.toFixed(2)} is too high, acquisition cost out of control`;
+    if (risk.metric === '频次') message = `Frequency ${risk.value.toFixed(1)} is high, audience may be fatigued`;
+    if (risk.metric === 'CTR') message = `CTR ${risk.value.toFixed(2)}% is low, low creative appeal`;
+    return { ...risk, message };
+  };
+  
+  // 翻译行动优先级
+  const translateAction = (action: { priority: number; metric: string; action: string; impact: 'high' | 'medium' | 'low' }): { priority: number; metric: string; action: string; impact: 'high' | 'medium' | 'low' } => {
+    let translatedAction = action.action;
+    // 提取数值
+    const cpcMatch = action.action.match(/\$[\d.]+/);
+    const roasMatch = action.action.match(/[\d.]+x/);
+    const rateMatch = action.action.match(/[\d.]+%/);
+    const freqMatch = action.action.match(/[\d.]+/);
+    
+    if (action.metric === 'CPC') translatedAction = `Pause current ad sets, test new creative to lower CPC (current $${cpcMatch?.[0]?.replace('$', '') || ''}, target < $1.5)`;
+    if (action.metric === 'ROAS') translatedAction = `Don't increase budget yet, optimize conversion path to improve ROAS (current ${roasMatch?.[0] || ''}, target > 3x)`;
+    if (action.metric === 'CPA') translatedAction = `Optimize audience targeting or adjust bidding (current $${cpcMatch?.[0]?.replace('$', '') || ''}, target < $25)`;
+    if (action.metric === '频次') translatedAction = `Expand audience or refresh creative to lower frequency (current ${freqMatch?.[0] || ''}, target < 2)`;
+    if (action.metric === 'CTR') translatedAction = `Optimize creative, test different copy and visuals (current ${rateMatch?.[0] || ''}, target > 1.5%)`;
+    if (action.metric === '转化率') translatedAction = `Optimize landing page experience to improve conversion rate (current ${rateMatch?.[0] || ''}, target > 2%)`;
+    return { ...action, action: translatedAction };
+  };
+  
+  return {
+    ...result,
+    overall_score: ratingMap[result.overall_score] || result.overall_score,
+    metrics: translatedMetrics,
+    issues: result.issues.map(translateIssue),
+    trends: result.trends.map(translateTrend),
+    recommendations: result.recommendations.map(translateRecommendation),
+    risks: result.risks?.map(translateRisk),
+    action_priorities: result.action_priorities?.map(translateAction),
+  };
 }
 
 function AnalysisContent() {
@@ -745,8 +861,8 @@ function AnalysisContent() {
             </CardContent>
           </Card>
 
-          {/* 区域3：分析区 */}
-          <Card className="bg-slate-900/90 border-cyan-400/30 backdrop-blur-sm shadow-xl">
+          {/* 区域3：分析区 - 渐变背景 */}
+          <Card className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-white/20 backdrop-blur-sm shadow-xl">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <LineChart className="w-5 h-5 text-cyan-400" />
@@ -763,50 +879,181 @@ function AnalysisContent() {
                   {analysis}
                 </div>
               ) : analysis ? (
-                <div className="space-y-4">
+                (() => {
+                  // 根据语言翻译分析结果
+                  const translatedAnalysis = translateAnalysisResult(analysis, locale);
+                  
+                  return (
+                <div className="space-y-6">
                   {/* 总体评分 */}
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 pb-4 border-b border-white/10">
                     <span className="text-blue-300">{locale === 'zh' ? '总体评分：' : 'Overall: '}</span>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      analysis.overall_score === '优秀' ? 'bg-green-500/20 text-green-300' :
-                      analysis.overall_score === '好' ? 'bg-blue-500/20 text-blue-300' :
-                      analysis.overall_score === '一般' ? 'bg-yellow-500/20 text-yellow-300' :
-                      'bg-red-500/20 text-red-300'
+                    <span className={`px-4 py-1.5 rounded-full text-sm font-semibold ${
+                      translatedAnalysis.overall_score === '优秀' || translatedAnalysis.overall_score === 'Excellent' ? 'bg-green-500/20 text-green-300 border border-green-500/30' :
+                      translatedAnalysis.overall_score === '好' || translatedAnalysis.overall_score === 'Good' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' :
+                      translatedAnalysis.overall_score === '一般' || translatedAnalysis.overall_score === 'Average' ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30' :
+                      'bg-red-500/20 text-red-300 border border-red-500/30'
                     }`}>
-                      {analysis.overall_score}
+                      {translatedAnalysis.overall_score}
                     </span>
                   </div>
                   
-                  {/* 指标评分 */}
-                  <div className="space-y-2">
-                    <h4 className="text-blue-200 font-medium">{locale === 'zh' ? '指标评分' : 'Metrics'}</h4>
-                    <div className="grid grid-cols-2 gap-2">
-                      {analysis.metrics.map((m, i) => (
-                        <div key={i} className="flex items-center justify-between bg-slate-800/50 rounded px-3 py-2">
-                          <span className="text-blue-300 text-sm">{m.name}</span>
-                          <div className="flex items-center gap-2">
-                            <span className="text-white text-sm font-medium">{m.value}</span>
-                            <span className={`text-xs px-2 py-0.5 rounded ${
-                              m.rating === '优秀' ? 'bg-green-500/20 text-green-300' :
-                              m.rating === '好' ? 'bg-blue-500/20 text-blue-300' :
-                              m.rating === '一般' ? 'bg-yellow-500/20 text-yellow-300' :
-                              'bg-red-500/20 text-red-300'
-                            }`}>
-                              {m.rating}
-                            </span>
+                  {/* 指标卡片 - 带颜色标签和图标 */}
+                  <div className="space-y-3">
+                    <h4 className="text-blue-200 font-medium flex items-center gap-2">
+                      <BarChart3 className="w-4 h-4" />
+                      {locale === 'zh' ? '指标评分' : 'Metrics'}
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {translatedAnalysis.metrics.map((m, i) => {
+                        // 根据评级选择颜色和图标
+                        const getMetricStyle = (rating: string, level: string) => {
+                          switch (level) {
+                            case 'excellent':
+                              return {
+                                bg: 'bg-green-500/10',
+                                border: 'border-green-500/30',
+                                text: 'text-green-300',
+                                icon: '✓',
+                                iconColor: 'text-green-400'
+                              };
+                            case 'good':
+                              return {
+                                bg: 'bg-blue-500/10',
+                                border: 'border-blue-500/30',
+                                text: 'text-blue-300',
+                                icon: '●',
+                                iconColor: 'text-blue-400'
+                              };
+                            case 'average':
+                              return {
+                                bg: 'bg-yellow-500/10',
+                                border: 'border-yellow-500/30',
+                                text: 'text-yellow-300',
+                                icon: '▲',
+                                iconColor: 'text-yellow-400'
+                              };
+                            case 'poor':
+                              return {
+                                bg: 'bg-red-500/10',
+                                border: 'border-red-500/30',
+                                text: 'text-red-300',
+                                icon: '✕',
+                                iconColor: 'text-red-400'
+                              };
+                            default:
+                              return {
+                                bg: 'bg-slate-500/10',
+                                border: 'border-slate-500/30',
+                                text: 'text-slate-300',
+                                icon: '—',
+                                iconColor: 'text-slate-400'
+                              };
+                          }
+                        };
+                        
+                        const style = getMetricStyle(m.rating, m.level);
+                        
+                        return (
+                          <div key={i} className={`${style.bg} ${style.border} border rounded-lg p-3 flex items-center justify-between`}>
+                            <div className="flex items-center gap-2">
+                              <span className={`${style.iconColor} text-lg`}>{style.icon}</span>
+                              <span className="text-blue-200 text-sm font-medium">{m.name}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-white text-sm font-semibold">
+                                {m.value !== null ? (m.name === 'CTR' || m.name === '转化率' || m.name === 'Conv. Rate' ? `${m.value.toFixed(2)}%` : m.name === 'ROAS' ? `${m.value.toFixed(1)}x` : `$${m.value.toFixed(2)}`) : '-'}
+                              </span>
+                              <span className={`text-xs px-2 py-0.5 rounded ${style.bg} ${style.text} border ${style.border}`}>
+                                {m.rating}
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                   
+                  {/* 风险提示 - 紧急/注意 */}
+                  {translatedAnalysis.risks && translatedAnalysis.risks.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="text-blue-200 font-medium flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 text-yellow-400" />
+                        {locale === 'zh' ? '风险提示' : 'Risk Alerts'}
+                      </h4>
+                      <div className="space-y-2">
+                        {translatedAnalysis.risks.map((risk, i) => (
+                          <div key={i} className={`flex items-start gap-2 p-3 rounded-lg ${
+                            risk.level === 'urgent' ? 'bg-red-500/10 border border-red-500/30' :
+                            risk.level === 'warning' ? 'bg-yellow-500/10 border border-yellow-500/30' :
+                            'bg-blue-500/10 border border-blue-500/30'
+                          }`}>
+                            <span className={`text-lg ${
+                              risk.level === 'urgent' ? 'text-red-400' :
+                              risk.level === 'warning' ? 'text-yellow-400' :
+                              'text-blue-400'
+                            }`}>
+                              {risk.level === 'urgent' ? '⚠' : risk.level === 'warning' ? '⚡' : 'ℹ'}
+                            </span>
+                            <div className="flex-1">
+                              <p className={`text-sm ${
+                                risk.level === 'urgent' ? 'text-red-200' :
+                                risk.level === 'warning' ? 'text-yellow-200' :
+                                'text-blue-200'
+                              }`}>
+                                {risk.message}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* 行动优先级 */}
+                  {translatedAnalysis.action_priorities && translatedAnalysis.action_priorities.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="text-blue-200 font-medium flex items-center gap-2">
+                        <Target className="w-4 h-4 text-cyan-400" />
+                        {locale === 'zh' ? '行动优先级' : 'Action Priority'}
+                      </h4>
+                      <div className="space-y-2">
+                        {translatedAnalysis.action_priorities.map((action, i) => (
+                          <div key={i} className="flex items-start gap-3 p-3 bg-slate-800/50 rounded-lg">
+                            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center">
+                              <span className="text-cyan-300 text-xs font-bold">{action.priority}</span>
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-blue-100 text-sm">{action.action}</p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className={`text-xs px-2 py-0.5 rounded ${
+                                  action.impact === 'high' ? 'bg-red-500/20 text-red-300' :
+                                  action.impact === 'medium' ? 'bg-yellow-500/20 text-yellow-300' :
+                                  'bg-blue-500/20 text-blue-300'
+                                }`}>
+                                  {action.impact === 'high' ? (locale === 'zh' ? '高影响' : 'High') :
+                                   action.impact === 'medium' ? (locale === 'zh' ? '中影响' : 'Medium') :
+                                   (locale === 'zh' ? '低影响' : 'Low')}
+                                </span>
+                                <span className="text-slate-400 text-xs">{action.metric}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
                   {/* 问题 */}
-                  {analysis.issues.length > 0 && (
-                    <div className="space-y-2">
-                      <h4 className="text-blue-200 font-medium">{locale === 'zh' ? '发现问题' : 'Issues'}</h4>
-                      <ul className="space-y-1">
-                        {analysis.issues.map((issue, i) => (
-                          <li key={i} className="flex items-start gap-2 text-yellow-200 text-sm">
+                  {translatedAnalysis.issues.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="text-blue-200 font-medium flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 text-yellow-400" />
+                        {locale === 'zh' ? '发现问题' : 'Issues'}
+                      </h4>
+                      <ul className="space-y-2">
+                        {translatedAnalysis.issues.map((issue, i) => (
+                          <li key={i} className="flex items-start gap-2 text-yellow-200 text-sm bg-yellow-500/5 border border-yellow-500/20 rounded-lg p-2">
                             <span className="text-yellow-400 mt-0.5">⚠</span>
                             <span>{issue}</span>
                           </li>
@@ -816,12 +1063,15 @@ function AnalysisContent() {
                   )}
                   
                   {/* 趋势 */}
-                  {analysis.trends.length > 0 && (
-                    <div className="space-y-2">
-                      <h4 className="text-blue-200 font-medium">{locale === 'zh' ? '趋势变化' : 'Trends'}</h4>
-                      <ul className="space-y-1">
-                        {analysis.trends.map((trend, i) => (
-                          <li key={i} className="flex items-start gap-2 text-blue-200 text-sm">
+                  {translatedAnalysis.trends.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="text-blue-200 font-medium flex items-center gap-2">
+                        <LineChart className="w-4 h-4 text-blue-400" />
+                        {locale === 'zh' ? '趋势变化' : 'Trends'}
+                      </h4>
+                      <ul className="space-y-2">
+                        {translatedAnalysis.trends.map((trend, i) => (
+                          <li key={i} className="flex items-start gap-2 text-blue-200 text-sm bg-blue-500/5 border border-blue-500/20 rounded-lg p-2">
                             <span className="text-blue-400 mt-0.5">→</span>
                             <span>{trend}</span>
                           </li>
@@ -831,12 +1081,15 @@ function AnalysisContent() {
                   )}
                   
                   {/* 建议 */}
-                  {analysis.recommendations.length > 0 && (
-                    <div className="space-y-2">
-                      <h4 className="text-blue-200 font-medium">{locale === 'zh' ? '优化建议' : 'Recommendations'}</h4>
-                      <ul className="space-y-1">
-                        {analysis.recommendations.map((rec, i) => (
-                          <li key={i} className="flex items-start gap-2 text-green-200 text-sm">
+                  {translatedAnalysis.recommendations.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="text-blue-200 font-medium flex items-center gap-2">
+                        <Target className="w-4 h-4 text-green-400" />
+                        {locale === 'zh' ? '优化建议' : 'Recommendations'}
+                      </h4>
+                      <ul className="space-y-2">
+                        {translatedAnalysis.recommendations.map((rec, i) => (
+                          <li key={i} className="flex items-start gap-2 text-green-200 text-sm bg-green-500/5 border border-green-500/20 rounded-lg p-2">
                             <span className="text-green-400 mt-0.5">✓</span>
                             <span>{rec}</span>
                           </li>
@@ -845,6 +1098,8 @@ function AnalysisContent() {
                     </div>
                   )}
                 </div>
+                  );
+                })()
               ) : (
                 <div className="text-blue-100 leading-relaxed whitespace-pre-wrap">
                   {locale === 'zh' ? '上传第一张截图，解锁AI分析' : 'Upload your first snapshot to unlock AI analysis'}
