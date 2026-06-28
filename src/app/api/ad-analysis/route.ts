@@ -7,8 +7,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { LLMClient, Config, HeaderUtils } from 'coze-coding-dev-sdk';
 import { getSupabaseServerClientAsync } from '@/storage/database/supabase-client';
+
+// 诊断师 Bot ID
+const DIAGNOSIS_BOT_ID = '7648602200872272137';
 
 // 获取路线中文名称
 function getRouteName(route: string): string {
@@ -164,34 +166,67 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // 调用 LLM 生成分析结论
-    console.log('[ad-analysis] OPENAI_API_KEY:', process.env.OPENAI_API_KEY ? '已设置(前6位:' + process.env.OPENAI_API_KEY.substring(0,6) + '...)' : '未设置');
-    const customHeaders = HeaderUtils.extractForwardHeaders(request.headers);
-    const llmConfig = new Config();
-    const llmClient = new LLMClient(llmConfig, customHeaders);
+    // 调用扣子诊断师 Bot API 生成分析结论
+    const cozeApiToken = process.env.COZE_API_TOKEN;
+    if (!cozeApiToken) {
+      console.error('[ad-analysis] COZE_API_TOKEN 未配置');
+      return NextResponse.json(
+        { error: 'AI分析服务未配置' },
+        { status: 500 }
+      );
+    }
 
     const historyJson = JSON.stringify(historyData, null, 2);
     const analysisPrompt = getAnalysisPrompt(dataCount, planInfo);
+    
+    // 构建完整的用户消息
+    const userMessage = `${analysisPrompt}\n\n数据记录：\n${historyJson}`;
 
-    const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
-      {
-        role: 'system',
-        content: analysisPrompt,
+    // 调用扣子 Bot API
+    const cozeResponse = await fetch('https://api.coze.cn/v3/chat', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${cozeApiToken}`,
+        'Content-Type': 'application/json',
       },
-      {
-        role: 'user',
-        content: `数据记录：\n${historyJson}`,
-      },
-    ];
-
-    const response = await llmClient.invoke(messages, {
-      model: 'doubao-seed-2-0-mini-260215',
-      temperature: 0.5,
+      body: JSON.stringify({
+        bot_id: DIAGNOSIS_BOT_ID,
+        user_id: user.id,
+        additional_messages: [
+          {
+            role: 'user',
+            content: userMessage,
+            content_type: 'text',
+          },
+        ],
+      }),
     });
+
+    if (!cozeResponse.ok) {
+      const errorText = await cozeResponse.text();
+      console.error('[ad-analysis] Coze API 调用失败:', cozeResponse.status, errorText);
+      return NextResponse.json(
+        { error: 'AI分析服务调用失败' },
+        { status: 500 }
+      );
+    }
+
+    const cozeResult = await cozeResponse.json();
+    
+    // 从返回结果中提取分析内容
+    let analysisContent = '分析生成中，请稍后刷新页面查看';
+    if (cozeResult.data?.messages && Array.isArray(cozeResult.data.messages)) {
+      const assistantMessage = cozeResult.data.messages.find(
+        (msg: { role: string; type: string }) => msg.role === 'assistant' && msg.type === 'answer'
+      );
+      if (assistantMessage?.content) {
+        analysisContent = assistantMessage.content;
+      }
+    }
 
     return NextResponse.json({
       data: historyData,
-      analysis: response.content,
+      analysis: analysisContent,
       dataCount: dataCount,
       planInfo: planInfo, // 返回方案信息供前端显示
     });
