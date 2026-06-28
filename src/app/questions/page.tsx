@@ -231,24 +231,11 @@ function QuizContent() {
   if (showCompliance) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-        <Card className="w-full max-w-2xl bg-white/5 border-white/20 backdrop-blur-sm shadow-xl">
-          <CardContent className="p-6">
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">
-              {locale === 'zh' ? '合规预检' : 'Compliance Checklist'}
-            </h2>
-            <p className="text-blue-200 mb-6 text-center">
-              {locale === 'zh' 
-                ? '请确认以下合规要点，避免广告被拒审' 
-                : 'Please confirm these compliance points to avoid ad rejection'}
-            </p>
-            
-            <ComplianceChecklist 
-              platform={platform}
-              onComplete={handleCompliancePass}
-              onSkip={handleComplianceSkip}
-            />
-          </CardContent>
-        </Card>
+        <ComplianceChecklist 
+          platform={platform}
+          onComplete={handleCompliancePass}
+          onSkip={handleComplianceSkip}
+        />
       </div>
     );
   }
