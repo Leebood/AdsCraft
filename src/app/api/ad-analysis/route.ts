@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseServerClientAsync } from '@/storage/database/supabase-client';
 
 // 诊断师 Bot ID
-const DIAGNOSIS_BOT_ID = '7648602200872272137';
+const DIAGNOSIS_BOT_ID = '7648850096180330548';
 
 // 获取路线中文名称
 function getRouteName(route: string): string {
