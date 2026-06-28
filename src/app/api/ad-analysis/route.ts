@@ -213,27 +213,27 @@ export async function GET(request: NextRequest) {
 
     const cozeResult = await cozeResponse.json();
     
-    // DEBUG: 临时返回完整结构，用于调试
-    return NextResponse.json({
-      debug: cozeResult,
-    });
+    // DEBUG: 打印 Coze API 返回的完整结构
+    console.log('[ad-analysis] Coze API 返回结构:', JSON.stringify(cozeResult, null, 2));
     
-    /*
     // 获取 chat_id 和 conversation_id
     const chatId = cozeResult.data?.id;
     const conversationId = cozeResult.data?.conversation_id;
     
     if (!chatId || !conversationId) {
       console.error('[ad-analysis] 未获取到 chat_id 或 conversation_id');
-      return NextResponse.json(
-        { error: 'AI分析服务返回异常' },
-        { status: 500 }
-      );
+      // 返回 placeholder，不报错
+      return NextResponse.json({
+        data: historyData,
+        analysis: '分析生成中，请稍后刷新页面查看',
+        dataCount: dataCount,
+        planInfo: planInfo,
+      });
     }
     
     // 轮询等待分析完成
     let analysisContent = '分析生成中，请稍后刷新页面查看';
-    const maxPollTime = 30000; // 最多轮询 30 秒
+    const maxPollTime = 60000; // 最多轮询 60 秒
     const pollInterval = 2000; // 每 2 秒轮询一次
     const startTime = Date.now();
     
@@ -290,7 +290,6 @@ export async function GET(request: NextRequest) {
     console.log('[ad-analysis] 返回前端结构:', JSON.stringify(responseData, null, 2));
 
     return NextResponse.json(responseData);
-    */
 
   } catch (error) {
     console.error('历史分析错误:', error);
