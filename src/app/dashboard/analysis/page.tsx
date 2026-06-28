@@ -306,9 +306,9 @@ function AnalysisContent() {
       if (!response.ok) {
         setError(data.error || (locale === 'zh' ? '保存失败' : 'Save failed'));
       } else {
-        // 保存成功，刷新数据
+        // 保存成功，显示提示信息
         setExtractedData(null);
-        setAnalysis(data.analysis);
+        setAnalysis(data.message || 'Data saved, view your diagnosis in the chat bot');
         // 如果API返回了方案信息，更新本地状态
         if (data.planInfo) {
           setUserPlan(data.planInfo);
