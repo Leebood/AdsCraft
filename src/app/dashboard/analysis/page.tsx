@@ -862,7 +862,7 @@ function AnalysisContent() {
           </Card>
 
           {/* 区域3：分析区 - 渐变背景 */}
-          <Card className="border-white/20 backdrop-blur-sm shadow-xl" style={{ background: 'linear-gradient(to bottom right, rgba(59, 130, 246, 0.1), rgba(168, 85, 247, 0.1))' }}>
+          <Card className="bg-transparent border-white/20 backdrop-blur-sm shadow-xl" style={{ background: 'linear-gradient(to bottom right, rgba(59, 130, 246, 0.1), rgba(168, 85, 247, 0.1))' }}>
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <LineChart className="w-5 h-5 text-cyan-400" />
