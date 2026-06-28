@@ -245,7 +245,7 @@ export function ComplianceChecklist({ platform, onComplete, onSkip }: Compliance
         </div>
         
         {/* Footer Actions */}
-        <div className="p-6 border-t border-white/10">
+        <div className="p-6">
           <div className="flex items-center justify-between">
             <div className="text-sm text-blue-200/60">
               <span className="text-red-400">{highSeverityItems.length}</span> 高风险 · 
