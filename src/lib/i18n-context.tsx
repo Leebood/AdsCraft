@@ -357,6 +357,24 @@ const translations = {
     'common.back': 'Back',
     'common.backHome': 'Back to Home',
     'common.backPrevious': 'Back to Previous',
+    
+    // 合规预检
+    'compliance.title': 'Compliance Pre-check',
+    'compliance.subtitle': 'Check before submission to reduce rejection risk',
+    'compliance.skip': 'Skip Check',
+    'compliance.highRiskWarning': 'Please ensure all high-risk items (marked in red) are completed to reduce rejection probability',
+    'compliance.items': 'items',
+    'compliance.creative': 'Creative',
+    'compliance.copy': 'Copy',
+    'compliance.landingPage': 'Landing Page',
+    'compliance.platformRules': 'Platform Rules',
+    'compliance.industry': 'Industry',
+    'compliance.other': 'Other',
+    'compliance.highRisk': 'High Risk',
+    'compliance.mediumRisk': 'Medium Risk',
+    'compliance.lowRisk': 'Low Risk',
+    'compliance.confirmSubmit': 'Confirm & Submit',
+    'compliance.completeHighRisk': 'Please complete high-risk items',
   },
   zh: {
     // 导航
@@ -703,6 +721,24 @@ const translations = {
     'common.back': '返回',
     'common.backHome': '返回首页',
     'common.backPrevious': '返回上一页',
+    
+    // 合规预检
+    'compliance.title': '合规预检',
+    'compliance.subtitle': '提交前检查，降低拒审风险',
+    'compliance.skip': '跳过检查',
+    'compliance.highRiskWarning': '请确保完成所有高风险项（红色标记）以降低拒审概率',
+    'compliance.items': '项',
+    'compliance.creative': '素材合规',
+    'compliance.copy': '文案合规',
+    'compliance.landingPage': '落地页',
+    'compliance.platformRules': '平台要求',
+    'compliance.industry': '行业资质',
+    'compliance.other': '其他',
+    'compliance.highRisk': '高风险',
+    'compliance.mediumRisk': '中风险',
+    'compliance.lowRisk': '低风险',
+    'compliance.confirmSubmit': '确认提交',
+    'compliance.completeHighRisk': '请完成高风险项',
   },
 };
 

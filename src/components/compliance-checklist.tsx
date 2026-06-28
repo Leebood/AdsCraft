@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ComplianceItem, PlatformId, PLATFORM_CONFIGS } from '@/lib/platforms/registry';
+import { useI18n } from '@/lib/i18n-context';
 
 interface ComplianceChecklistProps {
   platform: PlatformId;
@@ -12,6 +13,7 @@ interface ComplianceChecklistProps {
 export function ComplianceChecklist({ platform, onComplete, onSkip }: ComplianceChecklistProps) {
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
   const config = PLATFORM_CONFIGS[platform];
+  const { t, locale } = useI18n();
   
   // 按严重程度分组
   const highSeverityItems = config.complianceChecklist.filter(item => item.severity === 'high');
@@ -78,38 +80,32 @@ export function ComplianceChecklist({ platform, onComplete, onSkip }: Compliance
       case 'creative':
         return { 
           icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>,
-          name: '素材合规', 
-          nameEn: 'Creative' 
+          name: t('compliance.creative')
         };
       case 'copy':
         return { 
           icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>,
-          name: '文案合规', 
-          nameEn: 'Copy' 
+          name: t('compliance.copy')
         };
       case 'landing_page':
         return { 
           icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>,
-          name: '落地页', 
-          nameEn: 'Landing Page' 
+          name: t('compliance.landingPage')
         };
       case 'platform_specific':
         return { 
           icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
-          name: '平台要求', 
-          nameEn: 'Platform Rules' 
+          name: t('compliance.platformRules')
         };
       case 'industry':
         return { 
           icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
-          name: '行业资质', 
-          nameEn: 'Industry' 
+          name: t('compliance.industry')
         };
       default:
         return { 
           icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-          name: '其他', 
-          nameEn: 'Other' 
+          name: t('compliance.other')
         };
     }
   };
@@ -124,10 +120,10 @@ export function ComplianceChecklist({ platform, onComplete, onSkip }: Compliance
               <div className="w-10 h-10 flex items-center justify-center" dangerouslySetInnerHTML={{ __html: config.icon }} />
               <div>
                 <h2 className="text-xl font-semibold text-white">
-                  {config.name} 合规预检
+                  {config.name} {t('compliance.title')}
                 </h2>
                 <p className="text-blue-200/70 text-sm">
-                  提交前检查，降低拒审风险
+                  {t('compliance.subtitle')}
                 </p>
               </div>
             </div>
@@ -135,7 +131,7 @@ export function ComplianceChecklist({ platform, onComplete, onSkip }: Compliance
               onClick={onSkip}
               className="text-blue-300/60 hover:text-blue-300 transition-colors px-3 py-1 rounded-lg hover:bg-white/5"
             >
-              跳过检查
+              {t('compliance.skip')}
             </button>
           </div>
           
@@ -159,7 +155,7 @@ export function ComplianceChecklist({ platform, onComplete, onSkip }: Compliance
             <div className="mt-3 p-2 bg-red-500/10 border border-red-400/30 rounded-lg flex items-center gap-2">
               <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
               <span className="text-red-300 text-sm">
-                请确保完成所有高风险项（红色标记）以降低拒审概率
+                {t('compliance.highRiskWarning')}
               </span>
             </div>
           )}
@@ -178,7 +174,7 @@ export function ComplianceChecklist({ platform, onComplete, onSkip }: Compliance
                     {categoryInfo.name}
                   </h3>
                   <span className="text-xs text-blue-300/50">
-                    {items.length}项
+                    {items.length} {t('compliance.items')}
                   </span>
                 </div>
                 
@@ -219,20 +215,20 @@ export function ComplianceChecklist({ platform, onComplete, onSkip }: Compliance
                             <h4 className={`text-sm font-medium transition-colors ${
                               isChecked ? 'text-cyan-300' : 'text-white'
                             }`}>
-                              {item.titleZh}
+                              {locale === 'zh' ? item.titleZh : item.title}
                             </h4>
                           </div>
                           <p className={`text-xs transition-colors ${
                             isChecked ? 'text-blue-200/60' : 'text-blue-200/80'
                           }`}>
-                            {item.descriptionZh}
+                            {locale === 'zh' ? item.descriptionZh : item.description}
                           </p>
                         </div>
                         
                         {/* Severity Badge */}
                         {!isChecked && (
                           <span className={`px-2 py-1 rounded-md text-xs ${severityStyle.bg} ${severityStyle.color}`}>
-                            {item.severity === 'high' ? '高风险' : item.severity === 'medium' ? '中风险' : '低风险'}
+                            {item.severity === 'high' ? t('compliance.highRisk') : item.severity === 'medium' ? t('compliance.mediumRisk') : t('compliance.lowRisk')}
                           </span>
                         )}
                       </button>
@@ -248,9 +244,9 @@ export function ComplianceChecklist({ platform, onComplete, onSkip }: Compliance
         <div className="p-6">
           <div className="flex items-center justify-between">
             <div className="text-sm text-blue-200/60">
-              <span className="text-red-400">{highSeverityItems.length}</span> 高风险 · 
-              <span className="text-yellow-400">{mediumSeverityItems.length}</span> 中风险 · 
-              <span className="text-green-400">{lowSeverityItems.length}</span> 低风险
+              <span className="text-red-400">{highSeverityItems.length}</span> {t('compliance.highRisk')} · 
+              <span className="text-yellow-400">{mediumSeverityItems.length}</span> {t('compliance.mediumRisk')} · 
+              <span className="text-green-400">{lowSeverityItems.length}</span> {t('compliance.lowRisk')}
             </div>
             
             <div className="flex items-center gap-3">
@@ -258,7 +254,7 @@ export function ComplianceChecklist({ platform, onComplete, onSkip }: Compliance
                 onClick={onSkip}
                 className="px-4 py-2 rounded-xl border border-white/20 text-blue-200 hover:bg-white/5 transition-colors"
               >
-                跳过检查
+                {t('compliance.skip')}
               </button>
               <button
                 onClick={onComplete}
@@ -269,7 +265,7 @@ export function ComplianceChecklist({ platform, onComplete, onSkip }: Compliance
                     : 'bg-white/10 text-blue-300/50 cursor-not-allowed'
                 }`}
               >
-                {allHighSeverityChecked ? '确认提交' : '请完成高风险项'}
+                {allHighSeverityChecked ? t('compliance.confirmSubmit') : t('compliance.completeHighRisk')}
               </button>
             </div>
           </div>
