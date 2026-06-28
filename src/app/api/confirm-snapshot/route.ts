@@ -3,11 +3,14 @@
  * POST /api/confirm-snapshot
  * 
  * 接收用户确认的指标数据，写入 ad_snapshots 表
- * 分析由 Bot 诊断师负责，此接口只做数据入库
+ * 数据写入后，异步触发 Bot 分析，结果写回 analysis_result 字段
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseServerClientAsync } from '@/storage/database/supabase-client';
+
+// 诊断师 Bot ID
+const DIAGNOSIS_BOT_ID = '7648850096180330548';
 
 // 请求体类型
 interface SnapshotData {
@@ -23,6 +26,83 @@ interface SnapshotData {
   roas: number | null;
   raw_image_url?: string;
   file_key?: string;
+}
+
+/**
+ * 异步触发 Bot 分析，结果写回最新记录的 analysis_result 字段
+ */
+async function runBotAnalysis(historyData: Record<string, unknown>[], userId: string) {
+  const cozeApiToken = process.env.COZE_API_TOKEN;
+  if (!cozeApiToken) {
+    console.error('[Bot分析] COZE_API_TOKEN 未配置');
+    return;
+  }
+
+  const prompt = `以下是广告数据，请给出分析：\n${JSON.stringify(historyData.slice(0, 5))}`;
+  
+  const resp = await fetch('https://api.coze.cn/v3/chat', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${cozeApiToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      bot_id: DIAGNOSIS_BOT_ID,
+      user_id: userId,
+      additional_messages: [{ role: 'user', content: prompt, content_type: 'text' }],
+      auto_save_history: false,
+    }),
+  });
+
+  const body = await resp.json();
+  const chatId = body.data?.id;
+  const conversationId = body.data?.conversation_id;
+
+  if (!chatId || !conversationId) {
+    console.error('[Bot分析] 未获取到 chat_id，响应:', JSON.stringify(body));
+    return;
+  }
+
+  // 轮询最多 60 秒
+  const start = Date.now();
+  while (Date.now() - start < 60000) {
+    const statusResp = await fetch(
+      `https://api.coze.cn/v3/chat/retrieve?chat_id=${chatId}&conversation_id=${conversationId}`,
+      { headers: { 'Authorization': `Bearer ${cozeApiToken}` } }
+    );
+    const statusBody = await statusResp.json();
+
+    if (statusBody.data?.status === 'completed') {
+      const msgResp = await fetch(
+        `https://api.coze.cn/v3/chat/message/list?chat_id=${chatId}&conversation_id=${conversationId}`,
+        { headers: { 'Authorization': `Bearer ${cozeApiToken}` } }
+      );
+      const msgBody = await msgResp.json();
+      const answer = msgBody.data?.find(
+        (m: { role: string; type: string }) => m.role === 'assistant' && m.type === 'answer'
+      )?.content;
+
+      if (answer) {
+        const supabase = await getSupabaseServerClientAsync();
+        await supabase
+          .from('ad_snapshots')
+          .update({ analysis_result: { content: answer } })
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(1);
+      }
+      return;
+    }
+
+    if (['failed', 'canceled'].includes(statusBody.data?.status)) {
+      console.error('[Bot分析] Chat 状态异常:', statusBody.data?.status);
+      return;
+    }
+
+    await new Promise(r => setTimeout(r, 2000));
+  }
+
+  console.error('[Bot分析] 轮询超时（60秒）');
 }
 
 export async function POST(request: NextRequest) {
@@ -87,10 +167,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 写入成功后，查询该用户所有历史数据，异步触发 Bot 分析
+    const { data: historyData } = await supabase
+      .from('ad_snapshots')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    // Fire-and-forget：不 await，立即返回
+    runBotAnalysis(historyData || [], user.id).catch(err =>
+      console.error('[confirm-snapshot] Bot 分析异步失败:', err)
+    );
+
     return NextResponse.json({
       saved: true,
       id: data?.id,
-      message: 'Data saved, view your diagnosis in the chat bot',
+      message: 'Data saved, AI analysis is generating...',
     });
 
   } catch (error) {

@@ -306,14 +306,51 @@ function AnalysisContent() {
       if (!response.ok) {
         setError(data.error || (locale === 'zh' ? '保存失败' : 'Save failed'));
       } else {
-        // 保存成功，显示提示信息
+        // 保存成功，显示"AI 分析中..."
         setExtractedData(null);
-        setAnalysis(data.message || 'Data saved, view your diagnosis in the chat bot');
+        setAnalysis(locale === 'zh' ? 'AI 分析中...' : 'AI analysis is generating...');
         // 如果API返回了方案信息，更新本地状态
         if (data.planInfo) {
           setUserPlan(data.planInfo);
         }
         fetchHistoryAndAnalysis();
+        
+        // 开始轮询 /api/analysis-status，每 3 秒一次，最多 60 秒
+        const maxPollTime = 60000;
+        const pollInterval = 3000;
+        const startTime = Date.now();
+        
+        const pollAnalysis = async () => {
+          if (Date.now() - startTime >= maxPollTime) {
+            // 超时，显示提示信息
+            setAnalysis(locale === 'zh' ? '分析超时，请稍后刷新' : 'Analysis timeout, please refresh later');
+            return;
+          }
+          
+          try {
+            const statusResponse = await fetch('/api/analysis-status', {
+              headers: { 'x-session': token },
+            });
+            
+            if (statusResponse.ok) {
+              const statusData = await statusResponse.json();
+              
+              if (statusData.analysis) {
+                // 拿到结果，停止轮询，渲染到 AI Analysis 区域
+                setAnalysis(statusData.analysis);
+                return;
+              }
+            }
+          } catch (err) {
+            console.error('轮询分析状态失败:', err);
+          }
+          
+          // 继续轮询
+          setTimeout(pollAnalysis, pollInterval);
+        };
+        
+        // 延迟 3 秒后开始第一次轮询
+        setTimeout(pollAnalysis, pollInterval);
       }
     } catch (err) {
       console.error('保存错误:', err);
