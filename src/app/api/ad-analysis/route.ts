@@ -216,15 +216,64 @@ export async function GET(request: NextRequest) {
     // DEBUG: 打印 Coze API 返回的完整结构
     console.log('[ad-analysis] Coze API 返回结构:', JSON.stringify(cozeResult, null, 2));
     
-    // 从返回结果中提取分析内容
-    let analysisContent = '分析生成中，请稍后刷新页面查看';
-    if (cozeResult.data?.messages && Array.isArray(cozeResult.data.messages)) {
-      const assistantMessage = cozeResult.data.messages.find(
-        (msg: { role: string; type: string }) => msg.role === 'assistant' && msg.type === 'answer'
+    // 获取 chat_id 和 conversation_id
+    const chatId = cozeResult.data?.id;
+    const conversationId = cozeResult.data?.conversation_id;
+    
+    if (!chatId || !conversationId) {
+      console.error('[ad-analysis] 未获取到 chat_id 或 conversation_id');
+      return NextResponse.json(
+        { error: 'AI分析服务返回异常' },
+        { status: 500 }
       );
-      if (assistantMessage?.content) {
-        analysisContent = assistantMessage.content;
+    }
+    
+    // 轮询等待分析完成
+    let analysisContent = '分析生成中，请稍后刷新页面查看';
+    const maxPollTime = 30000; // 最多轮询 30 秒
+    const pollInterval = 2000; // 每 2 秒轮询一次
+    const startTime = Date.now();
+    
+    while (Date.now() - startTime < maxPollTime) {
+      // 查询 chat 状态
+      const retrieveResponse = await fetch(`https://api.coze.cn/v3/chat/retrieve?chat_id=${chatId}&conversation_id=${conversationId}`, {
+        headers: {
+          'Authorization': `Bearer ${cozeApiToken}`,
+        },
+      });
+      
+      if (retrieveResponse.ok) {
+        const retrieveResult = await retrieveResponse.json();
+        console.log('[ad-analysis] Chat 状态:', retrieveResult.data?.status);
+        
+        if (retrieveResult.data?.status === 'completed') {
+          // 获取消息列表
+          const messageListResponse = await fetch(`https://api.coze.cn/v3/chat/message/list?chat_id=${chatId}&conversation_id=${conversationId}`, {
+            headers: {
+              'Authorization': `Bearer ${cozeApiToken}`,
+            },
+          });
+          
+          if (messageListResponse.ok) {
+            const messageListResult = await messageListResponse.json();
+            console.log('[ad-analysis] 消息列表:', JSON.stringify(messageListResult, null, 2));
+            
+            // 从消息列表中提取 assistant 的回答
+            if (messageListResult.data && Array.isArray(messageListResult.data)) {
+              const assistantMessage = messageListResult.data.find(
+                (msg: { role: string; type: string }) => msg.role === 'assistant' && msg.type === 'answer'
+              );
+              if (assistantMessage?.content) {
+                analysisContent = assistantMessage.content;
+              }
+            }
+          }
+          break;
+        }
       }
+      
+      // 等待 2 秒后继续轮询
+      await new Promise(resolve => setTimeout(resolve, pollInterval));
     }
 
     const responseData = {
