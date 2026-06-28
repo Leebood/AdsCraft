@@ -8,6 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseServerClientAsync } from '@/storage/database/supabase-client';
+import { analyzeAdData, runAIAnalysis } from '@/lib/ad-analysis-engine';
 
 // 诊断师 Bot ID
 const DIAGNOSIS_BOT_ID = '7648850096180330548';
@@ -166,11 +167,15 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // 只返回历史数据，不在此处调用 Bot
-    // Bot 分析由 /api/confirm-snapshot 异步触发，结果写回 ad_snapshots.analysis_result
+    // 调用规则分析引擎
+    const ruleAnalysis = analyzeAdData(historyData);
+    
+    // 预留 AI 分析接口（暂时返回规则分析结果）
+    const aiAnalysis = await runAIAnalysis(ruleAnalysis);
+    
     return NextResponse.json({
       data: historyData,
-      analysis: null,
+      analysis: aiAnalysis,
       dataCount: dataCount,
       planInfo: planInfo,
     });

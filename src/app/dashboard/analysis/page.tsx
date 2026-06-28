@@ -43,6 +43,20 @@ interface HistorySnapshot {
   created_at: string;
 }
 
+// 规则分析结果类型
+interface AnalysisResult {
+  overall_score: string;
+  metrics: Array<{
+    name: string;
+    value: number | null;
+    rating: string;
+    benchmark: string;
+  }>;
+  issues: string[];
+  trends: string[];
+  recommendations: string[];
+}
+
 // 用户方案类型
 interface UserPlan {
   route: string;
@@ -72,7 +86,7 @@ function AnalysisContent() {
   const [uploading, setUploading] = useState(false);
   const [extractedData, setExtractedData] = useState<SnapshotData | null>(null);
   const [saving, setSaving] = useState(false);
-  const [analysis, setAnalysis] = useState<string>('');
+  const [analysis, setAnalysis] = useState<AnalysisResult | string | null>(null);
   const [historyData, setHistoryData] = useState<HistorySnapshot[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDays, setSelectedDays] = useState(daysFilter);
@@ -164,7 +178,7 @@ function AnalysisContent() {
       if (response.ok) {
         const data = await response.json();
         setHistoryData(data.data || []);
-        setAnalysis(data.analysis || '');
+        setAnalysis(data.analysis || null);
         // 如果API返回了方案信息，更新本地状态
         if (data.planInfo) {
           setUserPlan(data.planInfo);
@@ -744,9 +758,96 @@ function AnalysisContent() {
                 <div className="text-center py-8">
                   <div className="animate-spin w-8 h-8 border-2 border-cyan-400 border-t-transparent rounded-full mx-auto"></div>
                 </div>
+              ) : typeof analysis === 'string' ? (
+                <div className="text-blue-100 leading-relaxed whitespace-pre-wrap">
+                  {analysis}
+                </div>
+              ) : analysis ? (
+                <div className="space-y-4">
+                  {/* 总体评分 */}
+                  <div className="flex items-center gap-3">
+                    <span className="text-blue-300">{locale === 'zh' ? '总体评分：' : 'Overall: '}</span>
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      analysis.overall_score === '优秀' ? 'bg-green-500/20 text-green-300' :
+                      analysis.overall_score === '好' ? 'bg-blue-500/20 text-blue-300' :
+                      analysis.overall_score === '一般' ? 'bg-yellow-500/20 text-yellow-300' :
+                      'bg-red-500/20 text-red-300'
+                    }`}>
+                      {analysis.overall_score}
+                    </span>
+                  </div>
+                  
+                  {/* 指标评分 */}
+                  <div className="space-y-2">
+                    <h4 className="text-blue-200 font-medium">{locale === 'zh' ? '指标评分' : 'Metrics'}</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      {analysis.metrics.map((m, i) => (
+                        <div key={i} className="flex items-center justify-between bg-slate-800/50 rounded px-3 py-2">
+                          <span className="text-blue-300 text-sm">{m.name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-white text-sm font-medium">{m.value}</span>
+                            <span className={`text-xs px-2 py-0.5 rounded ${
+                              m.rating === '优秀' ? 'bg-green-500/20 text-green-300' :
+                              m.rating === '好' ? 'bg-blue-500/20 text-blue-300' :
+                              m.rating === '一般' ? 'bg-yellow-500/20 text-yellow-300' :
+                              'bg-red-500/20 text-red-300'
+                            }`}>
+                              {m.rating}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* 问题 */}
+                  {analysis.issues.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-blue-200 font-medium">{locale === 'zh' ? '发现问题' : 'Issues'}</h4>
+                      <ul className="space-y-1">
+                        {analysis.issues.map((issue, i) => (
+                          <li key={i} className="flex items-start gap-2 text-yellow-200 text-sm">
+                            <span className="text-yellow-400 mt-0.5">⚠</span>
+                            <span>{issue}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {/* 趋势 */}
+                  {analysis.trends.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-blue-200 font-medium">{locale === 'zh' ? '趋势变化' : 'Trends'}</h4>
+                      <ul className="space-y-1">
+                        {analysis.trends.map((trend, i) => (
+                          <li key={i} className="flex items-start gap-2 text-blue-200 text-sm">
+                            <span className="text-blue-400 mt-0.5">→</span>
+                            <span>{trend}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {/* 建议 */}
+                  {analysis.recommendations.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-blue-200 font-medium">{locale === 'zh' ? '优化建议' : 'Recommendations'}</h4>
+                      <ul className="space-y-1">
+                        {analysis.recommendations.map((rec, i) => (
+                          <li key={i} className="flex items-start gap-2 text-green-200 text-sm">
+                            <span className="text-green-400 mt-0.5">✓</span>
+                            <span>{rec}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div className="text-blue-100 leading-relaxed whitespace-pre-wrap">
-                  {analysis || (locale === 'zh' ? '上传第一张截图，解锁AI分析' : 'Upload your first snapshot to unlock AI analysis')}
+                  {locale === 'zh' ? '上传第一张截图，解锁AI分析' : 'Upload your first snapshot to unlock AI analysis'}
                 </div>
               )}
             </CardContent>
