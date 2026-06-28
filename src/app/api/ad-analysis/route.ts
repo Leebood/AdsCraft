@@ -165,6 +165,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 调用 LLM 生成分析结论
+    console.log('[ad-analysis] OPENAI_API_KEY:', process.env.OPENAI_API_KEY ? '已设置(前6位:' + process.env.OPENAI_API_KEY.substring(0,6) + '...)' : '未设置');
     const customHeaders = HeaderUtils.extractForwardHeaders(request.headers);
     const llmConfig = new Config();
     const llmClient = new LLMClient(llmConfig, customHeaders);
