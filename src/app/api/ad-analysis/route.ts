@@ -213,9 +213,12 @@ export async function GET(request: NextRequest) {
 
     const cozeResult = await cozeResponse.json();
     
-    // DEBUG: 打印 Coze API 返回的完整结构
-    console.log('[ad-analysis] Coze API 返回结构:', JSON.stringify(cozeResult, null, 2));
+    // DEBUG: 临时返回完整结构，用于调试
+    return NextResponse.json({
+      debug: cozeResult,
+    });
     
+    /*
     // 获取 chat_id 和 conversation_id
     const chatId = cozeResult.data?.id;
     const conversationId = cozeResult.data?.conversation_id;
@@ -287,6 +290,7 @@ export async function GET(request: NextRequest) {
     console.log('[ad-analysis] 返回前端结构:', JSON.stringify(responseData, null, 2));
 
     return NextResponse.json(responseData);
+    */
 
   } catch (error) {
     console.error('历史分析错误:', error);
