@@ -51,6 +51,7 @@ async function runBotAnalysis(historyData: Record<string, unknown>[], userId: st
       user_id: userId,
       additional_messages: [{ role: 'user', content: prompt, content_type: 'text' }],
       auto_save_history: false,
+      stream: false,
     }),
   });
 
