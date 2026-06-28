@@ -213,6 +213,9 @@ export async function GET(request: NextRequest) {
 
     const cozeResult = await cozeResponse.json();
     
+    // DEBUG: 打印 Coze API 返回的完整结构
+    console.log('[ad-analysis] Coze API 返回结构:', JSON.stringify(cozeResult, null, 2));
+    
     // 从返回结果中提取分析内容
     let analysisContent = '分析生成中，请稍后刷新页面查看';
     if (cozeResult.data?.messages && Array.isArray(cozeResult.data.messages)) {
@@ -224,12 +227,17 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({
+    const responseData = {
       data: historyData,
       analysis: analysisContent,
       dataCount: dataCount,
       planInfo: planInfo, // 返回方案信息供前端显示
-    });
+    };
+    
+    // DEBUG: 打印最终返回给前端的结构
+    console.log('[ad-analysis] 返回前端结构:', JSON.stringify(responseData, null, 2));
+
+    return NextResponse.json(responseData);
 
   } catch (error) {
     console.error('历史分析错误:', error);
