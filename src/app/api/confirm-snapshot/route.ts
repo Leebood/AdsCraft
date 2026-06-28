@@ -1,82 +1,47 @@
 /**
- * 确认入库+分析 API
+ * 确认截图指标 API
  * POST /api/confirm-snapshot
  * 
- * 接收用户确认后的指标，写入数据库，生成分析结论
- * 分析时结合用户的方案信息（预算、目标、路线）
+ * 接收用户确认的指标数据，写入数据库，拉历史数据，调 GPT-4o-mini 出诊断分析
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { LLMClient, Config, HeaderUtils } from 'coze-coding-dev-sdk';
 import { getSupabaseServerClientAsync } from '@/storage/database/supabase-client';
 
-// 获取路线中文名称
-function getRouteName(route: string): string {
-  const routeNames: Record<string, string> = {
-    'retailer': '零售商',
-    'manufacturer': '制造商',
-    'local_service': '本地服务商',
-    'brand': '品牌方',
-    'basic': '基础通用方案',
-  };
-  return routeNames[route] || route;
+// 超时时间 30秒
+const TIMEOUT_MS = 30000;
+
+// 请求体类型
+interface SnapshotData {
+  campaign_name: string | null;
+  snapshot_date: string | null;
+  spend: number | null;
+  impressions: number | null;
+  clicks: number | null;
+  ctr: number | null;
+  cpc: number | null;
+  conversions: number | null;
+  cpa: number | null;
+  roas: number | null;
+  raw_image_url?: string;
+  file_key?: string;
 }
 
-// 获取路线关注重点
-function getRouteFocus(route: string): string {
-  const routeFocus: Record<string, string> = {
-    'retailer': '重点关注ROAS（广告回报率）、转化率、CPA（每次行动成本），目标是提升销售转化',
-    'manufacturer': '重点关注品牌曝光、线索质量、CPA，目标是获取高质量潜在客户',
-    'local_service': '重点关注本地曝光、点击率、地理位置精准度，目标是吸引本地客户',
-    'brand': '重点关注品牌曝光量、互动率、品牌认知度提升，目标是扩大品牌影响力',
-    'basic': '根据用户预算和目标，关注核心指标表现',
-  };
-  return routeFocus[route] || '关注核心广告指标表现';
-}
+// 诊断分析 Prompt
+function buildDiagnosisPrompt(historyData: SnapshotData[]): string {
+  const dataJson = JSON.stringify(historyData, null, 2);
+  
+  return `以下是该用户的Facebook广告数据记录（按时间排序）：
+${dataJson}
 
-// 分析 Prompt（带方案上下文）
-function getAnalysisPrompt(dataCount: number, planInfo: { route: string; budget: string; goal: string } | null): string {
-  const routeName = planInfo ? getRouteName(planInfo.route) : '通用';
-  const routeFocus = planInfo ? getRouteFocus(planInfo.route) : '关注核心广告指标表现';
-  const budgetInfo = planInfo?.budget || '未知';
-  const goalInfo = planInfo?.goal || '未知';
+FB行业基准参考：CTR 1.0-2.0%, CPC $0.50-1.50, CPA $10-30, ROAS 2.0-4.0x
 
-  const contextInfo = planInfo 
-    ? `\n\n用户背景信息：
-- 用户类型：${routeName}
-- 预算设定：${budgetInfo}
-- 广告目标：${goalInfo}
-- 关注重点：${routeFocus}`
-    : '';
+请生成诊断分析：
+- 1条数据：各指标与行业基准对比，判断好坏，给出优化建议
+- 2条+数据：趋势变化分析，指出异常指标，给出优化方向
+- 5条+数据：异常检测、具体优化路径
 
-  if (dataCount === 1) {
-    return `以下是该用户的第一条广告数据记录。${contextInfo}
-
-请生成基准诊断分析：
-- 各指标与行业基准对比（CTR基准1.8%，CPA根据行业不同在$5-50）
-- 结合用户类型判断各指标表现好坏
-- 给出针对性的优化建议
-
-用简洁的中文，分点输出，不超过300字。`;
-  } else if (dataCount >= 2 && dataCount < 5) {
-    return `以下是该用户的广告数据记录（有${dataCount}条数据）。${contextInfo}
-
-请生成趋势分析：
-- 指标变化趋势分析（CTR、CPC、CPA、ROAS的变化）
-- 结合用户类型指出异常指标
-- 给出针对性的优化方向
-
-用简洁的中文，分点输出，不超过300字。`;
-  } else {
-    return `以下是该用户的广告数据记录（有${dataCount}条数据）。${contextInfo}
-
-请生成深度分析：
-- 异常检测（识别显著偏离的指标）
-- 结合用户类型进行广告组对比分析
-- 给出具体优化路径建议
-
-用简洁的中文，分点输出，不超过300字。`;
-  }
+用英文，分点输出，不超过300字。`;
 }
 
 export async function POST(request: NextRequest) {
@@ -86,7 +51,7 @@ export async function POST(request: NextRequest) {
     
     if (!sessionToken) {
       return NextResponse.json(
-        { error: '请先登录后再保存数据' },
+        { error: '请先登录后再确认数据' },
         { status: 401 }
       );
     }
@@ -101,123 +66,123 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 获取用户最近的方案信息（用于分析上下文）
-    const { data: userPlan } = await supabase
-      .from('plans')
-      .select('route, budget, goal, plan_data')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
-
-    const planInfo = userPlan ? {
-      route: userPlan.route,
-      budget: userPlan.budget,
-      goal: userPlan.goal,
-    } : null;
-
     // 解析请求体
-    const body = await request.json();
+    const body: SnapshotData = await request.json();
     
-    // 验证必要字段
-    const {
-      campaign_name,
-      snapshot_date,
-      spend,
-      impressions,
-      clicks,
-      ctr,
-      cpc,
-      conversions,
-      cpa,
-      roas,
-      raw_image_url,
-      file_key,
-      platform = 'facebook',  // 默认 Facebook，因为当前是截图上传流程
-      source = 'screenshot',  // 默认截图来源
-    } = body;
+    // 验证必填字段
+    if (!body.campaign_name && !body.snapshot_date) {
+      return NextResponse.json(
+        { error: '请至少提供广告系列名称或日期' },
+        { status: 400 }
+      );
+    }
 
-    // 写入数据库
-    const { data: insertedData, error: insertError } = await supabase
+    // 写入 ad_snapshots 表
+    const { error: insertError } = await supabase
       .from('ad_snapshots')
       .insert({
         user_id: user.id,
-        campaign_name: campaign_name || null,
-        snapshot_date: snapshot_date || null,
-        spend: spend || null,
-        impressions: impressions || null,
-        clicks: clicks || null,
-        ctr: ctr || null,
-        cpc: cpc || null,
-        conversions: conversions || null,
-        cpa: cpa || null,
-        roas: roas || null,
-        raw_image_url: raw_image_url || null,
-        platform: platform,      // 平台字段
-        source: source,          // 数据来源
-      })
-      .select()
-      .single();
+        platform: 'facebook',
+        campaign_name: body.campaign_name,
+        snapshot_date: body.snapshot_date,
+        spend: body.spend,
+        impressions: body.impressions,
+        clicks: body.clicks,
+        ctr: body.ctr,
+        cpc: body.cpc,
+        conversions: body.conversions,
+        cpa: body.cpa,
+        roas: body.roas,
+        raw_image_url: body.raw_image_url || null,
+      });
 
     if (insertError) {
-      console.error('数据库写入错误:', insertError);
+      console.error('Failed to insert snapshot:', insertError);
       return NextResponse.json(
-        { error: '保存数据失败' },
+        { error: '保存数据失败，请重试' },
         { status: 500 }
       );
     }
 
-    // 查询该用户历史数据
+    // 查询该用户所有历史记录
     const { data: historyData, error: historyError } = await supabase
       .from('ad_snapshots')
       .select('*')
       .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(30);
+      .eq('platform', 'facebook')
+      .order('snapshot_date', { ascending: true });
 
     if (historyError) {
-      console.error('历史数据查询错误:', historyError);
+      console.error('Failed to fetch history:', historyError);
     }
 
-    const dataCount = historyData?.length || 1;
+    const historyCount = historyData?.length || 0;
 
-    // 调用 LLM 生成分析结论
-    const customHeaders = HeaderUtils.extractForwardHeaders(request.headers);
-    const llmConfig = new Config();
-    const llmClient = new LLMClient(llmConfig, customHeaders);
+    // 调用 OpenAI API 生成诊断分析
+    const openaiApiKey = process.env.OPENAI_API_KEY;
+    if (!openaiApiKey) {
+      return NextResponse.json({
+        saved: true,
+        history_count: historyCount,
+        analysis: 'Data saved successfully. AI analysis is temporarily unavailable.',
+      });
+    }
 
-    // 构建分析请求（带方案上下文）
-    const historyJson = JSON.stringify(historyData || [insertedData], null, 2);
-    const analysisPrompt = getAnalysisPrompt(dataCount, planInfo);
+    const prompt = buildDiagnosisPrompt(historyData || [body]);
 
-    const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
-      {
-        role: 'system',
-        content: analysisPrompt,
-      },
-      {
-        role: 'user',
-        content: `数据记录：\n${historyJson}`,
-      },
-    ];
-
-    const response = await llmClient.invoke(messages, {
-      model: 'doubao-seed-2-0-mini-260215',
-      temperature: 0.5,
+    // 设置超时
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('Analysis timeout')), TIMEOUT_MS);
     });
+
+    // 调用 OpenAI API
+    const openaiResponse = await Promise.race([
+      fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${openaiApiKey}`,
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'user', content: prompt },
+          ],
+          temperature: 0.5,
+          max_tokens: 500,
+        }),
+      }),
+      timeoutPromise,
+    ]);
+
+    let analysis = '';
+    
+    if (openaiResponse.ok) {
+      const result = await openaiResponse.json();
+      analysis = result.choices[0]?.message?.content || '';
+    } else {
+      console.error('OpenAI API error:', await openaiResponse.text());
+      analysis = 'Data saved successfully. AI analysis is temporarily unavailable.';
+    }
 
     return NextResponse.json({
       saved: true,
-      id: insertedData.id,
-      analysis: response.content,
-      dataCount: dataCount,
-      planInfo: planInfo, // 返回方案信息供前端显示
+      history_count: historyCount,
+      analysis,
     });
 
   } catch (error) {
-    console.error('确认入库错误:', error);
+    console.error('Confirm snapshot error:', error);
+    
+    if (error instanceof Error && error.message.includes('timeout')) {
+      return NextResponse.json(
+        { error: 'Analysis timeout, please retry' },
+        { status: 504 }
+      );
+    }
+
     return NextResponse.json(
-      { error: '保存数据失败，请重试' },
+      { error: 'Failed to confirm snapshot, please retry' },
       { status: 500 }
     );
   }
