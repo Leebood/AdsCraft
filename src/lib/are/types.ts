@@ -238,3 +238,80 @@ export const FACEBOOK_BENCHMARKS: Record<IndustryType, FacebookBenchmarks> = {
 
 // Default benchmarks (e-commerce as default)
 export const DEFAULT_BENCHMARKS = FACEBOOK_BENCHMARKS.ecommerce;
+
+// ==================== TikTok Campaign Data ====================
+
+export interface TikTokCampaign {
+  name: string;
+  status: string; // Active / Paused
+  budget: number;
+  spend: number;
+  impressions: number;
+  clicks: number;
+  ctr: number; // percentage
+  cpc: number;
+  conversions: number;
+  cvr: number; // percentage
+  cpa: number;
+  roas: number;
+  // Video metrics (optional)
+  video_views?: number;
+  six_second_views?: number;
+  six_second_view_rate?: number; // percentage
+  avg_watch_time?: number; // seconds
+  // Optional
+  cpm?: number;
+}
+
+export interface TikTokParsedData {
+  platform: 'tiktok';
+  data_source: DataSource;
+  date_range: string;
+  snapshot_date?: string;
+  campaigns: TikTokCampaign[];
+}
+
+// ==================== TikTok Benchmarks ====================
+
+export interface TikTokBenchmarks {
+  ctr: number;
+  cvr: number;
+  cpc: number;
+  cpa: number;
+  roas: number;
+  cpm: number;
+  six_second_view_rate: number;
+  avg_watch_time: number;
+}
+
+export const TIKTOK_BENCHMARKS_DEFAULT: TikTokBenchmarks = {
+  ctr: 1.5,
+  cvr: 3.5,
+  cpc: 0.50,
+  cpa: 8.00,
+  roas: 2.5,
+  cpm: 10.00,
+  six_second_view_rate: 25,
+  avg_watch_time: 4.5,
+};
+
+// ==================== Generic Rule Type ====================
+
+export interface Rule {
+  rule_id?: string;
+  id?: string; // Alternative to rule_id
+  metric: string;
+  condition: string;
+  check?: (value: number, benchmark?: number, target?: number) => boolean;
+  status: RuleStatus;
+  severity: RuleSeverity;
+  recommendation: string;
+  description?: string;
+}
+
+export interface Benchmark {
+  metric: string;
+  value: number;
+  unit: string;
+  description?: string;
+}
