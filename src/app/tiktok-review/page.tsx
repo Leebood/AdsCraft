@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Upload, Loader2, AlertCircle, X, CheckCircle2, TrendingUp, Target, Lightbulb, Image as ImageIcon } from 'lucide-react';
 import { TikTokReport, type TikTokReportData } from '@/components/tiktok-report';
 import { ReportExport } from '@/components/report-export';
+import { StepIndicator } from '@/components/step-indicator';
 import { generateUnifiedReport, type UnifiedReport } from '@/lib/are/report-generator';
 
 type Step = 'upload' | 'preview' | 'result';
@@ -203,16 +204,27 @@ export default function TikTokReviewPage() {
     );
   }, [reportData]);
 
+  const currentStepNum = step === 'upload' ? 1 : step === 'preview' ? 2 : 3;
+
   // Show result
   if (step === 'result' && reportData) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-8">
         <div className="max-w-7xl mx-auto">
-          <div className="mb-8 flex items-center justify-between">
-            <Button onClick={handleReset} variant="outline">
-              ← Back to Upload
-            </Button>
+          {/* Header */}
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-white">TikTok Ads Review</h1>
           </div>
+
+          {/* Stepper */}
+          <div className="flex items-center gap-2 mb-8">
+            <StepIndicator step={1} currentStep={currentStepNum} label="Upload" icon={<Upload className="h-4 w-4" />} />
+            <div className="flex-1 h-px bg-slate-700" />
+            <StepIndicator step={2} currentStep={currentStepNum} label="Preview" icon={<CheckCircle2 className="h-4 w-4" />} />
+            <div className="flex-1 h-px bg-slate-700" />
+            <StepIndicator step={3} currentStep={currentStepNum} label="Result" icon={<CheckCircle2 className="h-4 w-4" />} />
+          </div>
+
           <TikTokReport data={reportData} />
           
           {/* Export Section */}
@@ -221,6 +233,13 @@ export default function TikTokReviewPage() {
               <ReportExport report={unifiedReport} locale="en" />
             </div>
           )}
+
+          {/* New Diagnosis button */}
+          <div className="mt-8 flex justify-center">
+            <Button onClick={handleReset} variant="outline" className="border-white/20 text-white hover:bg-white/5">
+              New Diagnosis
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -231,14 +250,22 @@ export default function TikTokReviewPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-8">
         <div className="max-w-6xl mx-auto">
-          <div className="mb-8">
-            <Button onClick={handleReset} variant="outline">
-              ← Back to Upload
-            </Button>
+          {/* Header */}
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-white">TikTok Ads Review</h1>
+          </div>
+
+          {/* Stepper */}
+          <div className="flex items-center gap-2 mb-8">
+            <StepIndicator step={1} currentStep={currentStepNum} label="Upload" icon={<Upload className="h-4 w-4" />} />
+            <div className="flex-1 h-px bg-slate-700" />
+            <StepIndicator step={2} currentStep={currentStepNum} label="Preview" icon={<CheckCircle2 className="h-4 w-4" />} />
+            <div className="flex-1 h-px bg-slate-700" />
+            <StepIndicator step={3} currentStep={currentStepNum} label="Result" icon={<CheckCircle2 className="h-4 w-4" />} />
           </div>
 
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-white mb-2">Confirm Extracted Data</h1>
+            <h2 className="text-3xl font-bold text-white mb-2">Confirm Extracted Data</h2>
             <p className="text-slate-400">Please verify the extracted data and make any necessary corrections</p>
           </div>
 

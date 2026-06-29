@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Upload, Loader2, AlertCircle, X, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { FacebookReport } from '@/components/facebook-report';
 import { ReportExport } from '@/components/report-export';
+import { StepIndicator } from '@/components/step-indicator';
 import { generateUnifiedReport } from '@/lib/are/report-generator';
 import type { AOSReport, UnifiedReport } from '@/lib/are';
 
@@ -221,18 +222,12 @@ export default function FacebookReviewPage() {
           
           <div className="flex items-center gap-4">
             {/* Step indicator */}
-            <div className="hidden md:flex items-center gap-2 text-sm">
-              <span className={step === 'upload' ? 'text-[#00D4FF]' : 'text-slate-500'}>
-                {step === 'upload' ? '①' : '✓'} Upload
-              </span>
-              <span className="text-slate-600">→</span>
-              <span className={step === 'preview' ? 'text-[#00D4FF]' : step === 'result' ? 'text-slate-500' : 'text-slate-500'}>
-                {step === 'preview' ? '②' : step === 'result' ? '✓' : '②'} Preview
-              </span>
-              <span className="text-slate-600">→</span>
-              <span className={step === 'result' ? 'text-[#00D4FF]' : 'text-slate-500'}>
-                {step === 'result' ? '③' : '③'} Result
-              </span>
+            <div className="hidden md:flex items-center gap-2">
+              <StepIndicator step={1} currentStep={step === 'upload' ? 1 : step === 'preview' ? 2 : 3} label="Upload" icon={<Upload className="h-4 w-4" />} />
+              <div className="w-8 h-px bg-slate-700" />
+              <StepIndicator step={2} currentStep={step === 'upload' ? 1 : step === 'preview' ? 2 : 3} label="Preview" icon={<CheckCircle2 className="h-4 w-4" />} />
+              <div className="w-8 h-px bg-slate-700" />
+              <StepIndicator step={3} currentStep={step === 'upload' ? 1 : step === 'preview' ? 2 : 3} label="Result" icon={<CheckCircle2 className="h-4 w-4" />} />
             </div>
             
             {/* New Diagnosis button */}

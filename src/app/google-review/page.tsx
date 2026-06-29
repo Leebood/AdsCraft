@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { GoogleReport, GoogleReportData } from '@/components/google-report';
 import { ReportExport } from '@/components/report-export';
+import { StepIndicator } from '@/components/step-indicator';
 import { generateUnifiedReport, UnifiedReport } from '@/lib/are';
 import { useRouter } from 'next/navigation';
 
@@ -197,15 +198,6 @@ export default function GoogleReviewPage() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleBack}
-            className="text-slate-400 hover:text-white"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Google
-          </Button>
           <h1 className="text-2xl font-bold text-white">Google Ads Review</h1>
         </div>
 
@@ -481,28 +473,3 @@ export default function GoogleReviewPage() {
 // Helper Components
 // ============================================================================
 
-function StepIndicator({ step, currentStep, label, icon }: { step: number; currentStep: number; label: string; icon: React.ReactNode }) {
-  const isActive = step === currentStep;
-  const isCompleted = step < currentStep;
-  
-  return (
-    <div className="flex items-center gap-2">
-      <div className={`
-        flex items-center justify-center w-8 h-8 rounded-full
-        ${isActive ? 'bg-blue-600 text-white' : ''}
-        ${isCompleted ? 'bg-green-600 text-white' : ''}
-        ${!isActive && !isCompleted ? 'bg-slate-800 text-slate-400' : ''}
-      `}>
-        {isCompleted ? <CheckCircle className="h-4 w-4" /> : icon}
-      </div>
-      <span className={`
-        text-sm font-medium
-        ${isActive ? 'text-white' : ''}
-        ${isCompleted ? 'text-green-400' : ''}
-        ${!isActive && !isCompleted ? 'text-slate-400' : ''}
-      `}>
-        {label}
-      </span>
-    </div>
-  );
-}
