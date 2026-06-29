@@ -297,7 +297,7 @@ function AnalysisContent() {
         return;
       }
 
-      const response = await fetch(`/api/ad-analysis?days=${selectedDays}`, {
+      const response = await fetch(`/api/ad-analysis?days=${selectedDays}&locale=${locale}`, {
         headers: { 'x-session': token }
       });
 
