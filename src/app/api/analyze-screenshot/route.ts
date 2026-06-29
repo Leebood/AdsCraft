@@ -181,6 +181,11 @@ export async function POST(request: NextRequest) {
     });
 
     const content = response.content || '';
+    
+    // 打印 LLM 完整返回内容用于调试
+    console.log('[Screenshot Analysis] LLM Response:', content);
+    console.log('[Screenshot Analysis] Response content type:', typeof content);
+    console.log('[Screenshot Analysis] Response content length:', content.length);
 
     // 解析 LLM 返回的 JSON
     let extractedData;
@@ -190,8 +195,15 @@ export async function POST(request: NextRequest) {
         .replace(/```json\n?/g, '')
         .replace(/```/g, '')
         .trim();
+      
+      console.log('[Screenshot Analysis] Cleaned content:', cleanContent);
+      
       extractedData = JSON.parse(cleanContent);
-    } catch {
+      console.log('[Screenshot Analysis] Parsed data:', JSON.stringify(extractedData, null, 2));
+    } catch (parseError) {
+      console.error('[Screenshot Analysis] JSON parse error:', parseError);
+      console.error('[Screenshot Analysis] Raw content that failed to parse:', content);
+      
       // 如果解析失败，返回原始内容让用户手动填写
       extractedData = {
         campaign_name: null,
@@ -220,6 +232,15 @@ export async function POST(request: NextRequest) {
       limit: updatedUserData?.screenshot_count_limit || limit,
       remaining: (updatedUserData?.screenshot_count_limit || limit) - (updatedUserData?.screenshot_count_used || used + 1),
     };
+
+    // 添加调试信息（开发环境）
+    if (process.env.NODE_ENV === 'development') {
+      extractedData._debug = {
+        llm_response: content,
+        response_length: content.length,
+        parsed_successfully: content.trim().length > 0 && !content.includes('null'),
+      };
+    }
 
     return NextResponse.json(extractedData);
 
