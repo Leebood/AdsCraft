@@ -141,6 +141,7 @@ function translateAnalysisResult(result: AnalysisResult, locale: string): Analys
   
   // 翻译建议
   const translateRecommendation = (rec: string): string => {
+    if (rec.includes('上传第一张截图')) return 'Upload your first screenshot to unlock AI analysis';
     if (rec.includes('CTR 表现良好')) return 'CTR is performing well, maintain current creative strategy';
     if (rec.includes('CPA 控制得当')) return 'CPA is well controlled, consider increasing budget to scale';
     if (rec.includes('ROAS 表现优秀')) return 'ROAS is excellent, ad return is healthy';
