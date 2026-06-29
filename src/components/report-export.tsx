@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download, FileText, Presentation, Mail, Loader2, CheckCircle } from 'lucide-react';
+import { Download, FileText, Presentation, Mail, Loader2, CheckCircle, ChevronDown } from 'lucide-react';
 import type { UnifiedReport } from '@/lib/are/report-generator';
 
 interface ReportExportProps {
@@ -40,6 +40,7 @@ const translations = {
 export function ReportExport({ report, locale = 'en' }: ReportExportProps) {
   const t = translations[locale];
   
+  const [isOpen, setIsOpen] = useState(false);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   const [isExportingPPT, setIsExportingPPT] = useState(false);
   const [isGeneratingEmail, setIsGeneratingEmail] = useState(false);
@@ -48,6 +49,7 @@ export function ReportExport({ report, locale = 'en' }: ReportExportProps) {
   
   // Export to PDF
   const handleExportPDF = async () => {
+    setIsOpen(false);
     setIsExportingPDF(true);
     try {
       const response = await fetch('/api/export/pdf', {
@@ -79,6 +81,7 @@ export function ReportExport({ report, locale = 'en' }: ReportExportProps) {
   
   // Export to PPT
   const handleExportPPT = async () => {
+    setIsOpen(false);
     setIsExportingPPT(true);
     try {
       const response = await fetch('/api/export/ppt', {
@@ -110,6 +113,7 @@ export function ReportExport({ report, locale = 'en' }: ReportExportProps) {
   
   // Generate email content
   const handleGenerateEmail = async () => {
+    setIsOpen(false);
     setIsGeneratingEmail(true);
     try {
       const response = await fetch('/api/export/email', {
@@ -123,7 +127,7 @@ export function ReportExport({ report, locale = 'en' }: ReportExportProps) {
       }
       
       const data = await response.json();
-      setEmailContent(data.data);
+      setEmailContent(data);
     } catch (error) {
       console.error('Email generation error:', error);
       alert(t.exportFailed);
@@ -132,83 +136,90 @@ export function ReportExport({ report, locale = 'en' }: ReportExportProps) {
     }
   };
   
-  // Copy email content to clipboard
+  // Copy email content
   const handleCopyEmail = async () => {
     if (!emailContent) return;
     
-    try {
-      await navigator.clipboard.writeText(emailContent.text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      console.error('Copy failed:', error);
-    }
+    const text = `Subject: ${emailContent.subject}\n\n${emailContent.text}`;
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
   
+  const isLoading = isExportingPDF || isExportingPPT || isGeneratingEmail;
+  
   return (
-    <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-6">
-      <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-        <Download className="h-5 w-5 text-blue-400" />
-        {t.exportReport}
-      </h3>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* PDF Export */}
-        <Button
-          onClick={handleExportPDF}
-          disabled={isExportingPDF}
-          className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white"
-        >
-          {isExportingPDF ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              {t.generating}
-            </>
-          ) : (
-            <>
-              <FileText className="h-4 w-4 mr-2" />
-              {t.downloadPDF}
-            </>
-          )}
-        </Button>
+    <div className="bg-[#101827] border border-white/10 rounded-xl p-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+          <Download className="h-5 w-5 text-blue-400" />
+          {t.exportReport}
+        </h3>
         
-        {/* PPT Export */}
-        <Button
-          onClick={handleExportPPT}
-          disabled={isExportingPPT}
-          className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
-        >
-          {isExportingPPT ? (
+        <div className="relative">
+          <Button
+            onClick={() => setIsOpen(!isOpen)}
+            disabled={isLoading}
+            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                {t.generating}
+              </>
+            ) : (
+              <>
+                <Download className="h-4 w-4 mr-2" />
+                {t.exportReport}
+                <ChevronDown className={`h-4 w-4 ml-2 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+              </>
+            )}
+          </Button>
+          
+          {/* Dropdown Menu */}
+          {isOpen && (
             <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              {t.generating}
-            </>
-          ) : (
-            <>
-              <Presentation className="h-4 w-4 mr-2" />
-              {t.downloadPPT}
+              <div 
+                className="fixed inset-0 z-10" 
+                onClick={() => setIsOpen(false)}
+              />
+              <div className="absolute right-0 mt-2 w-56 bg-[#1E293B] border border-white/10 rounded-lg shadow-xl z-20">
+                <button
+                  onClick={handleExportPDF}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left text-white hover:bg-white/5 transition-colors rounded-t-lg"
+                >
+                  <FileText className="h-5 w-5 text-red-400" />
+                  <div>
+                    <div className="font-medium">{t.downloadPDF}</div>
+                    <div className="text-xs text-slate-400">Professional PDF format</div>
+                  </div>
+                </button>
+                <div className="border-t border-white/5" />
+                <button
+                  onClick={handleExportPPT}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left text-white hover:bg-white/5 transition-colors"
+                >
+                  <Presentation className="h-5 w-5 text-orange-400" />
+                  <div>
+                    <div className="font-medium">{t.downloadPPT}</div>
+                    <div className="text-xs text-slate-400">Presentation slides</div>
+                  </div>
+                </button>
+                <div className="border-t border-white/5" />
+                <button
+                  onClick={handleGenerateEmail}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left text-white hover:bg-white/5 transition-colors rounded-b-lg"
+                >
+                  <Mail className="h-5 w-5 text-blue-400" />
+                  <div>
+                    <div className="font-medium">{t.sendEmail}</div>
+                    <div className="text-xs text-slate-400">Generate email content</div>
+                  </div>
+                </button>
+              </div>
             </>
           )}
-        </Button>
-        
-        {/* Email Export */}
-        <Button
-          onClick={handleGenerateEmail}
-          disabled={isGeneratingEmail}
-          className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
-        >
-          {isGeneratingEmail ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              {t.generating}
-            </>
-          ) : (
-            <>
-              <Mail className="h-4 w-4 mr-2" />
-              {t.sendEmail}
-            </>
-          )}
-        </Button>
+        </div>
       </div>
       
       {/* Email Content Preview */}
