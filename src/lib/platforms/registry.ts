@@ -33,6 +33,7 @@ export interface PlatformRoute {
   isFree?: boolean;         // 是否免费
   creemLink?: string;       // Creem 支付链接
   isComingSoon?: boolean;   // 是否"敬请期待"
+  screenshotLimit?: number; // 每月截图分析次数
 }
 
 // 合规检查项
@@ -208,7 +209,8 @@ export const facebookConfig: PlatformConfig = {
       price: 0,
       priceText: '$0',
       priceTextZh: '$0',
-      isFree: true
+      isFree: true,
+      screenshotLimit: 3
     },
     { 
       id: 'local_service', 
@@ -222,7 +224,8 @@ export const facebookConfig: PlatformConfig = {
       price: 9.9,
       priceText: '$9.9/mo',
       priceTextZh: '¥71/月',
-      creemLink: 'https://www.creem.io/payment/prod_4iIOpYQLDR8tlnxu6Ziwz6'
+      creemLink: 'https://www.creem.io/payment/prod_4iIOpYQLDR8tlnxu6Ziwz6',
+      screenshotLimit: 15
     },
     { 
       id: 'retailer', 
@@ -236,7 +239,8 @@ export const facebookConfig: PlatformConfig = {
       price: 19.9,
       priceText: '$19.9/mo',
       priceTextZh: '¥143/月',
-      creemLink: 'https://www.creem.io/payment/prod_77H9iTdPoURp4C2Le1xhE8'
+      creemLink: 'https://www.creem.io/payment/prod_77H9iTdPoURp4C2Le1xhE8',
+      screenshotLimit: 30
     },
     { 
       id: 'manufacturer', 
@@ -250,7 +254,8 @@ export const facebookConfig: PlatformConfig = {
       price: 29.9,
       priceText: '$29.9/mo',
       priceTextZh: '¥215/月',
-      creemLink: 'https://www.creem.io/payment/prod_2jkEL15rXCjBQxkEGpXR5v'
+      creemLink: 'https://www.creem.io/payment/prod_2jkEL15rXCjBQxkEGpXR5v',
+      screenshotLimit: 50
     },
     { 
       id: 'brand', 
@@ -264,7 +269,8 @@ export const facebookConfig: PlatformConfig = {
       price: 29.9,
       priceText: '$29.9/mo',
       priceTextZh: '¥215/月',
-      creemLink: 'https://www.creem.io/payment/prod_2B7hXzysLFhXYvP8bmTa9c'
+      creemLink: 'https://www.creem.io/payment/prod_2B7hXzysLFhXYvP8bmTa9c',
+      screenshotLimit: 50
     }
   ],
   
@@ -450,7 +456,8 @@ export const tiktokConfig: PlatformConfig = {
       price: 0,
       priceText: '$0',
       priceTextZh: '$0',
-      isFree: true
+      isFree: true,
+      screenshotLimit: 3
     },
     { 
       id: 'local_service', 
@@ -464,7 +471,8 @@ export const tiktokConfig: PlatformConfig = {
       price: 14.9,
       priceText: '$14.9/mo',
       priceTextZh: '¥107/月',
-      creemLink: 'https://www.creem.io/payment/prod_sOYjwKXMpsOig5VmY0R4d' 
+      creemLink: 'https://www.creem.io/payment/prod_sOYjwKXMpsOig5VmY0R4d',
+      screenshotLimit: 15
     },
     { 
       id: 'website_conv', 
@@ -478,7 +486,8 @@ export const tiktokConfig: PlatformConfig = {
       price: 24.9,
       priceText: '$24.9/mo',
       priceTextZh: '¥179/月',
-      creemLink: 'https://www.creem.io/payment/prod_8D7PXxYlpaNfTQ9MgMoQ2'
+      creemLink: 'https://www.creem.io/payment/prod_8D7PXxYlpaNfTQ9MgMoQ2',
+      screenshotLimit: 30
     },
     { 
       id: 'brand_awareness', 
@@ -492,7 +501,8 @@ export const tiktokConfig: PlatformConfig = {
       price: 39.9,
       priceText: '$39.9/mo',
       priceTextZh: '¥287/月',
-      creemLink: 'https://www.creem.io/payment/prod_6TrbXbote5e43Baxh87OlK'
+      creemLink: 'https://www.creem.io/payment/prod_6TrbXbote5e43Baxh87OlK',
+      screenshotLimit: 50
     }
   ],
   

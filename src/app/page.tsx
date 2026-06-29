@@ -845,17 +845,27 @@ export default function HomePage() {
                   onClick={() => handleRouteClick('facebook', route)}
                   className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/8 hover:border-white/20 cursor-pointer transition-all"
                 >
-                  <div>
-                    <span className="text-white text-sm font-medium">
-                      {locale === 'zh' ? route.nameZh : route.name}
-                    </span>
-                    {route.isFree && (
-                      <span className="ml-2 px-2 py-0.5 text-xs bg-[#00D4FF]/20 text-[#00D4FF] rounded">
-                        {locale === 'zh' ? '免费' : 'Free'}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-white text-sm font-medium">
+                        {locale === 'zh' ? route.nameZh : route.name}
                       </span>
-                    )}
+                      {route.isFree && (
+                        <span className="px-2 py-0.5 text-xs bg-[#00D4FF]/20 text-[#00D4FF] rounded">
+                          {locale === 'zh' ? '免费' : 'Free'}
+                        </span>
+                      )}
+                      {route.screenshotLimit && (
+                        <span className="px-2 py-0.5 text-xs bg-white/10 text-[#94A3B8] rounded">
+                          {route.screenshotLimit}{locale === 'zh' ? '次截图/月' : ' screenshots/mo'}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[#94A3B8] text-xs mt-1">
+                      {locale === 'zh' ? route.descriptionZh : route.description}
+                    </p>
                   </div>
-                  <span className="text-[#94A3B8] text-sm">
+                  <span className="text-[#94A3B8] text-sm ml-4">
                     {locale === 'zh' ? route.priceTextZh : route.priceText}
                   </span>
                 </div>
@@ -876,17 +886,27 @@ export default function HomePage() {
                   onClick={() => handleRouteClick('tiktok', route)}
                   className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/8 hover:border-white/20 cursor-pointer transition-all"
                 >
-                  <div>
-                    <span className="text-white text-sm font-medium">
-                      {locale === 'zh' ? route.nameZh : route.name}
-                    </span>
-                    {route.isFree && (
-                      <span className="ml-2 px-2 py-0.5 text-xs bg-[#00D4FF]/20 text-[#00D4FF] rounded">
-                        {locale === 'zh' ? '免费' : 'Free'}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-white text-sm font-medium">
+                        {locale === 'zh' ? route.nameZh : route.name}
                       </span>
-                    )}
+                      {route.isFree && (
+                        <span className="px-2 py-0.5 text-xs bg-[#00D4FF]/20 text-[#00D4FF] rounded">
+                          {locale === 'zh' ? '免费' : 'Free'}
+                        </span>
+                      )}
+                      {route.screenshotLimit && (
+                        <span className="px-2 py-0.5 text-xs bg-white/10 text-[#94A3B8] rounded">
+                          {route.screenshotLimit}{locale === 'zh' ? '次截图/月' : ' screenshots/mo'}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[#94A3B8] text-xs mt-1">
+                      {locale === 'zh' ? route.descriptionZh : route.description}
+                    </p>
                   </div>
-                  <span className="text-[#94A3B8] text-sm">
+                  <span className="text-[#94A3B8] text-sm ml-4">
                     {locale === 'zh' ? route.priceTextZh : route.priceText}
                   </span>
                 </div>
