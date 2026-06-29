@@ -167,7 +167,8 @@ export default function PlansPage() {
         body: JSON.stringify({
           mode: 'full',
           time_range: selectedTimeRange,
-          use_saved_config: true  // 使用保存的配置，跳过问卷
+          use_saved_config: true,  // 使用保存的配置，跳过问卷
+          ad_data: adDataOverview  // 传递授权账号的广告数据
         })
       });
 

@@ -540,11 +540,147 @@ function generateFourDimensionResults(
   return { canSubmit, passProbability, readinessScore, profitability, actionOrder, evidenceSources };
 }
 
+// ========== 诊断模式：从授权账号数据生成诊断报告 ==========
+
+interface AdData {
+  total_spend?: number;
+  total_impressions?: number;
+  total_clicks?: number;
+  total_conversions?: number;
+  active_campaigns?: number;
+  ctr?: number;
+  cpc?: number;
+  cpa?: number;
+  roas?: number;
+  conversion_rate?: number;
+  frequency?: number;
+}
+
+function generateDiagnosisFromAdData(adData: AdData): string {
+  // 计算账号阶段
+  const daysRunning = 30; // 默认值，实际应该从账号创建时间计算
+  let accountStage = '新账号冷启动';
+  if (daysRunning > 30) {
+    accountStage = '稳定运营';
+  }
+  
+  // 计算日均消耗
+  const dailyBudget = adData.total_spend ? adData.total_spend / daysRunning : 0;
+  
+  // 计算 CTR
+  const ctr = adData.ctr || (adData.total_clicks && adData.total_impressions 
+    ? (adData.total_clicks / adData.total_impressions * 100) 
+    : 0);
+  
+  // 计算转化率
+  const conversionRate = adData.conversion_rate || (adData.total_conversions && adData.total_clicks
+    ? (adData.total_conversions / adData.total_clicks * 100)
+    : 0);
+  
+  // 计算 ROAS
+  const roas = adData.roas || 0;
+  
+  // 计算 CPA
+  const cpa = adData.cpa || (adData.total_spend && adData.total_conversions
+    ? adData.total_spend / adData.total_conversions
+    : 0);
+  
+  // 计算 CPC
+  const cpc = adData.cpc || (adData.total_spend && adData.total_clicks
+    ? adData.total_spend / adData.total_clicks
+    : 0);
+  
+  // 计算频次
+  const frequency = adData.frequency || (adData.total_impressions && adData.total_clicks
+    ? adData.total_impressions / adData.total_clicks
+    : 1);
+  
+  // 生成诊断报告
+  let diagnosis = `# TikTok 账号诊断报告\n\n`;
+  diagnosis += `## 账号状态\n`;
+  diagnosis += `- 运营天数：${daysRunning} 天\n`;
+  diagnosis += `- 账号阶段：${accountStage}\n`;
+  diagnosis += `- 日均消耗：$${dailyBudget.toFixed(2)}\n`;
+  diagnosis += `- 活跃广告系列：${adData.active_campaigns || 0} 个\n\n`;
+  
+  diagnosis += `## 核心指标\n`;
+  diagnosis += `- CTR：${ctr.toFixed(2)}%\n`;
+  diagnosis += `- CPC：$${cpc.toFixed(2)}\n`;
+  diagnosis += `- CPA：$${cpa.toFixed(2)}\n`;
+  diagnosis += `- 转化率：${conversionRate.toFixed(2)}%\n`;
+  diagnosis += `- ROAS：${roas.toFixed(2)}x\n`;
+  diagnosis += `- 频次：${frequency.toFixed(2)}\n\n`;
+  
+  // 生成建议
+  diagnosis += `## 诊断建议\n\n`;
+  
+  if (ctr < 1) {
+    diagnosis += `### 🔴 CTR 偏低（${ctr.toFixed(2)}%）\n`;
+    diagnosis += `**问题**：素材吸引力不足或受众定位不精准\n`;
+    diagnosis += `**建议**：\n`;
+    diagnosis += `1. 优化素材前3秒hook，提升点击率\n`;
+    diagnosis += `2. 检查受众定位是否与产品匹配\n`;
+    diagnosis += `3. 测试不同创意类型（视频/图片/轮播）\n\n`;
+  }
+  
+  if (conversionRate < 1) {
+    diagnosis += `### 🔴 转化率偏低（${conversionRate.toFixed(2)}%）\n`;
+    diagnosis += `**问题**：落地页体验不佳或产品与受众不匹配\n`;
+    diagnosis += `**建议**：\n`;
+    diagnosis += `1. 优化落地页加载速度\n`;
+    diagnosis += `2. 检查CTA按钮位置和文案\n`;
+    diagnosis += `3. 确保产品描述清晰、有吸引力\n\n`;
+  }
+  
+  if (cpa > 50 && roas < 2) {
+    diagnosis += `### 🔴 CPA 过高且 ROAS 偏低\n`;
+    diagnosis += `**问题**：投放效率差，需要优化\n`;
+    diagnosis += `**建议**：\n`;
+    diagnosis += `1. 暂停当前投放，重新定义受众\n`;
+    diagnosis += `2. 优化素材创意，提升点击率\n`;
+    diagnosis += `3. 考虑更换产品或调整定价策略\n\n`;
+  }
+  
+  if (frequency > 3) {
+    diagnosis += `### 🟡 频次偏高（${frequency.toFixed(2)}）\n`;
+    diagnosis += `**问题**：受众疲劳，素材被看腻了\n`;
+    diagnosis += `**建议**：\n`;
+    diagnosis += `1. 立即更换素材或扩展受众池\n`;
+    diagnosis += `2. 增加新创意，避免重复展示\n\n`;
+  }
+  
+  if (ctr > 1.5 && conversionRate > 2 && roas > 3) {
+    diagnosis += `### 🟢 整体表现健康\n`;
+    diagnosis += `**建议**：\n`;
+    diagnosis += `1. 可加大预算放量，保持当前策略\n`;
+    diagnosis += `2. 持续监控指标变化，及时调整\n\n`;
+  }
+  
+  diagnosis += `## 下一步行动\n`;
+  diagnosis += `1. 根据上述建议优化投放策略\n`;
+  diagnosis += `2. 上传下一批数据对比趋势\n`;
+  diagnosis += `3. 持续监控核心指标变化\n`;
+  
+  return diagnosis;
+}
+
 // ========== 主 API 处理 ==========
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    
+    // 检查是否为诊断模式（有 ad_data 参数）
+    if (body.ad_data) {
+      const diagnosis = generateDiagnosisFromAdData(body.ad_data);
+      return NextResponse.json({ 
+        success: true, 
+        diagnosis,
+        mode: 'diagnosis',
+        ad_data: body.ad_data
+      });
+    }
+    
     const formData: ReviewFormData = body;
 
     // 第四层：技术验证（0次API调用，纯HTTP请求）
