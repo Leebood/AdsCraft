@@ -8,6 +8,25 @@ export const CREEM_PRODUCTS = {
     price: '$19.9',
     priceValue: 19.9,
     priceCn: '¥143',
+    screenshotLimit: 30,
+    features: {
+      en: [
+        '8-question customized plan',
+        'Reason analysis (why A not B)',
+        'Cold start strategy',
+        '5-stage progressive guide',
+        'AI data diagnosis',
+        '30 screenshot analyses/month',
+      ],
+      zh: [
+        '8问定制方案',
+        '原因分析（为什么选A不选B）',
+        '冷启动策略',
+        '5阶段递进指南',
+        'AI数据诊断',
+        '每月30次截图分析',
+      ],
+    },
   },
   // Facebook 制造商路线
   fb_manufacturer: {
@@ -16,6 +35,27 @@ export const CREEM_PRODUCTS = {
     price: '$29.9',
     priceValue: 29.9,
     priceCn: '¥215',
+    screenshotLimit: 50,
+    features: {
+      en: [
+        '8-question customized plan',
+        'Reason analysis (why A not B)',
+        'Cold start strategy',
+        '5-stage progressive guide',
+        'AI data diagnosis',
+        '50 screenshot analyses/month',
+        'B2B/wholesale specific guidance',
+      ],
+      zh: [
+        '8问定制方案',
+        '原因分析（为什么选A不选B）',
+        '冷启动策略',
+        '5阶段递进指南',
+        'AI数据诊断',
+        '每月50次截图分析',
+        'B2B/批发专项指导',
+      ],
+    },
   },
   // Facebook 品牌方路线
   fb_brand: {
@@ -24,6 +64,27 @@ export const CREEM_PRODUCTS = {
     price: '$29.9',
     priceValue: 29.9,
     priceCn: '¥215',
+    screenshotLimit: 50,
+    features: {
+      en: [
+        '8-question customized plan',
+        'Reason analysis (why A not B)',
+        'Cold start strategy',
+        '5-stage progressive guide',
+        'AI data diagnosis',
+        '50 screenshot analyses/month',
+        'Brand promotion strategy',
+      ],
+      zh: [
+        '8问定制方案',
+        '原因分析（为什么选A不选B）',
+        '冷启动策略',
+        '5阶段递进指南',
+        'AI数据诊断',
+        '每月50次截图分析',
+        '品牌推广策略',
+      ],
+    },
   },
   // Facebook 本地服务商路线
   fb_local_service: {
@@ -32,6 +93,27 @@ export const CREEM_PRODUCTS = {
     price: '$9.9',
     priceValue: 9.9,
     priceCn: '¥71',
+    screenshotLimit: 15,
+    features: {
+      en: [
+        '8-question customized plan',
+        'Reason analysis (why A not B)',
+        'Cold start strategy',
+        '5-stage progressive guide',
+        'AI data diagnosis',
+        '15 screenshot analyses/month',
+        'Local business specific guidance',
+      ],
+      zh: [
+        '8问定制方案',
+        '原因分析（为什么选A不选B）',
+        '冷启动策略',
+        '5阶段递进指南',
+        'AI数据诊断',
+        '每月15次截图分析',
+        '本地商家专项指导',
+      ],
+    },
   },
   // TikTok Local Service Plan
   tiktok_local_service: {
@@ -40,6 +122,27 @@ export const CREEM_PRODUCTS = {
     price: '$14.9',
     priceValue: 14.9,
     priceCn: '¥107',
+    screenshotLimit: 15,
+    features: {
+      en: [
+        'TikTok 6-step audit',
+        'Creative & compliance check',
+        'Landing page optimization',
+        'Tracking setup guide',
+        'AI data diagnosis',
+        '15 screenshot analyses/month',
+        'Local business specific guidance',
+      ],
+      zh: [
+        'TikTok 6步审核',
+        '素材与合规检查',
+        '落地页优化',
+        '追踪设置指南',
+        'AI数据诊断',
+        '每月15次截图分析',
+        '本地商家专项指导',
+      ],
+    },
   },
   // TikTok Website Conversion Plan
   tiktok_website_conv: {
@@ -48,6 +151,27 @@ export const CREEM_PRODUCTS = {
     price: '$24.9',
     priceValue: 24.9,
     priceCn: '¥179',
+    screenshotLimit: 30,
+    features: {
+      en: [
+        'TikTok 6-step audit',
+        'Creative & compliance check',
+        'Landing page optimization',
+        'Tracking setup guide',
+        'AI data diagnosis',
+        '30 screenshot analyses/month',
+        'E-commerce conversion strategy',
+      ],
+      zh: [
+        'TikTok 6步审核',
+        '素材与合规检查',
+        '落地页优化',
+        '追踪设置指南',
+        'AI数据诊断',
+        '每月30次截图分析',
+        '电商转化策略',
+      ],
+    },
   },
   // TikTok Brand Awareness Plan
   tiktok_brand_awareness: {
@@ -56,6 +180,27 @@ export const CREEM_PRODUCTS = {
     price: '$39.9',
     priceValue: 39.9,
     priceCn: '¥287',
+    screenshotLimit: 50,
+    features: {
+      en: [
+        'TikTok 6-step audit',
+        'Creative & compliance check',
+        'Landing page optimization',
+        'Tracking setup guide',
+        'AI data diagnosis',
+        '50 screenshot analyses/month',
+        'Brand awareness strategy',
+      ],
+      zh: [
+        'TikTok 6步审核',
+        '素材与合规检查',
+        '落地页优化',
+        '追踪设置指南',
+        'AI数据诊断',
+        '每月50次截图分析',
+        '品牌曝光策略',
+      ],
+    },
   },
 } as const;
 

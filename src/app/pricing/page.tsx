@@ -173,7 +173,9 @@ function PricingContent() {
       iconColor: style.iconColor,
       buttonBg: style.buttonBg,
       buttonHover: style.buttonHover,
-      shadowColor: style.shadowColor
+      shadowColor: style.shadowColor,
+      features: product.features,   // 每个线路的功能列表
+      screenshotLimit: product.screenshotLimit, // 截图分析次数
     };
   };
 
@@ -196,7 +198,7 @@ function PricingContent() {
     );
   }
 
-  const features = [
+  const features = pricingData?.features?.[locale as 'en' | 'zh'] || [
     t('pricing.premium.feature1'),
     t('pricing.premium.feature2'),
     t('pricing.premium.feature3'),
