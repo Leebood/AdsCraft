@@ -8,6 +8,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useI18n } from '@/lib/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 import { getSupabaseBrowserClientAsync } from '@/lib/supabase-browser';
+import { Upload, FileText, CheckCircle, Loader2 } from 'lucide-react';
+import { TikTokReport } from '@/components/tiktok-report';
 
 interface DiagnosisRecord {
   id: string;
@@ -48,8 +50,18 @@ export default function PlansPage() {
   const [adDataOverview, setAdDataOverview] = useState<AdDataOverview | null>(null);
   const [loading, setLoading] = useState(true);
   const [showTimeRangeModal, setShowTimeRangeModal] = useState(false);
+  
+  // TikTok 截图上传相关状态
+  const [tkScreenshot, setTkScreenshot] = useState<string | null>(null);
+  const [tkScreenshotFile, setTkScreenshotFile] = useState<File | null>(null);
+  const [tkRecognizedData, setTkRecognizedData] = useState<any>(null);
+  const [tkAnalyzing, setTkAnalyzing] = useState(false);
+  const [tkRecognizing, setTkRecognizing] = useState(false);
+  const [tkAnalysisResult, setTkAnalysisResult] = useState<any>(null);
+  const [tkStep, setTkStep] = useState<'upload' | 'preview' | 'result'>('upload');
   const [selectedTimeRange, setSelectedTimeRange] = useState<'7' | '14' | '30'>('7');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showTkPreview, setShowTkPreview] = useState(false);
 
   // 获取TikTok连接状态和诊断记录
   useEffect(() => {
@@ -210,6 +222,99 @@ export default function PlansPage() {
     }
   `;
 
+  // TikTok 截图上传处理
+  const handleTkScreenshotUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setTkScreenshotFile(file);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setTkScreenshot(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+    
+    // 识别截图
+    setTkRecognizing(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('platform', 'tiktok');
+      
+      const res = await fetch('/api/analyze-screenshot', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      const data = await res.json();
+      if (data.success) {
+        setTkRecognizedData(data.data);
+        setTkStep('preview');
+      } else {
+        alert(data.error || 'Screenshot recognition failed');
+      }
+    } catch (error) {
+      console.error('Screenshot recognition error:', error);
+      alert('Screenshot recognition failed');
+    } finally {
+      setTkRecognizing(false);
+    }
+  };
+
+  // TikTok 分析处理
+  const handleTkAnalyze = async () => {
+    if (!tkRecognizedData) return;
+    
+    setTkAnalyzing(true);
+    try {
+      const res = await fetch('/api/tiktok-review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          campaigns: [{
+            name: tkRecognizedData.campaign_name || 'TikTok Campaign',
+            spend: tkRecognizedData.spend || 0,
+            impressions: tkRecognizedData.impressions || 0,
+            clicks: tkRecognizedData.clicks || 0,
+            ctr: tkRecognizedData.ctr || 0,
+            cpc: tkRecognizedData.cpc || 0,
+            conversions: tkRecognizedData.conversions || 0,
+            cvr: tkRecognizedData.cvr || 0,
+            cpa: tkRecognizedData.cpa || 0,
+            roas: tkRecognizedData.roas || 0,
+            video_views: tkRecognizedData.video_views || 0,
+            '6s_views': tkRecognizedData['6s_views'] || 0,
+            avg_watch_time: tkRecognizedData.avg_watch_time || 0,
+          }],
+          date_range: tkRecognizedData.date_range || 'Last 7 days',
+          locale: locale,
+        }),
+      });
+      
+      const data = await res.json();
+      if (data.success) {
+        setTkAnalysisResult(data.data);
+        setTkStep('result');
+      } else {
+        alert(data.error || 'Analysis failed');
+      }
+    } catch (error) {
+      console.error('Analysis error:', error);
+      alert('Analysis failed');
+    } finally {
+      setTkAnalyzing(false);
+    }
+  };
+
+  // 重置 TikTok 截图上传
+  const resetTkScreenshot = () => {
+    setTkScreenshot(null);
+    setTkScreenshotFile(null);
+    setTkRecognizedData(null);
+    setTkAnalysisResult(null);
+    setTkStep('upload');
+  };
+
   // FB Tab内容
   const renderFBTab = () => (
     <div className="space-y-6">
@@ -257,215 +362,255 @@ export default function PlansPage() {
     </div>
   );
 
-  // TK Tab内容 - 根据授权状态显示不同内容
+  // TK Tab内容 - 截图上传诊断
   const renderTKTab = () => {
-    // 已授权状态
-    if (tiktokConnection?.is_connected) {
-      return (
-        <div className="space-y-6">
-          {/* 连接状态卡片 */}
-          <Card className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-400/30">
-            <CardContent className="py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                    <span className="text-white font-bold">TK</span>
-                  </div>
-                  <div>
-                    <p className="text-white font-medium">
-                      {tiktokConnection.advertiser_name || tiktokConnection.advertiser_id}
-                    </p>
-                    <p className="text-purple-300/70 text-sm">
-                      {locale === 'zh' ? '已连接' : 'Connected'}
-                    </p>
-                  </div>
+    return (
+      <div className="space-y-6">
+        {/* 步骤指示器 */}
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <div className={`flex items-center gap-2 ${tkStep === 'upload' ? 'text-purple-400' : 'text-blue-300/50'}`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${tkStep === 'upload' ? 'bg-purple-500/20 border border-purple-400/30' : 'bg-white/5 border border-white/10'}`}>
+              <Upload className="w-4 h-4" />
+            </div>
+            <span className="text-sm">{locale === 'zh' ? '上传截图' : 'Upload'}</span>
+          </div>
+          <div className="w-8 h-px bg-white/20"></div>
+          <div className={`flex items-center gap-2 ${tkStep === 'preview' ? 'text-purple-400' : 'text-blue-300/50'}`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${tkStep === 'preview' ? 'bg-purple-500/20 border border-purple-400/30' : 'bg-white/5 border border-white/10'}`}>
+              <FileText className="w-4 h-4" />
+            </div>
+            <span className="text-sm">{locale === 'zh' ? '预览数据' : 'Preview'}</span>
+          </div>
+          <div className="w-8 h-px bg-white/20"></div>
+          <div className={`flex items-center gap-2 ${tkStep === 'result' ? 'text-purple-400' : 'text-blue-300/50'}`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${tkStep === 'result' ? 'bg-purple-500/20 border border-purple-400/30' : 'bg-white/5 border border-white/10'}`}>
+              <CheckCircle className="w-4 h-4" />
+            </div>
+            <span className="text-sm">{locale === 'zh' ? '分析结果' : 'Result'}</span>
+          </div>
+        </div>
+
+        {/* Step 1: 上传截图 */}
+        {tkStep === 'upload' && (
+          <Card className="bg-white/5 border-white/10">
+            <CardContent className="py-8">
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center border border-purple-400/30">
+                  <Upload className="w-8 h-8 text-purple-400" />
                 </div>
-                <Button 
-                  size="sm"
-                  onClick={handleConnectTikTok}
-                  className="bg-purple-500/20 text-purple-400 hover:bg-purple-500/30"
-                >
-                  {locale === 'zh' ? '刷新授权' : 'Refresh'}
-                </Button>
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  {locale === 'zh' ? '上传 TikTok 广告截图' : 'Upload TikTok Ads Screenshot'}
+                </h3>
+                <p className="text-blue-200/70 mb-6">
+                  {locale === 'zh' 
+                    ? '上传 TikTok Ads Manager 截图，自动识别数据并进行诊断分析' 
+                    : 'Upload TikTok Ads Manager screenshot for automatic data recognition and diagnosis'}
+                </p>
+                
+                <label className="cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleTkScreenshotUpload}
+                    className="hidden"
+                    disabled={tkRecognizing}
+                  />
+                  <div className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-400 hover:to-pink-500 text-white rounded-lg inline-flex items-center gap-2 transition-all">
+                    {tkRecognizing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        {locale === 'zh' ? '识别中...' : 'Recognizing...'}
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4" />
+                        {locale === 'zh' ? '选择截图' : 'Choose Screenshot'}
+                      </>
+                    )}
+                  </div>
+                </label>
+                <p className="text-blue-300/50 text-sm mt-4">
+                  {locale === 'zh' ? '支持 PNG, JPG 格式' : 'Supports PNG, JPG'}
+                </p>
               </div>
             </CardContent>
           </Card>
+        )}
 
-          {/* 广告数据概览 */}
-          {adDataOverview && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {/* Step 2: 预览数据 */}
+        {tkStep === 'preview' && tkRecognizedData && (
+          <div className="space-y-4">
+            {/* 截图预览 */}
+            {tkScreenshot && (
               <Card className="bg-white/5 border-white/10">
-                <CardContent className="py-4 text-center">
-                  <p className="text-2xl font-bold text-white">${adDataOverview.total_spend.toFixed(2)}</p>
-                  <p className="text-blue-300/70 text-sm">{locale === 'zh' ? '总花费' : 'Total Spend'}</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-white/5 border-white/10">
-                <CardContent className="py-4 text-center">
-                  <p className="text-2xl font-bold text-white">{adDataOverview.total_impressions.toLocaleString()}</p>
-                  <p className="text-blue-300/70 text-sm">{locale === 'zh' ? '曝光量' : 'Impressions'}</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-white/5 border-white/10">
-                <CardContent className="py-4 text-center">
-                  <p className="text-2xl font-bold text-white">{adDataOverview.active_campaigns}</p>
-                  <p className="text-blue-300/70 text-sm">{locale === 'zh' ? '活跃广告' : 'Active Campaigns'}</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-white/5 border-white/10">
-                <CardContent className="py-4 text-center">
-                  <p className="text-2xl font-bold text-cyan-400">{adDataOverview.total_conversions}</p>
-                  <p className="text-blue-300/70 text-sm">{locale === 'zh' ? '转化数' : 'Conversions'}</p>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* 历史诊断记录 */}
-          {tkRecords.length > 0 ? (
-            <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-white">
-                {locale === 'zh' ? 'TikTok诊断记录' : 'TikTok Diagnosis Records'}
-              </h3>
-              {tkRecords.map((record) => (
-                <Card key={record.id} className="bg-white/5 border-white/10 hover:border-purple-400/30 transition-all">
-                  <CardContent className="py-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className={`px-2 py-0.5 rounded text-xs ${
-                            record.diagnosis_type === 'full' 
-                              ? 'bg-purple-500/20 text-purple-400' 
-                              : 'bg-cyan-500/20 text-cyan-400'
-                          }`}>
-                            {record.diagnosis_type === 'full' 
-                              ? (locale === 'zh' ? '完整诊断' : 'Full Diagnosis')
-                              : (locale === 'zh' ? '轻量建议' : 'Light Advice')
-                            }
-                          </span>
-                          <span className="text-blue-300/70 text-xs">
-                            {record.time_range || '7d'}
-                          </span>
-                        </div>
-                        <p className="text-white font-medium truncate mt-1">{record.summary}</p>
-                        <p className="text-blue-300/70 text-sm">
-                          {new Date(record.created_at).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US')}
-                        </p>
-                      </div>
-                      <Link href={`/diagnosis/${record.id}`}>
-                        <Button size="sm" className="bg-purple-500/20 text-purple-400 hover:bg-purple-500/30">
-                          {locale === 'zh' ? '查看' : 'View'}
-                        </Button>
-                      </Link>
+                <CardContent className="py-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-white font-medium flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-purple-400" />
+                      {locale === 'zh' ? '截图预览' : 'Screenshot Preview'}
+                    </h4>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setShowTkPreview(!showTkPreview)}
+                      className="text-blue-300/70 hover:text-white"
+                    >
+                      {showTkPreview ? (locale === 'zh' ? '收起' : 'Collapse') : (locale === 'zh' ? '展开' : 'Expand')}
+                    </Button>
+                  </div>
+                  {showTkPreview && (
+                    <div className="rounded-lg overflow-hidden border border-white/10">
+                      <img src={tkScreenshot} alt="TikTok Screenshot" className="w-full h-auto" />
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* 识别结果 */}
             <Card className="bg-white/5 border-white/10">
-              <CardContent className="py-8 text-center">
-                <p className="text-blue-200/70 mb-4">
-                  {locale === 'zh' ? '已连接TikTok账号，可直接进行完整诊断' : 'TikTok connected, ready for full diagnosis'}
-                </p>
-                <Button 
-                  onClick={handleTKRediagnosis}
-                  className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-400 hover:to-pink-500 text-white"
-                >
-                  {locale === 'zh' ? '重新诊断' : 'Re-Diagnosis'}
-                </Button>
+              <CardContent className="py-4">
+                <h4 className="text-white font-medium mb-4 flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-400" />
+                  {locale === 'zh' ? '识别结果（可修正）' : 'Recognized Data (Editable)'}
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div>
+                    <label className="text-blue-300/70 text-xs">{locale === 'zh' ? '花费' : 'Spend'}</label>
+                    <input
+                      type="number"
+                      value={tkRecognizedData.spend || ''}
+                      onChange={(e) => setTkRecognizedData({...tkRecognizedData, spend: parseFloat(e.target.value) || 0})}
+                      className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-blue-300/70 text-xs">{locale === 'zh' ? '展示量' : 'Impressions'}</label>
+                    <input
+                      type="number"
+                      value={tkRecognizedData.impressions || ''}
+                      onChange={(e) => setTkRecognizedData({...tkRecognizedData, impressions: parseInt(e.target.value) || 0})}
+                      className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-blue-300/70 text-xs">{locale === 'zh' ? '点击量' : 'Clicks'}</label>
+                    <input
+                      type="number"
+                      value={tkRecognizedData.clicks || ''}
+                      onChange={(e) => setTkRecognizedData({...tkRecognizedData, clicks: parseInt(e.target.value) || 0})}
+                      className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-blue-300/70 text-xs">CTR</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={tkRecognizedData.ctr || ''}
+                      onChange={(e) => setTkRecognizedData({...tkRecognizedData, ctr: parseFloat(e.target.value) || 0})}
+                      className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-blue-300/70 text-xs">CVR</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={tkRecognizedData.cvr || ''}
+                      onChange={(e) => setTkRecognizedData({...tkRecognizedData, cvr: parseFloat(e.target.value) || 0})}
+                      className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-blue-300/70 text-xs">ROAS</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={tkRecognizedData.roas || ''}
+                      onChange={(e) => setTkRecognizedData({...tkRecognizedData, roas: parseFloat(e.target.value) || 0})}
+                      className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-blue-300/70 text-xs">{locale === 'zh' ? '视频播放量' : 'Video Views'}</label>
+                    <input
+                      type="number"
+                      value={tkRecognizedData.video_views || ''}
+                      onChange={(e) => setTkRecognizedData({...tkRecognizedData, video_views: parseInt(e.target.value) || 0})}
+                      className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-blue-300/70 text-xs">{locale === 'zh' ? '6秒观看率' : '6s View Rate'}</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={tkRecognizedData['6s_views'] || ''}
+                      onChange={(e) => setTkRecognizedData({...tkRecognizedData, '6s_views': parseFloat(e.target.value) || 0})}
+                      className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white text-sm"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-3 mt-6">
+                  <Button
+                    onClick={handleTkAnalyze}
+                    disabled={tkAnalyzing}
+                    className="flex-1 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-400 hover:to-pink-500 text-white"
+                  >
+                    {tkAnalyzing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        {locale === 'zh' ? '分析中...' : 'Analyzing...'}
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        {locale === 'zh' ? '开始分析' : 'Start Analysis'}
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={resetTkScreenshot}
+                    className="border-white/20 text-blue-200 hover:bg-white/5"
+                  >
+                    {locale === 'zh' ? '重新上传' : 'Re-upload'}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
-          )}
-        </div>
-      );
-    }
+          </div>
+        )}
 
-    // 未授权 + 有使用记录
-    if (tkRecords.length > 0) {
-      return (
-        <div className="space-y-6">
-          {/* 授权提示 */}
-          <Card className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border-cyan-400/30">
-            <CardContent className="py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
-                    <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-white font-medium">
-                      {locale === 'zh' ? '连接TikTok账号获取完整诊断' : 'Connect TikTok for full diagnosis'}
-                    </p>
-                    <p className="text-blue-300/70 text-sm">
-                      {locale === 'zh' ? '获取真实广告数据，进行完整四层审查' : 'Get real ad data for complete 4-layer review'}
-                    </p>
-                  </div>
+        {/* Step 3: 分析结果 */}
+        {tkStep === 'result' && tkAnalysisResult && (
+          <div className="space-y-4">
+            <Card className="bg-white/5 border-white/10">
+              <CardContent className="py-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-white font-medium flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-400" />
+                    {locale === 'zh' ? '分析结果' : 'Analysis Result'}
+                  </h4>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={resetTkScreenshot}
+                    className="border-white/20 text-blue-200 hover:bg-white/5"
+                  >
+                    {locale === 'zh' ? '新的分析' : 'New Analysis'}
+                  </Button>
                 </div>
-                <Button 
-                  onClick={handleConnectTikTok}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white"
-                >
-                  {locale === 'zh' ? '连接账号' : 'Connect'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 历史轻量建议记录 */}
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-white">
-              {locale === 'zh' ? '轻量建议记录' : 'Light Advice Records'}
-            </h3>
-            {tkRecords.map((record) => (
-              <Card key={record.id} className="bg-white/5 border-white/10 hover:border-cyan-400/30 transition-all">
-                <CardContent className="py-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="px-2 py-0.5 rounded text-xs bg-cyan-500/20 text-cyan-400">
-                        {locale === 'zh' ? '轻量建议' : 'Light Advice'}
-                      </span>
-                      <p className="text-white font-medium truncate mt-1">{record.summary}</p>
-                      <p className="text-blue-300/70 text-sm">
-                        {new Date(record.created_at).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US')}
-                      </p>
-                    </div>
-                    <Link href={`/diagnosis/${record.id}`}>
-                      <Button size="sm" className="bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30">
-                        {locale === 'zh' ? '查看' : 'View'}
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                {/* 显示 TikTok 报告 */}
+                <div className="mt-4">
+                  <TikTokReport data={tkAnalysisResult} locale={locale} />
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </div>
-      );
-    }
-
-    // 未授权 + 无使用记录
-    return (
-      <Card className="bg-white/5 border-white/10">
-        <CardContent className="py-12 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center border border-purple-400/30">
-            <span className="text-2xl font-bold text-purple-400">TK</span>
-          </div>
-          <p className="text-blue-200/70 mb-6">
-            {locale === 'zh' 
-              ? '完成TikTok诊断后，结果将显示在这里' 
-              : 'TikTok diagnosis results will appear here after completion'}
-          </p>
-          <Button 
-            onClick={handleStartDiagnosis}
-            className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-400 hover:to-pink-500 text-white"
-          >
-            {locale === 'zh' ? '开始诊断' : 'Start Diagnosis'}
-          </Button>
-        </CardContent>
-      </Card>
+        )}
+      </div>
     );
   };
 
