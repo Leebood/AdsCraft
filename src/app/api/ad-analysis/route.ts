@@ -138,7 +138,7 @@ export async function GET(request: NextRequest) {
       .select('*')
       .eq('user_id', user.id)
       .gte('created_at', startDate.toISOString())
-      .order('created_at', { ascending: false });
+      .order('snapshot_date', { ascending: false });
     
     // 如果指定了平台，添加过滤条件
     if (platform && ['facebook', 'tiktok'].includes(platform)) {
