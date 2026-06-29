@@ -28,6 +28,18 @@ const PLATFORM_POLICY_POINTS = {
       '禁止敏感或成人内容',
       '移动端落地页优化要求'
     ]
+  },
+  google: {
+    name: 'Google Ads',
+    policyUrl: 'https://support.google.com/adspolicy',
+    keyPoints: [
+      '禁止禁止内容（ counterfeit goods, dangerous products, dishonest behavior）',
+      '禁止误导性声明或夸大效果',
+      '落地页必须功能正常且相关',
+      '禁止滥用广告功能（弹窗、自动下载等）',
+      '敏感行业需额外资质审核',
+      '版权和商标合规要求'
+    ]
   }
 };
 

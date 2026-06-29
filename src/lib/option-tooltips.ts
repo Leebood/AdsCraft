@@ -424,7 +424,7 @@ export const FORM_TYPE_TOOLTIPS: OptionTooltip[] = [
 export function getOptionDescription(
   questionLabel: string,
   optionText: string,
-  platform: 'facebook' | 'tiktok',
+  platform: 'facebook' | 'tiktok' | 'google',
   language: 'en' | 'zh'
 ): string | null {
   const isEn = language === 'en';

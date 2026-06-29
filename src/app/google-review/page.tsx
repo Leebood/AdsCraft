@@ -23,6 +23,8 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { GoogleReport, GoogleReportData } from '@/components/google-report';
+import { ReportExport } from '@/components/report-export';
+import { generateUnifiedReport, UnifiedReport } from '@/lib/are';
 import { useRouter } from 'next/navigation';
 
 // ============================================================================
@@ -57,6 +59,7 @@ export default function GoogleReviewPage() {
   const [screenshotPreview, setShowPreview] = useState(false);
   const [extractedData, setExtractedData] = useState<GoogleCampaignData | null>(null);
   const [report, setReport] = useState<GoogleReportData | null>(null);
+  const [unifiedReport, setUnifiedReport] = useState<UnifiedReport | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -153,6 +156,26 @@ export default function GoogleReviewPage() {
       
       if (result.success && result.data) {
         setReport(result.data);
+        // 生成统一报告用于导出
+        const unified = generateUnifiedReport(
+          'google',
+          result.data.campaign_name,
+          result.data.date_range,
+          result.data.evidence,
+          result.data.metric_analysis,
+          result.data.diagnosis,
+          result.data.scores,
+          result.data.llm_explanation,
+          result.data.action_plan,
+          {
+            analysis_duration_ms: 0,
+            model_used: 'unknown',
+            ars_version: '1.0.0',
+            are_version: '1.0.0',
+            data_source: 'screenshot',
+          }
+        );
+        setUnifiedReport(unified);
         setStep(3);
       } else {
         throw new Error(result.error || 'Analysis failed');
@@ -442,6 +465,11 @@ export default function GoogleReviewPage() {
               </Button>
             </div>
             <GoogleReport report={report} locale="en" />
+            
+            {/* Export Report */}
+            {unifiedReport && (
+              <ReportExport report={unifiedReport} />
+            )}
           </div>
         )}
       </div>

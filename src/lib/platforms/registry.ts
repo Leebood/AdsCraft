@@ -566,17 +566,185 @@ export const tiktokConfig: PlatformConfig = {
 };
 
 /**
+ * Google Ads 平台配置
+ */
+export const googleAdsConfig: PlatformConfig = {
+  id: 'google',
+  name: 'Google Ads',
+  nameZh: 'Google Ads',
+  // Google Ads 图标：彩色 G 字母
+  icon: `<svg viewBox="0 0 40 40" class="w-10 h-10">
+    <defs>
+      <linearGradient id="gGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#4285F4"/>
+        <stop offset="50%" style="stop-color:#34A853"/>
+        <stop offset="100%" style="stop-color:#FBBC05"/>
+      </linearGradient>
+    </defs>
+    <rect width="40" height="40" rx="8" fill="url(#gGrad)"/>
+    <text x="20" y="28" text-anchor="middle" font-size="20" font-weight="bold" fill="white" font-family="system-ui">G</text>
+  </svg>`,
+  color: '#4285F4',
+  dataSource: 'screenshot',
+  
+  quizFlow: [
+    {
+      id: 'campaignType',
+      title: 'Campaign Type',
+      titleZh: '广告类型',
+      description: 'What type of Google Ads campaign do you run?',
+      descriptionZh: '你运行什么类型的 Google Ads 广告？',
+      options: [
+        { id: 'search', label: 'Search', labelZh: '搜索广告', value: 'search' },
+        { id: 'display', label: 'Display', labelZh: '展示广告', value: 'display' },
+        { id: 'shopping', label: 'Shopping', labelZh: '购物广告', value: 'shopping' },
+        { id: 'video', label: 'Video', labelZh: '视频广告', value: 'video' }
+      ]
+    },
+    {
+      id: 'budget',
+      title: 'Monthly Budget',
+      titleZh: '月预算',
+      description: 'Select your monthly ad budget range',
+      descriptionZh: '选择你的月预算范围',
+      options: [
+        { id: 'low', label: 'Low', labelZh: '低预算', value: 'low', description: '$500-2000/mo', descriptionZh: '$500-2000/月' },
+        { id: 'mid', label: 'Medium', labelZh: '中等预算', value: 'mid', description: '$2000-10000/mo', descriptionZh: '$2000-10000/月' },
+        { id: 'high', label: 'High', labelZh: '高预算', value: 'high', description: '$10000+/mo', descriptionZh: '$10000+/月' }
+      ]
+    },
+    {
+      id: 'goal',
+      title: 'Campaign Goal',
+      titleZh: '投放目标',
+      description: 'What is your primary objective?',
+      descriptionZh: '你的主要目标是什么？',
+      options: [
+        { id: 'sales', label: 'Sales', labelZh: '销售', value: 'sales' },
+        { id: 'leads', label: 'Leads', labelZh: '潜在客户', value: 'leads' },
+        { id: 'awareness', label: 'Brand Awareness', labelZh: '品牌知名度', value: 'awareness' },
+        { id: 'traffic', label: 'Website Traffic', labelZh: '网站流量', value: 'traffic' }
+      ]
+    }
+  ],
+  
+  metricsMap: {
+    'spend': 'cost',
+    'ctr': 'ctr',
+    'cpc': 'cpc',
+    'roas': 'roas',
+    'quality_score': 'quality_score',
+    'conversions': 'conversions',
+    'cvr': 'cvr'
+  },
+  
+  extraMetrics: ['quality_score', 'impression_share'],
+  
+  diagnosisPrompt: `You are a Google Ads campaign diagnostician. Analyze the following metrics:
+- Spend (Cost)
+- CTR (Click-Through Rate)
+- CPC (Cost Per Click)
+- ROAS (Return on Ad Spend)
+- Quality Score (1-10)
+- Conversions
+- CVR (Conversion Rate)
+
+Provide diagnosis in the following format:
+1. Overall Score (0-100)
+2. Five dimension scores: Compliance, Campaign Strategy, Creative, Landing Page, Tracking
+3. Key findings with evidence
+4. Actionable recommendations`,
+  
+  benchmarks: {
+    'ctr_search': { good: 3.0, avg: 1.5, poor: 0.5 },
+    'ctr_display': { good: 0.5, avg: 0.2, poor: 0.1 },
+    'cpc_search': { good: 1.0, avg: 2.5, poor: 5.0 },
+    'cpc_display': { good: 0.5, avg: 1.0, poor: 2.0 },
+    'roas': { good: 4.0, avg: 2.0, poor: 1.0 },
+    'quality_score': { good: 8, avg: 5, poor: 3 },
+    'cvr': { good: 3.0, avg: 1.5, poor: 0.5 }
+  },
+  
+  routes: [
+    {
+      id: 'free',
+      name: 'Free Trial',
+      nameZh: '免费试用',
+      description: '1 screenshot analysis per month',
+      icon: '🎯',
+      color: '#94A3B8',
+      isFree: true,
+      screenshotLimit: 1
+    },
+    {
+      id: 'starter',
+      name: 'Starter',
+      nameZh: '入门版',
+      description: 'For small businesses',
+      icon: '🚀',
+      color: '#4285F4',
+      price: 29.9,
+      priceText: '$29.9/mo',
+      priceTextZh: '¥215/月',
+      screenshotLimit: 20
+    },
+    {
+      id: 'pro',
+      name: 'Pro',
+      nameZh: '专业版',
+      description: 'For growing businesses',
+      icon: '💎',
+      color: '#34A853',
+      price: 79.9,
+      priceText: '$79.9/mo',
+      priceTextZh: '¥575/月',
+      screenshotLimit: 100
+    }
+  ],
+  
+  complianceChecklist: [
+    {
+      id: 'google_policy_1',
+      title: 'No prohibited content',
+      titleZh: '无禁止内容',
+      description: 'Ensure ads comply with Google Ads policies',
+      descriptionZh: '确保广告符合 Google Ads 政策',
+      category: 'platform_specific',
+      severity: 'high'
+    },
+    {
+      id: 'google_copy_1',
+      title: 'Clear and accurate claims',
+      titleZh: '清晰准确的声明',
+      description: 'Avoid misleading or exaggerated claims',
+      descriptionZh: '避免误导性或夸大的声明',
+      category: 'copy',
+      severity: 'medium'
+    },
+    {
+      id: 'google_landing_1',
+      title: 'Landing page quality',
+      titleZh: '落地页质量',
+      description: 'Ensure landing page is functional and relevant',
+      descriptionZh: '确保落地页功能正常且相关',
+      category: 'landing_page',
+      severity: 'high'
+    }
+  ]
+};
+
+/**
  * 平台ID类型
  */
-export type PlatformId = 'facebook' | 'tiktok';
+export type PlatformId = 'facebook' | 'tiktok' | 'google';
 
 /**
  * 平台注册表
  */
 export const platformRegistry: Record<PlatformId, PlatformConfig> = {
   facebook: facebookConfig,
-  tiktok: tiktokConfig
-  // google_ads: googleAdsConfig // 预留
+  tiktok: tiktokConfig,
+  google: googleAdsConfig
 };
 
 /**
@@ -584,7 +752,8 @@ export const platformRegistry: Record<PlatformId, PlatformConfig> = {
  */
 export const PLATFORM_CONFIGS: Record<PlatformId, PlatformConfig> = {
   facebook: facebookConfig,
-  tiktok: tiktokConfig
+  tiktok: tiktokConfig,
+  google: googleAdsConfig
 };
 
 /**

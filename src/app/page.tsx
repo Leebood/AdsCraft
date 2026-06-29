@@ -307,10 +307,13 @@ export default function HomePage() {
   };
 
   // 处理免费诊断按钮点击
-  const handleFreeDiagnosis = (platform: 'facebook' | 'tiktok') => {
+  const handleFreeDiagnosis = (platform: 'facebook' | 'tiktok' | 'google') => {
     tiktokPixel.track('StartFreeDiagnosis');
     if (platform === 'tiktok') {
       handleAuthRequiredAction('/rejection-check');
+    } else if (platform === 'google') {
+      // Google 跳转截图分析页面
+      handleAuthRequiredAction('/google-review');
     } else {
       // Facebook 跳转截图分析页面
       handleAuthRequiredAction('/dashboard/analysis');
@@ -714,28 +717,29 @@ export default function HomePage() {
             </button>
           </motion.div>
 
-          {/* Google Ads - Coming Soon */}
+          {/* Google Ads */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="p-8 rounded-xl bg-[#101827]/50 border border-white/5 opacity-60 text-center"
+            className="p-8 rounded-xl bg-[#101827] border border-white/8 hover:border-[#4285F4]/30 transition-all text-center"
           >
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center">
-              <svg className="w-8 h-8 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#4285F4]/10 flex items-center justify-center overflow-hidden">
+              <div className="w-10 h-10" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.google.icon }} />
             </div>
-            <h3 className="text-xl font-semibold text-white/60 mb-2">Google Ads</h3>
-            <p className="text-[#94A3B8]/60 text-sm mb-6">
-              {locale === 'zh' ? '即将推出' : 'Coming Soon'}
+            <h3 className="text-xl font-semibold text-white mb-2">Google Ads</h3>
+            <p className="text-[#94A3B8] text-sm mb-6">
+              {locale === 'zh' 
+                ? '上传广告截图。获取完整分析报告。' 
+                : 'Upload campaign screenshots. Get a full analysis report.'}
             </p>
             <button
-              disabled
-              className="px-6 py-2 bg-white/5 text-white/40 font-semibold rounded-lg cursor-not-allowed"
+              onClick={() => handleFreeDiagnosis('google')}
+              disabled={loading}
+              className="px-6 py-2 bg-[#00D4FF] text-[#08111F] font-semibold rounded-lg hover:bg-[#35E1FF] transition-all disabled:opacity-50"
             >
-              {locale === 'zh' ? '即将推出' : 'Coming Soon'}
+              {locale === 'zh' ? '分析 Google' : 'Analyze Google'}
             </button>
           </motion.div>
         </div>

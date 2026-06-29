@@ -17,23 +17,13 @@ import {
   Shield,
   DollarSign
 } from 'lucide-react';
+import type { Evidence, MetricAnalysis, Diagnosis, Scores, ActionPlanItem, LLMExplanation } from '@/lib/are/types';
 
 // ============================================================================
 // Types
 // ============================================================================
 
-interface Evidence {
-  evidence_id: string;
-  metric: string;
-  value: number;
-  value_formatted: string;
-  benchmark: number;
-  benchmark_formatted: string;
-  status: 'above' | 'below' | 'on_target';
-  campaign: string;
-}
-
-interface MetricAnalysis {
+interface MetricAnalysisLocal {
   metric: string;
   evidence_id: string;
   value: number;
@@ -46,28 +36,6 @@ interface MetricAnalysis {
   trend?: 'increasing' | 'decreasing' | 'stable';
 }
 
-interface Diagnosis {
-  rule_id: string;
-  metric: string;
-  evidence_id: string;
-  value: number;
-  value_formatted: string;
-  condition: string;
-  status: 'critical' | 'warning' | 'info' | 'good' | 'excellent';
-  severity: 'high' | 'medium' | 'low' | 'none';
-  recommendation: string;
-  description: string;
-  campaign: string;
-}
-
-interface Scores {
-  overall: number;
-  performance: number;
-  efficiency: number;
-  delivery: number;
-  risk: number;
-}
-
 interface ActionPlan {
   priority: string;
   action: string;
@@ -78,12 +46,6 @@ interface ActionPlan {
   related_diagnosis: string[];
 }
 
-interface LLMExplanation {
-  executive_summary: string;
-  diagnosis: string;
-  action_plan: string;
-}
-
 export interface TikTokReportData {
   report_id: string;
   platform: string;
@@ -92,7 +54,7 @@ export interface TikTokReportData {
   date_range: string;
   scores: Scores;
   evidence: Evidence[];
-  metric_analysis: MetricAnalysis[];
+  metric_analysis: MetricAnalysisLocal[];
   diagnosis: Diagnosis[];
   action_plan: ActionPlan[];
   llm_explanation: LLMExplanation;
@@ -169,7 +131,7 @@ function ScoreCard({ title, score, icon: Icon }: { title: string; score: number;
   );
 }
 
-function MetricCard({ analysis }: { analysis: MetricAnalysis }) {
+function MetricCard({ analysis }: { analysis: MetricAnalysisLocal }) {
   const statusLabels = {
     above_benchmark: 'Above Benchmark',
     below_benchmark: 'Below Benchmark',
@@ -235,7 +197,7 @@ function DiagnosisCard({ diagnosis }: { diagnosis: Diagnosis }) {
                 {diagnosis.rule_id}
               </Badge>
             </div>
-            <p className="text-slate-300 text-sm mb-2">{diagnosis.description}</p>
+            <p className="text-slate-300 text-sm mb-2">{diagnosis.recommendation}</p>
             <div className="flex items-center gap-4 text-xs text-slate-400">
               <span>Value: {diagnosis.value_formatted}</span>
               <span>Condition: {diagnosis.condition}</span>

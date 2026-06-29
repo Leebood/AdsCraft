@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Upload, Loader2, AlertCircle, X, CheckCircle2, TrendingUp, Target, Lightbulb, Image as ImageIcon } from 'lucide-react';
 import { TikTokReport, type TikTokReportData } from '@/components/tiktok-report';
+import { ReportExport } from '@/components/report-export';
+import { generateUnifiedReport, type UnifiedReport } from '@/lib/are/report-generator';
 
 type Step = 'upload' | 'preview' | 'result';
 
@@ -165,17 +167,60 @@ export default function TikTokReviewPage() {
     setExtractedData({ ...extractedData, [field]: parsedValue });
   };
 
+  // Generate unified report for export
+  const unifiedReport: UnifiedReport | null = useMemo(() => {
+    if (!reportData) return null;
+    
+    return generateUnifiedReport(
+      'tiktok',
+      reportData.campaign_name,
+      reportData.date_range,
+      reportData.evidence as any,
+      reportData.metric_analysis as any,
+      reportData.diagnosis as any,
+      reportData.scores,
+      {
+        executive_summary: `TikTok campaign "${reportData.campaign_name}" analysis complete. Overall score: ${reportData.scores.overall}/100.`,
+        diagnosis: '',
+        action_plan: '',
+      },
+      reportData.action_plan.map(a => ({
+        priority: a.priority as 'P0' | 'P1' | 'P2',
+        action: a.action,
+        issue: a.issue,
+        details: a.details,
+        expected_impact: a.expected_impact,
+        related_evidence: a.related_evidence || [],
+        related_diagnosis: a.related_diagnosis || [],
+      })),
+      {
+        analysis_duration_ms: 0,
+        model_used: 'gpt-4',
+        ars_version: 'v1',
+        are_version: 'v1',
+        data_source: 'OCR',
+      }
+    );
+  }, [reportData]);
+
   // Show result
   if (step === 'result' && reportData) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-8">
         <div className="max-w-7xl mx-auto">
-          <div className="mb-8">
+          <div className="mb-8 flex items-center justify-between">
             <Button onClick={handleReset} variant="outline">
               ← Back to Upload
             </Button>
           </div>
           <TikTokReport data={reportData} />
+          
+          {/* Export Section */}
+          {unifiedReport && (
+            <div className="mt-8">
+              <ReportExport report={unifiedReport} locale="en" />
+            </div>
+          )}
         </div>
       </div>
     );
