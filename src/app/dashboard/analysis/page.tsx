@@ -155,17 +155,26 @@ function translateAnalysisResult(result: AnalysisResult, locale: string): Analys
   // 翻译风险提示
   const translateRisk = (risk: { level: 'urgent' | 'warning' | 'info'; message: string; metric: string; value: number; threshold: number }): { level: 'urgent' | 'warning' | 'info'; message: string; metric: string; value: number; threshold: number } => {
     let message = risk.message;
+    let metric = risk.metric;
+    // 翻译 metric 名称
+    if (metric === '频次') metric = 'Frequency';
+    if (metric === '转化率') metric = 'Conv. Rate';
+    // 翻译 message
     if (risk.metric === 'CPC') message = `CPC $${risk.value.toFixed(2)} is high (benchmark $0.8-1.5), wasting budget daily`;
-    if (risk.metric === 'ROAS') message = `ROAS ${risk.value.toFixed(1)}x below 3x profitability line`;
-    if (risk.metric === 'CPA') message = `CPA $${risk.value.toFixed(2)} is too high, acquisition cost out of control`;
-    if (risk.metric === '频次') message = `Frequency ${risk.value.toFixed(1)} is high, audience may be fatigued`;
-    if (risk.metric === 'CTR') message = `CTR ${risk.value.toFixed(2)}% is low, low creative appeal`;
-    return { ...risk, message };
+    else if (risk.metric === 'ROAS') message = `ROAS ${risk.value.toFixed(1)}x below 3x profitability line`;
+    else if (risk.metric === 'CPA') message = `CPA $${risk.value.toFixed(2)} is too high, acquisition cost out of control`;
+    else if (risk.metric === '频次') message = `Frequency ${risk.value.toFixed(1)} is high, audience may be fatigued`;
+    else if (risk.metric === 'CTR') message = `CTR ${risk.value.toFixed(2)}% is low, low creative appeal`;
+    return { ...risk, message, metric };
   };
   
   // 翻译行动优先级
   const translateAction = (action: { priority: number; metric: string; action: string; impact: 'high' | 'medium' | 'low' }): { priority: number; metric: string; action: string; impact: 'high' | 'medium' | 'low' } => {
     let translatedAction = action.action;
+    let translatedMetric = action.metric;
+    // 翻译 metric 名称
+    if (translatedMetric === '频次') translatedMetric = 'Frequency';
+    if (translatedMetric === '转化率') translatedMetric = 'Conv. Rate';
     // 提取数值
     const cpcMatch = action.action.match(/\$[\d.]+/);
     const roasMatch = action.action.match(/[\d.]+x/);
@@ -173,12 +182,12 @@ function translateAnalysisResult(result: AnalysisResult, locale: string): Analys
     const freqMatch = action.action.match(/[\d.]+/);
     
     if (action.metric === 'CPC') translatedAction = `Pause current ad sets, test new creative to lower CPC (current $${cpcMatch?.[0]?.replace('$', '') || ''}, target < $1.5)`;
-    if (action.metric === 'ROAS') translatedAction = `Don't increase budget yet, optimize conversion path to improve ROAS (current ${roasMatch?.[0] || ''}, target > 3x)`;
-    if (action.metric === 'CPA') translatedAction = `Optimize audience targeting or adjust bidding (current $${cpcMatch?.[0]?.replace('$', '') || ''}, target < $25)`;
-    if (action.metric === '频次') translatedAction = `Expand audience or refresh creative to lower frequency (current ${freqMatch?.[0] || ''}, target < 2)`;
-    if (action.metric === 'CTR') translatedAction = `Optimize creative, test different copy and visuals (current ${rateMatch?.[0] || ''}, target > 1.5%)`;
-    if (action.metric === '转化率') translatedAction = `Optimize landing page experience to improve conversion rate (current ${rateMatch?.[0] || ''}, target > 2%)`;
-    return { ...action, action: translatedAction };
+    else if (action.metric === 'ROAS') translatedAction = `Don't increase budget yet, optimize conversion path to improve ROAS (current ${roasMatch?.[0] || ''}, target > 3x)`;
+    else if (action.metric === 'CPA') translatedAction = `Optimize audience targeting or adjust bidding (current $${cpcMatch?.[0]?.replace('$', '') || ''}, target < $25)`;
+    else if (action.metric === '频次') translatedAction = `Expand audience or refresh creative to lower frequency (current ${freqMatch?.[0] || ''}, target < 2)`;
+    else if (action.metric === 'CTR') translatedAction = `Optimize creative, test different copy and visuals (current ${rateMatch?.[0] || ''}, target > 1.5%)`;
+    else if (action.metric === '转化率') translatedAction = `Optimize landing page experience to improve conversion rate (current ${rateMatch?.[0] || ''}, target > 2%)`;
+    return { ...action, action: translatedAction, metric: translatedMetric };
   };
   
   return {
