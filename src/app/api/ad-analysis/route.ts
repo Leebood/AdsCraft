@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseServerClientAsync } from '@/storage/database/supabase-client';
-import { analyzeAdData, runAIAnalysis } from '@/lib/ad-analysis-engine';
+import { analyzeAdData, AdSnapshot } from '@/lib/ad-analysis-engine-v2';
 
 // 诊断师 Bot ID
 const DIAGNOSIS_BOT_ID = '7648850096180330548';
@@ -167,15 +167,18 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // 调用规则分析引擎
-    const ruleAnalysis = analyzeAdData(historyData);
+    // 调用新的分析引擎 v2.0
+    const currentSnapshot = historyData[0];
+    const previousSnapshot = historyData.length > 1 ? historyData[1] : null;
     
-    // 预留 AI 分析接口（暂时返回规则分析结果）
-    const aiAnalysis = await runAIAnalysis(ruleAnalysis);
+    // 获取语言参数
+    const locale = searchParams.get('locale') || 'zh';
+    
+    const analysis = analyzeAdData(currentSnapshot, previousSnapshot, locale);
     
     return NextResponse.json({
       data: historyData,
-      analysis: aiAnalysis,
+      analysis: analysis,
       dataCount: dataCount,
       planInfo: planInfo,
     });

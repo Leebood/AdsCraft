@@ -890,224 +890,153 @@ function AnalysisContent() {
                 </div>
               ) : analysis ? (
                 (() => {
-                  // 根据语言翻译分析结果
-                  const translatedAnalysis = translateAnalysisResult(analysis, locale);
+                  // 新的分析结果格式 v2.0
+                  const v2Analysis = analysis as unknown as {
+                    diagnosis?: { pattern: string; conclusion: string; confidence: string };
+                    trends?: { has_history: boolean; previous_date?: string; changes: Array<{ metric: string; prev: number; curr: number; change_pct: number; direction: string; quality: string }>; summary: string };
+                    actions?: Array<{ priority: number; type: string; metric: string; action: string; evidence: string }>;
+                  };
                   
-                  return (
-                <div className="space-y-6">
-                  {/* 总体评分 */}
-                  <div className="flex items-center gap-3 pb-4 border-b border-white/10">
-                    <span className="text-blue-300">{locale === 'zh' ? '总体评分：' : 'Overall: '}</span>
-                    <span className={`px-4 py-1.5 rounded-full text-sm font-semibold ${
-                      translatedAnalysis.overall_score === '优秀' || translatedAnalysis.overall_score === 'Excellent' ? 'bg-green-500/20 text-green-300 border border-green-500/30' :
-                      translatedAnalysis.overall_score === '好' || translatedAnalysis.overall_score === 'Good' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' :
-                      translatedAnalysis.overall_score === '一般' || translatedAnalysis.overall_score === 'Average' ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30' :
-                      'bg-red-500/20 text-red-300 border border-red-500/30'
-                    }`}>
-                      {translatedAnalysis.overall_score}
-                    </span>
-                  </div>
-                  
-                  {/* 指标卡片 - 带颜色标签和图标 */}
-                  <div className="space-y-3">
-                    <h4 className="text-blue-200 font-medium flex items-center gap-2">
-                      <BarChart3 className="w-4 h-4" />
-                      {locale === 'zh' ? '指标评分' : 'Metrics'}
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {translatedAnalysis.metrics.map((m, i) => {
-                        // 根据评级选择颜色和图标
-                        const getMetricStyle = (rating: string, level: string) => {
-                          switch (level) {
-                            case 'excellent':
-                              return {
-                                bg: 'bg-green-500/10',
-                                border: 'border-green-500/30',
-                                text: 'text-green-300',
-                                icon: '✓',
-                                iconColor: 'text-green-400'
-                              };
-                            case 'good':
-                              return {
-                                bg: 'bg-blue-500/10',
-                                border: 'border-blue-500/30',
-                                text: 'text-blue-300',
-                                icon: '●',
-                                iconColor: 'text-blue-400'
-                              };
-                            case 'average':
-                              return {
-                                bg: 'bg-yellow-500/10',
-                                border: 'border-yellow-500/30',
-                                text: 'text-yellow-300',
-                                icon: '▲',
-                                iconColor: 'text-yellow-400'
-                              };
-                            case 'poor':
-                              return {
-                                bg: 'bg-red-500/10',
-                                border: 'border-red-500/30',
-                                text: 'text-red-300',
-                                icon: '✕',
-                                iconColor: 'text-red-400'
-                              };
-                            default:
-                              return {
-                                bg: 'bg-slate-500/10',
-                                border: 'border-slate-500/30',
-                                text: 'text-slate-300',
-                                icon: '—',
-                                iconColor: 'text-slate-400'
-                              };
-                          }
-                        };
-                        
-                        const style = getMetricStyle(m.rating, m.level);
-                        
-                        return (
-                          <div key={i} className={`${style.bg} ${style.border} border rounded-lg p-3 flex items-center justify-between`}>
-                            <div className="flex items-center gap-2">
-                              <span className={`${style.iconColor} text-lg`}>{style.icon}</span>
-                              <span className="text-blue-200 text-sm font-medium">{m.name}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-white text-sm font-semibold">
-                                {m.value !== null ? (m.name === 'CTR' || m.name === '转化率' || m.name === 'Conv. Rate' ? `${m.value.toFixed(2)}%` : m.name === 'ROAS' ? `${m.value.toFixed(1)}x` : `$${m.value.toFixed(2)}`) : '-'}
-                              </span>
-                              <span className={`text-xs px-2 py-0.5 rounded ${style.bg} ${style.text} border ${style.border}`}>
-                                {m.rating}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  
-                  {/* 风险提示 - 紧急/注意 */}
-                  {translatedAnalysis.risks && translatedAnalysis.risks.length > 0 && (
-                    <div className="space-y-3">
-                      <h4 className="text-blue-200 font-medium flex items-center gap-2">
-                        <AlertTriangle className="w-4 h-4 text-yellow-400" />
-                        {locale === 'zh' ? '风险提示' : 'Risk Alerts'}
-                      </h4>
-                      <div className="space-y-2">
-                        {translatedAnalysis.risks.map((risk, i) => (
-                          <div key={i} className={`flex items-start gap-2 p-3 rounded-lg ${
-                            risk.level === 'urgent' ? 'bg-red-500/10 border border-red-500/30' :
-                            risk.level === 'warning' ? 'bg-yellow-500/10 border border-yellow-500/30' :
-                            'bg-blue-500/10 border border-blue-500/30'
+                  // 如果是旧格式，使用旧的翻译函数
+                  if ('overall_score' in analysis) {
+                    const translatedAnalysis = translateAnalysisResult(analysis, locale);
+                    return (
+                      <div className="space-y-6">
+                        {/* 总体评分 */}
+                        <div className="flex items-center gap-3 pb-4 border-b border-white/10">
+                          <span className="text-blue-300">{locale === 'zh' ? '总体评分：' : 'Overall: '}</span>
+                          <span className={`px-4 py-1.5 rounded-full text-sm font-semibold ${
+                            translatedAnalysis.overall_score === '优秀' || translatedAnalysis.overall_score === 'Excellent' ? 'bg-green-500/20 text-green-300 border border-green-500/30' :
+                            translatedAnalysis.overall_score === '好' || translatedAnalysis.overall_score === 'Good' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' :
+                            translatedAnalysis.overall_score === '一般' || translatedAnalysis.overall_score === 'Average' ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30' :
+                            'bg-red-500/20 text-red-300 border border-red-500/30'
                           }`}>
-                            <span className={`text-lg ${
-                              risk.level === 'urgent' ? 'text-red-400' :
-                              risk.level === 'warning' ? 'text-yellow-400' :
-                              'text-blue-400'
-                            }`}>
-                              {risk.level === 'urgent' ? '⚠' : risk.level === 'warning' ? '⚡' : 'ℹ'}
-                            </span>
-                            <div className="flex-1">
-                              <p className={`text-sm ${
-                                risk.level === 'urgent' ? 'text-red-200' :
-                                risk.level === 'warning' ? 'text-yellow-200' :
-                                'text-blue-200'
-                              }`}>
-                                {risk.message}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* 行动优先级 */}
-                  {translatedAnalysis.action_priorities && translatedAnalysis.action_priorities.length > 0 && (
-                    <div className="space-y-3">
-                      <h4 className="text-blue-200 font-medium flex items-center gap-2">
-                        <Target className="w-4 h-4 text-cyan-400" />
-                        {locale === 'zh' ? '行动优先级' : 'Action Priority'}
-                      </h4>
-                      <div className="space-y-2">
-                        {translatedAnalysis.action_priorities.map((action, i) => (
-                          <div key={i} className="flex items-start gap-3 p-3 bg-slate-800/50 rounded-lg">
-                            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center">
-                              <span className="text-cyan-300 text-xs font-bold">{action.priority}</span>
-                            </div>
-                            <div className="flex-1">
-                              <p className="text-blue-100 text-sm">{action.action}</p>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className={`text-xs px-2 py-0.5 rounded ${
-                                  action.impact === 'high' ? 'bg-red-500/20 text-red-300' :
-                                  action.impact === 'medium' ? 'bg-yellow-500/20 text-yellow-300' :
-                                  'bg-blue-500/20 text-blue-300'
-                                }`}>
-                                  {action.impact === 'high' ? (locale === 'zh' ? '高影响' : 'High') :
-                                   action.impact === 'medium' ? (locale === 'zh' ? '中影响' : 'Medium') :
-                                   (locale === 'zh' ? '低影响' : 'Low')}
-                                </span>
-                                <span className="text-slate-400 text-xs">{action.metric}</span>
+                            {translatedAnalysis.overall_score}
+                          </span>
+                        </div>
+                        
+                        {/* 指标卡片 */}
+                        <div className="space-y-3">
+                          <h4 className="text-blue-200 font-medium flex items-center gap-2">
+                            <BarChart3 className="w-4 h-4" />
+                            {locale === 'zh' ? '指标评分' : 'Metrics'}
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {translatedAnalysis.metrics.map((m, i) => (
+                              <div key={i} className="bg-slate-800/50 border border-white/10 rounded-lg p-3 flex items-center justify-between">
+                                <span className="text-blue-200 text-sm font-medium">{m.name}</span>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-white text-sm font-semibold">
+                                    {m.value !== null ? (m.name === 'CTR' || m.name === '转化率' || m.name === 'Conv. Rate' ? `${m.value.toFixed(2)}%` : m.name === 'ROAS' ? `${m.value.toFixed(1)}x` : `$${m.value.toFixed(2)}`) : '-'}
+                                  </span>
+                                  <span className="text-xs px-2 py-0.5 rounded bg-slate-700 text-slate-300">
+                                    {m.rating}
+                                  </span>
+                                </div>
                               </div>
-                            </div>
+                            ))}
                           </div>
-                        ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    );
+                  }
                   
-                  {/* 问题 */}
-                  {translatedAnalysis.issues.length > 0 && (
-                    <div className="space-y-3">
-                      <h4 className="text-blue-200 font-medium flex items-center gap-2">
-                        <AlertTriangle className="w-4 h-4 text-yellow-400" />
-                        {locale === 'zh' ? '发现问题' : 'Issues'}
-                      </h4>
-                      <ul className="space-y-2">
-                        {translatedAnalysis.issues.map((issue, i) => (
-                          <li key={i} className="flex items-start gap-2 text-yellow-200 text-sm bg-yellow-500/5 border border-yellow-500/20 rounded-lg p-2">
-                            <span className="text-yellow-400 mt-0.5">⚠</span>
-                            <span>{issue}</span>
-                          </li>
-                        ))}
-                      </ul>
+                  // 新格式 v2.0
+                  return (
+                    <div className="space-y-6">
+                      {/* 诊断卡片 */}
+                      {v2Analysis.diagnosis && (
+                        <div className="space-y-3">
+                          <h4 className="text-blue-200 font-medium flex items-center gap-2">
+                            <Target className="w-4 h-4 text-cyan-400" />
+                            {locale === 'zh' ? '诊断结论' : 'Diagnosis'}
+                          </h4>
+                          <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-cyan-300 font-semibold">{v2Analysis.diagnosis.pattern}</span>
+                              <span className={`text-xs px-2 py-0.5 rounded ${
+                                v2Analysis.diagnosis.confidence === 'high' ? 'bg-green-500/20 text-green-300' :
+                                v2Analysis.diagnosis.confidence === 'medium' ? 'bg-yellow-500/20 text-yellow-300' :
+                                'bg-slate-500/20 text-slate-300'
+                              }`}>
+                                {v2Analysis.diagnosis.confidence === 'high' ? (locale === 'zh' ? '高置信度' : 'High') :
+                                 v2Analysis.diagnosis.confidence === 'medium' ? (locale === 'zh' ? '中置信度' : 'Medium') :
+                                 (locale === 'zh' ? '低置信度' : 'Low')}
+                              </span>
+                            </div>
+                            <p className="text-blue-100 text-sm">{v2Analysis.diagnosis.conclusion}</p>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* 趋势对比 */}
+                      {v2Analysis.trends && (
+                        <div className="space-y-3">
+                          <h4 className="text-blue-200 font-medium flex items-center gap-2">
+                            <LineChart className="w-4 h-4 text-blue-400" />
+                            {locale === 'zh' ? '趋势对比' : 'Trends'}
+                          </h4>
+                          {v2Analysis.trends.has_history ? (
+                            <div className="bg-slate-800/50 border border-white/10 rounded-lg p-4">
+                              <p className="text-blue-200 text-xs mb-3">
+                                {locale === 'zh' ? `vs 上次上传：${v2Analysis.trends.previous_date}` : `vs Last upload: ${v2Analysis.trends.previous_date}`}
+                              </p>
+                              <div className="space-y-2">
+                                {v2Analysis.trends.changes.map((change, i) => (
+                                  <div key={i} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
+                                    <span className="text-blue-200 text-sm font-medium w-20">{change.metric}</span>
+                                    <div className="flex items-center gap-4">
+                                      <span className="text-slate-400 text-xs">{typeof change.prev === 'number' ? change.prev.toFixed(2) : '-'}</span>
+                                      <span className="text-white text-sm font-semibold">{typeof change.curr === 'number' ? change.curr.toFixed(2) : '-'}</span>
+                                      <span className={`text-xs px-2 py-0.5 rounded ${
+                                        change.quality === 'good' ? 'bg-green-500/20 text-green-300' :
+                                        change.quality === 'bad' ? 'bg-red-500/20 text-red-300' :
+                                        'bg-slate-500/20 text-slate-300'
+                                      }`}>
+                                        {change.direction === 'up' ? '↑' : change.direction === 'down' ? '↓' : '→'} {Math.abs(change.change_pct)}%
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                              <p className="text-blue-200 text-sm mt-3 pt-3 border-t border-white/10">{v2Analysis.trends.summary}</p>
+                            </div>
+                          ) : (
+                            <div className="bg-slate-800/50 border border-white/10 rounded-lg p-4 text-center">
+                              <p className="text-blue-200 text-sm">{v2Analysis.trends.summary}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* 行动建议 */}
+                      {v2Analysis.actions && v2Analysis.actions.length > 0 && (
+                        <div className="space-y-3">
+                          <h4 className="text-blue-200 font-medium flex items-center gap-2">
+                            <Target className="w-4 h-4 text-cyan-400" />
+                            {locale === 'zh' ? '行动建议' : 'Actions'}
+                          </h4>
+                          <div className="space-y-2">
+                            {v2Analysis.actions.map((action, i) => (
+                              <div key={i} className="bg-slate-800/50 border border-white/10 rounded-lg p-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className={`text-xs px-2 py-0.5 rounded font-semibold ${
+                                    action.type === 'STOP' ? 'bg-red-500/20 text-red-300 border border-red-500/30' :
+                                    action.type === 'FIX' ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30' :
+                                    'bg-green-500/20 text-green-300 border border-green-500/30'
+                                  }`}>
+                                    {action.type}
+                                  </span>
+                                  <span className="text-blue-200 text-sm font-medium">{action.metric}</span>
+                                </div>
+                                <p className="text-blue-100 text-sm mb-2">{action.action}</p>
+                                <p className="text-slate-400 text-xs italic">{action.evidence}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
-                  
-                  {/* 趋势 */}
-                  {translatedAnalysis.trends.length > 0 && (
-                    <div className="space-y-3">
-                      <h4 className="text-blue-200 font-medium flex items-center gap-2">
-                        <LineChart className="w-4 h-4 text-blue-400" />
-                        {locale === 'zh' ? '趋势变化' : 'Trends'}
-                      </h4>
-                      <ul className="space-y-2">
-                        {translatedAnalysis.trends.map((trend, i) => (
-                          <li key={i} className="flex items-start gap-2 text-blue-200 text-sm bg-blue-500/5 border border-blue-500/20 rounded-lg p-2">
-                            <span className="text-blue-400 mt-0.5">→</span>
-                            <span>{trend}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  
-                  {/* 建议 */}
-                  {translatedAnalysis.recommendations.length > 0 && (
-                    <div className="space-y-3">
-                      <h4 className="text-blue-200 font-medium flex items-center gap-2">
-                        <Target className="w-4 h-4 text-green-400" />
-                        {locale === 'zh' ? '优化建议' : 'Recommendations'}
-                      </h4>
-                      <ul className="space-y-2">
-                        {translatedAnalysis.recommendations.map((rec, i) => (
-                          <li key={i} className="flex items-start gap-2 text-green-200 text-sm bg-green-500/5 border border-green-500/20 rounded-lg p-2">
-                            <span className="text-green-400 mt-0.5">✓</span>
-                            <span>{rec}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
                   );
                 })()
               ) : (
