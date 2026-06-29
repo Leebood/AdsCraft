@@ -24,22 +24,29 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024;
 // 支持的图片格式
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
-// 截图识别 Prompt
-const EXTRACT_PROMPT = `这是一张Facebook Ads Manager的截图。请提取以下指标返回JSON格式：
+// 截图识别 Prompt - 只提取原始数据，不做分析
+const EXTRACT_PROMPT = `你是一个数据提取工具。请从这张 Facebook Ads Manager 截图中提取原始数据，不要进行任何分析或诊断。
+
+严格返回以下 JSON 格式，只填写从截图中看到的数值，找不到的填 null：
+
 {
-  "campaign_name": "广告系列名称",
-  "snapshot_date": "截图日期(YYYY-MM-DD格式)",
-  "spend": 花费金额(数字),
-  "impressions": 展示次数(整数),
-  "clicks": 点击次数(整数),
-  "ctr": 点击率(百分比数字),
-  "cpc": 单次点击成本(数字),
-  "conversions": 转化次数(整数),
-  "cpa": 单次获取成本(数字),
-  "roas": 广告支出回报率(数字)
+  "campaign_name": "广告系列名称（从截图中提取）",
+  "snapshot_date": "截图日期（YYYY-MM-DD格式，从截图中提取）",
+  "spend": 花费金额（数字，如 1234.56）,
+  "impressions": 展示次数（整数）,
+  "clicks": 点击次数（整数）,
+  "ctr": 点击率（百分比数字，如 1.5 表示 1.5%）,
+  "cpc": 单次点击成本（数字）,
+  "conversions": 转化次数（整数）,
+  "cpa": 单次获取成本（数字）,
+  "roas": 广告支出回报率（数字，如 2.5）
 }
 
-找不到的指标返回null。只返回JSON，不要其他文字。`;
+重要：
+1. 只返回 JSON，不要任何分析、诊断、建议
+2. 不要添加 Diagnosis、Trends、Actions 等字段
+3. 只提取截图中实际显示的数值
+4. 如果找不到某个指标，返回 null`;
 
 export async function POST(request: NextRequest) {
   try {
