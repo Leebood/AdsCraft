@@ -2,201 +2,440 @@
 
 /**
  * Facebook Review Report Page
- * 展示 Facebook 广告分析报告
+ * Facebook 广告截图分析和报告展示
+ * 
+ * 流程：Upload → Preview → Result
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useRef, useCallback } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Upload, Loader2, AlertCircle, X, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { FacebookReport } from '@/components/facebook-report';
 import { ReportExport } from '@/components/report-export';
 import { generateUnifiedReport } from '@/lib/are/report-generator';
-import type { AOSReport, ManualInputData, UnifiedReport } from '@/lib/are';
+import type { AOSReport, UnifiedReport } from '@/lib/are';
 
-// Sample data for testing
-const SAMPLE_DATA: ManualInputData = {
-  date_range: 'Last 7 days',
-  snapshot_date: '2026-06-30',
-  campaigns: [
-    {
-      name: 'Summer Sale 2026',
-      delivery: 'Active',
-      budget: 100.00,
-      spent: 342.18,
-      results: 89,
-      cpr: 3.84,
-      impressions: 89234,
-      reach: 75621,
-      ctr: 2.34,
-      cpc: 1.52,
-      frequency: 1.18,
-      roas: 3.2,
-      cpm: 12.50,
-    },
-    {
-      name: 'Brand Awareness',
-      delivery: 'Active',
-      budget: 50.00,
-      spent: 156.42,
-      results: 12,
-      cpr: 13.03,
-      impressions: 45678,
-      reach: 38912,
-      ctr: 0.87,
-      cpc: 3.84,
-      frequency: 2.3,
-      roas: 1.2,
-      cpm: 15.20,
-    },
-    {
-      name: 'Retargeting - Cart Abandoners',
-      delivery: 'Active',
-      budget: 30.00,
-      spent: 89.50,
-      results: 45,
-      cpr: 1.99,
-      impressions: 23456,
-      reach: 18923,
-      ctr: 1.95,
-      cpc: 1.25,
-      frequency: 1.24,
-      roas: 4.5,
-      cpm: 9.80,
-    },
-  ],
-};
+type Step = 'upload' | 'preview' | 'result';
+
+interface ExtractedData {
+  campaign_name: string | null;
+  snapshot_date: string | null;
+  spend: number | null;
+  impressions: number | null;
+  reach: number | null;
+  clicks: number | null;
+  ctr: number | null;
+  cpc: number | null;
+  frequency: number | null;
+  cpm: number | null;
+  results: number | null;
+  cpr: number | null;
+  roas: number | null;
+  [key: string]: string | number | null | undefined;
+}
 
 export default function FacebookReviewPage() {
+  const [step, setStep] = useState<Step>('upload');
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
   const [report, setReport] = useState<AOSReport | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [locale, setLocale] = useState<'en' | 'zh'>('en');
   const [unifiedReport, setUnifiedReport] = useState<UnifiedReport | null>(null);
-  
-  const runAnalysis = async () => {
-    setLoading(true);
+  const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Handle file selection
+  const handleFileSelect = useCallback((selectedFile: File) => {
+    if (!selectedFile.type.startsWith('image/')) {
+      setError('Please upload an image file');
+      return;
+    }
+    if (selectedFile.size > 10 * 1024 * 1024) {
+      setError('Image size cannot exceed 10MB');
+      return;
+    }
     setError(null);
+    setFile(selectedFile);
+    const reader = new FileReader();
+    reader.onload = (e) => setPreview(e.target?.result as string);
+    reader.readAsDataURL(selectedFile);
+  }, []);
+
+  // Handle drag and drop
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    const droppedFile = e.dataTransfer.files[0];
+    if (droppedFile) handleFileSelect(droppedFile);
+  }, [handleFileSelect]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+  }, []);
+
+  // Upload and analyze screenshot
+  const handleUploadAndAnalyze = async () => {
+    if (!file) return;
     
+    setUploading(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('platform', 'facebook');
+
+      const response = await fetch('/api/analyze-screenshot', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Screenshot recognition failed');
+      }
+
+      setExtractedData(result.data);
+      setStep('preview');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Recognition failed, please try again');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Run full analysis
+  const handleAnalyze = async () => {
+    if (!extractedData) return;
+
+    setAnalyzing(true);
+    setError(null);
+
     try {
       const response = await fetch('/api/facebook-review', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...SAMPLE_DATA,
-          locale,
+          date_range: 'Last 7 days',
+          snapshot_date: extractedData.snapshot_date || new Date().toISOString().split('T')[0],
+          campaigns: [{
+            name: extractedData.campaign_name || 'Unknown Campaign',
+            delivery: 'Active',
+            budget: 100,
+            spent: extractedData.spend || 0,
+            results: extractedData.results || 0,
+            cpr: extractedData.cpr || 0,
+            impressions: extractedData.impressions || 0,
+            reach: extractedData.reach || 0,
+            ctr: extractedData.ctr || 0,
+            cpc: extractedData.cpc || 0,
+            frequency: extractedData.frequency || 0,
+            roas: extractedData.roas || 0,
+            cpm: extractedData.cpm || 0,
+          }],
+          locale: 'en',
         }),
       });
-      
-      if (!response.ok) {
-        throw new Error('Analysis failed');
-      }
-      
+
       const result = await response.json();
-      
-      if (result.success) {
-        setReport(result.data);
-        
-        // Generate unified report for export
-        const aosReport = result.data as AOSReport;
-        const unified = generateUnifiedReport(
-          'facebook',
-          aosReport.campaign_name,
-          aosReport.date_range,
-          aosReport.evidence,
-          aosReport.metric_analysis,
-          aosReport.diagnosis,
-          aosReport.scores,
-          aosReport.llm_explanation,
-          aosReport.action_plan,
-          {
-            analysis_duration_ms: aosReport.metadata.analysis_duration_ms,
-            model_used: aosReport.metadata.model_used,
-            ars_version: aosReport.metadata.ars_version,
-            are_version: aosReport.metadata.are_version,
-            data_source: aosReport.data_source.type,
-          }
-        );
-        setUnifiedReport(unified);
-      } else {
-        throw new Error(result.error || 'Unknown error');
+
+      if (!result.success) {
+        throw new Error(result.error || 'Analysis failed');
       }
+
+      const aosReport = result.data as AOSReport;
+      setReport(aosReport);
+      
+      // Generate unified report for export
+      const unified = generateUnifiedReport(
+        'facebook',
+        aosReport.campaign_name,
+        aosReport.date_range,
+        aosReport.evidence,
+        aosReport.metric_analysis,
+        aosReport.diagnosis,
+        aosReport.scores,
+        aosReport.llm_explanation,
+        aosReport.action_plan,
+        {
+          analysis_duration_ms: aosReport.metadata.analysis_duration_ms,
+          model_used: aosReport.metadata.model_used,
+          ars_version: aosReport.metadata.ars_version,
+          are_version: aosReport.metadata.are_version,
+          data_source: aosReport.data_source.type,
+        }
+      );
+      setUnifiedReport(unified);
+      
+      setStep('result');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Analysis failed');
     } finally {
-      setLoading(false);
+      setAnalyzing(false);
     }
   };
-  
-  // Run analysis on mount
-  useEffect(() => {
-    runAnalysis();
-  }, []);
-  
+
+  // Reset to upload step
+  const handleReset = () => {
+    setStep('upload');
+    setFile(null);
+    setPreview(null);
+    setExtractedData(null);
+    setReport(null);
+    setUnifiedReport(null);
+    setError(null);
+  };
+
+  // Go back to previous step
+  const handleBack = () => {
+    if (step === 'result') {
+      setStep('preview');
+    } else if (step === 'preview') {
+      setStep('upload');
+      setExtractedData(null);
+    }
+    setError(null);
+  };
+
   return (
     <div className="min-h-screen bg-[#08111F] text-white">
       {/* Header */}
       <header className="border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
+            {step !== 'upload' && (
+              <button
+                onClick={handleBack}
+                className="p-2 hover:bg-white/5 rounded-lg transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+            )}
             <h1 className="text-xl font-bold text-[#00D4FF]">AdsCraft</h1>
             <span className="text-slate-400">|</span>
-            <h2 className="text-lg text-white">Facebook Review Report</h2>
+            <h2 className="text-lg text-white">Facebook Ad Diagnosis</h2>
           </div>
           
           <div className="flex items-center gap-4">
-            {/* Language Toggle */}
-            <button
-              onClick={() => setLocale(locale === 'en' ? 'zh' : 'en')}
-              className="px-3 py-1.5 text-sm border border-white/20 rounded-lg hover:bg-white/5 transition-colors"
-            >
-              {locale === 'en' ? '中文' : 'English'}
-            </button>
+            {/* Step indicator */}
+            <div className="hidden md:flex items-center gap-2 text-sm">
+              <span className={step === 'upload' ? 'text-[#00D4FF]' : 'text-slate-500'}>
+                {step === 'upload' ? '①' : '✓'} Upload
+              </span>
+              <span className="text-slate-600">→</span>
+              <span className={step === 'preview' ? 'text-[#00D4FF]' : step === 'result' ? 'text-slate-500' : 'text-slate-500'}>
+                {step === 'preview' ? '②' : step === 'result' ? '✓' : '②'} Preview
+              </span>
+              <span className="text-slate-600">→</span>
+              <span className={step === 'result' ? 'text-[#00D4FF]' : 'text-slate-500'}>
+                {step === 'result' ? '③' : '③'} Result
+              </span>
+            </div>
             
-            {/* Re-run Analysis */}
-            <button
-              onClick={runAnalysis}
-              disabled={loading}
-              className="px-4 py-1.5 text-sm bg-[#00D4FF] text-[#08111F] font-medium rounded-lg hover:bg-[#35E1FF] transition-colors disabled:opacity-50"
-            >
-              {loading ? 'Analyzing...' : 'Re-analyze'}
-            </button>
+            {/* New Diagnosis button */}
+            {step === 'result' && (
+              <Button
+                onClick={handleReset}
+                variant="outline"
+                className="border-white/20 text-white hover:bg-white/5"
+              >
+                New Diagnosis
+              </Button>
+            )}
           </div>
         </div>
       </header>
       
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        {loading && (
-          <div className="flex items-center justify-center h-96">
-            <div className="text-center">
-              <div className="w-12 h-12 border-4 border-[#00D4FF] border-t-transparent rounded-full animate-spin mx-auto" />
-              <p className="text-slate-400 mt-4">Analyzing campaign data...</p>
-            </div>
-          </div>
-        )}
-        
+      <main className="max-w-4xl mx-auto px-4 py-8">
+        {/* Error message */}
         {error && (
-          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 text-center">
-            <p className="text-red-400 text-lg font-medium">Analysis Failed</p>
-            <p className="text-slate-400 mt-2">{error}</p>
-            <button
-              onClick={runAnalysis}
-              className="mt-4 px-4 py-2 bg-red-500/20 border border-red-500/30 rounded-lg text-red-400 hover:bg-red-500/30 transition-colors"
-            >
-              Retry
+          <div className="mb-6 bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-red-400">{error}</p>
+            </div>
+            <button onClick={() => setError(null)} className="text-red-400 hover:text-red-300">
+              <X className="w-4 h-4" />
             </button>
           </div>
         )}
-        
-        {report && !loading && (
-          <>
-            <FacebookReport report={report} locale={locale} />
+
+        {/* Step 1: Upload */}
+        {step === 'upload' && (
+          <Card className="bg-white/5 border-white/10">
+            <CardContent className="py-12">
+              <div className="text-center">
+                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center border border-blue-400/30">
+                  <Upload className="w-10 h-10 text-blue-400" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-2">
+                  Upload Facebook Ads Screenshot
+                </h3>
+                <p className="text-slate-400 mb-8 max-w-md mx-auto">
+                  Upload a screenshot of your Facebook Ads Manager to get a professional diagnosis report.
+                </p>
+                
+                {/* Upload area */}
+                <div
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  className="border-2 border-dashed border-white/20 rounded-xl p-12 hover:border-[#00D4FF]/50 transition-colors cursor-pointer"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {preview ? (
+                    <div className="space-y-4">
+                      <img src={preview} alt="Preview" className="max-h-64 mx-auto rounded-lg" />
+                      <p className="text-sm text-slate-400">{file?.name}</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <Upload className="w-12 h-12 mx-auto text-slate-500" />
+                      <div>
+                        <p className="text-white font-medium">Click to upload or drag and drop</p>
+                        <p className="text-sm text-slate-500 mt-1">PNG, JPG, WEBP up to 10MB</p>
+                      </div>
+                    </div>
+                  )}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) handleFileSelect(f);
+                    }}
+                  />
+                </div>
+                
+                {/* Upload button */}
+                {file && (
+                  <div className="mt-6 flex justify-center gap-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setFile(null);
+                        setPreview(null);
+                      }}
+                      className="border-white/20 text-white hover:bg-white/5"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleUploadAndAnalyze}
+                      disabled={uploading}
+                      className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white"
+                    >
+                      {uploading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Recognizing...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="w-4 h-4 mr-2" />
+                          Upload & Recognize
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Step 2: Preview extracted data */}
+        {step === 'preview' && extractedData && (
+          <div className="space-y-6">
+            <Card className="bg-white/5 border-white/10">
+              <CardHeader>
+                <CardTitle className="text-xl text-white flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-green-400" />
+                  Data Recognized
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {Object.entries(extractedData).map(([key, value]) => {
+                    if (value === null || value === undefined || value === '') return null;
+                    return (
+                      <div key={key} className="bg-white/5 rounded-lg p-3">
+                        <p className="text-xs text-slate-400 capitalize">{key.replace(/_/g, ' ')}</p>
+                        <p className="text-white font-medium mt-1">
+                          {typeof value === 'number' 
+                            ? key.includes('ctr') || key.includes('cvr') || key.includes('roas') 
+                              ? `${value}%` 
+                              : key.includes('spend') || key.includes('cpc') || key.includes('cpm') || key.includes('cpr') || key.includes('cpa')
+                                ? `$${value.toFixed(2)}`
+                                : value.toLocaleString()
+                            : value}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                <div className="mt-6 flex justify-center gap-4">
+                  <Button
+                    variant="outline"
+                    onClick={handleBack}
+                    className="border-white/20 text-white hover:bg-white/5"
+                  >
+                    Re-upload
+                  </Button>
+                  <Button
+                    onClick={handleAnalyze}
+                    disabled={analyzing}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white"
+                  >
+                    {analyzing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-4 h-4 mr-2" />
+                        Start Diagnosis
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Step 3: Result */}
+        {step === 'result' && report && (
+          <div className="space-y-6">
+            <FacebookReport report={report} locale="en" />
             
             {/* Export Section */}
             {unifiedReport && (
-              <div className="mt-8">
-                <ReportExport report={unifiedReport} locale={locale} />
-              </div>
+              <ReportExport report={unifiedReport} locale="en" />
             )}
-          </>
+          </div>
+        )}
+
+        {/* Loading state */}
+        {(uploading || analyzing) && !error && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-[#101827] border border-white/10 rounded-xl p-8 text-center">
+              <Loader2 className="w-12 h-12 text-[#00D4FF] animate-spin mx-auto" />
+              <p className="text-white mt-4 font-medium">
+                {uploading ? 'Recognizing screenshot...' : 'Analyzing campaign data...'}
+              </p>
+              <p className="text-slate-400 text-sm mt-2">
+                {uploading ? 'Extracting metrics from your screenshot' : 'Running diagnosis rules'}
+              </p>
+            </div>
+          </div>
         )}
       </main>
       
