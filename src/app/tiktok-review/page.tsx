@@ -1,111 +1,105 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { TikTokReport } from '@/components/tiktok-report';
-import { Upload, Loader2, AlertCircle } from 'lucide-react';
+import { Upload, Loader2, AlertCircle, X, CheckCircle2, TrendingUp, Target, Lightbulb, Image as ImageIcon } from 'lucide-react';
+import { TikTokReport, type TikTokReportData } from '@/components/tiktok-report';
 
-interface ReportData {
-  report_id: string;
-  platform: string;
-  campaign_name: string;
-  generated_at: string;
-  date_range: string;
-  scores: {
-    overall: number;
-    performance: number;
-    efficiency: number;
-    delivery: number;
-    risk: number;
-  };
-  evidence: Array<{
-    evidence_id: string;
-    metric: string;
-    value: number;
-    value_formatted: string;
-    benchmark: number;
-    benchmark_formatted: string;
-    status: 'above' | 'below' | 'on_target';
-    campaign: string;
-  }>;
-  metric_analysis: Array<{
-    metric: string;
-    evidence_id: string;
-    value: number;
-    value_formatted: string;
-    benchmark: number;
-    benchmark_formatted: string;
-    status: 'above_benchmark' | 'below_benchmark' | 'on_target' | 'insufficient_data';
-    deviation: number;
-    deviation_percentage: number;
-    trend?: 'increasing' | 'decreasing' | 'stable';
-  }>;
-  diagnosis: Array<{
-    rule_id: string;
-    metric: string;
-    evidence_id: string;
-    value: number;
-    value_formatted: string;
-    condition: string;
-    status: 'critical' | 'warning' | 'info' | 'good' | 'excellent';
-    severity: 'high' | 'medium' | 'low' | 'none';
-    recommendation: string;
-    description: string;
-    campaign: string;
-  }>;
-  action_plan: Array<{
-    priority: string;
-    action: string;
-    issue: string;
-    details: string;
-    expected_impact: string;
-    related_evidence: string[];
-    related_diagnosis: string[];
-  }>;
-  llm_explanation: {
-    executive_summary: string;
-    diagnosis: string;
-    action_plan: string;
-  };
-  warnings: Array<{ type: string; message: string }>;
-  metadata: {
-    has_video_data: boolean;
-    data_sufficient: boolean;
-    ars_version: string;
-    are_version: string;
-  };
+type Step = 'upload' | 'preview' | 'result';
+
+interface ExtractedData {
+  campaign_name: string | null;
+  snapshot_date: string | null;
+  spend: number | null;
+  impressions: number | null;
+  clicks: number | null;
+  ctr: number | null;
+  cpc: number | null;
+  conversions: number | null;
+  cvr: number | null;
+  cpa: number | null;
+  roas: number | null;
+  video_views: number | null;
+  six_second_views: number | null;
+  six_second_view_rate: number | null;
+  avg_watch_time: number | null;
 }
 
 export default function TikTokReviewPage() {
-  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState<Step>('upload');
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
+  const [reportData, setReportData] = useState<TikTokReportData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [reportData, setReportData] = useState<ReportData | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Form state
-  const [campaignName, setCampaignName] = useState('');
-  const [spend, setSpend] = useState('');
-  const [impressions, setImpressions] = useState('');
-  const [clicks, setClicks] = useState('');
-  const [ctr, setCtr] = useState('');
-  const [cpc, setCpc] = useState('');
-  const [conversions, setConversions] = useState('');
-  const [cvr, setCvr] = useState('');
-  const [cpa, setCpa] = useState('');
-  const [roas, setRoas] = useState('');
-  const [dateRange, setDateRange] = useState('Last 7 days');
+  const handleFileSelect = useCallback((selectedFile: File) => {
+    if (!selectedFile.type.startsWith('image/')) {
+      setError('Please upload an image file');
+      return;
+    }
+    if (selectedFile.size > 10 * 1024 * 1024) {
+      setError('Image size cannot exceed 10MB');
+      return;
+    }
+    setError(null);
+    setFile(selectedFile);
+    const reader = new FileReader();
+    reader.onload = (e) => setPreview(e.target?.result as string);
+    reader.readAsDataURL(selectedFile);
+  }, []);
 
-  // Video metrics (optional)
-  const [videoViews, setVideoViews] = useState('');
-  const [sixSecondViews, setSixSecondViews] = useState('');
-  const [sixSecondViewRate, setSixSecondViewRate] = useState('');
-  const [avgWatchTime, setAvgWatchTime] = useState('');
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
-    setLoading(true);
+    const droppedFile = e.dataTransfer.files[0];
+    if (droppedFile) handleFileSelect(droppedFile);
+  }, [handleFileSelect]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+  }, []);
+
+  const handleUploadAndAnalyze = async () => {
+    if (!file) return;
+    
+    setUploading(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('platform', 'tiktok');
+
+      const response = await fetch('/api/analyze-screenshot', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Screenshot recognition failed');
+      }
+
+      setExtractedData(result.data);
+      setStep('preview');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Recognition failed, please try again');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleAnalyze = async () => {
+    if (!extractedData) return;
+
+    setAnalyzing(true);
     setError(null);
 
     try {
@@ -114,22 +108,22 @@ export default function TikTokReviewPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           campaigns: [{
-            name: campaignName || 'Unknown Campaign',
-            spend: parseFloat(spend) || 0,
-            impressions: parseInt(impressions) || 0,
-            clicks: parseInt(clicks) || 0,
-            ctr: parseFloat(ctr) || 0,
-            cpc: parseFloat(cpc) || 0,
-            conversions: parseInt(conversions) || 0,
-            cvr: parseFloat(cvr) || 0,
-            cpa: parseFloat(cpa) || 0,
-            roas: parseFloat(roas) || 0,
-            video_views: videoViews ? parseInt(videoViews) : undefined,
-            six_second_views: sixSecondViews ? parseInt(sixSecondViews) : undefined,
-            six_second_view_rate: sixSecondViewRate ? parseFloat(sixSecondViewRate) : undefined,
-            avg_watch_time: avgWatchTime ? parseFloat(avgWatchTime) : undefined,
+            name: extractedData.campaign_name || 'Unknown Campaign',
+            spend: extractedData.spend || 0,
+            impressions: extractedData.impressions || 0,
+            clicks: extractedData.clicks || 0,
+            ctr: extractedData.ctr || 0,
+            cpc: extractedData.cpc || 0,
+            conversions: extractedData.conversions || 0,
+            cvr: extractedData.cvr || 0,
+            cpa: extractedData.cpa || 0,
+            roas: extractedData.roas || 0,
+            video_views: extractedData.video_views || undefined,
+            six_second_views: extractedData.six_second_views || undefined,
+            six_second_view_rate: extractedData.six_second_view_rate || undefined,
+            avg_watch_time: extractedData.avg_watch_time || undefined,
           }],
-          date_range: dateRange,
+          date_range: extractedData.snapshot_date || 'Last 7 days',
           locale: 'en',
         }),
       });
@@ -141,25 +135,44 @@ export default function TikTokReviewPage() {
       }
 
       setReportData(result.data);
+      setStep('result');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : 'Analysis failed');
     } finally {
-      setLoading(false);
+      setAnalyzing(false);
     }
   };
 
   const handleReset = () => {
+    setStep('upload');
+    setFile(null);
+    setPreview(null);
+    setExtractedData(null);
     setReportData(null);
     setError(null);
   };
 
-  if (reportData) {
+  const handleDataChange = (field: keyof ExtractedData, value: string) => {
+    if (!extractedData) return;
+    
+    let parsedValue: string | number | null = value;
+    if (value === '') {
+      parsedValue = null;
+    } else if (typeof extractedData[field] === 'number') {
+      parsedValue = parseFloat(value);
+    }
+    
+    setExtractedData({ ...extractedData, [field]: parsedValue });
+  };
+
+  // Show result
+  if (step === 'result' && reportData) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-8">
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
             <Button onClick={handleReset} variant="outline">
-              ← Back to Input
+              ← Back to Upload
             </Button>
           </div>
           <TikTokReport data={reportData} />
@@ -168,70 +181,83 @@ export default function TikTokReviewPage() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">TikTok Ads Review</h1>
-          <p className="text-slate-400">
-            Enter your TikTok campaign data to get a comprehensive analysis
-          </p>
-        </div>
+  // Show preview (edit extracted data)
+  if (step === 'preview' && extractedData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-8">
+            <Button onClick={handleReset} variant="outline">
+              ← Back to Upload
+            </Button>
+          </div>
 
-        <Card className="bg-slate-900/50 border-slate-800">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Upload className="h-5 w-5" />
-              Campaign Data Input
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Basic Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold text-white mb-2">Confirm Extracted Data</h1>
+            <p className="text-slate-400">Please verify the extracted data and make any necessary corrections</p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Screenshot Preview */}
+            <Card className="bg-slate-900/50 border-slate-800">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <ImageIcon className="h-5 w-5" />
+                  Screenshot Preview
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {preview && (
+                  <img src={preview} alt="Screenshot" className="w-full rounded-lg" />
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Edit Extracted Data */}
+            <Card className="bg-slate-900/50 border-slate-800">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                  Extracted Data
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div>
                   <Label className="text-slate-300">Campaign Name</Label>
                   <Input
-                    value={campaignName}
-                    onChange={(e) => setCampaignName(e.target.value)}
-                    placeholder="Summer Collection"
+                    value={extractedData.campaign_name || ''}
+                    onChange={(e) => handleDataChange('campaign_name', e.target.value)}
+                    placeholder="Campaign name"
                     className="bg-slate-800 border-slate-700 text-white mt-1"
                   />
                 </div>
                 <div>
-                  <Label className="text-slate-300">Date Range</Label>
+                  <Label className="text-slate-300">Snapshot Date</Label>
                   <Input
-                    value={dateRange}
-                    onChange={(e) => setDateRange(e.target.value)}
-                    placeholder="Last 7 days"
+                    value={extractedData.snapshot_date || ''}
+                    onChange={(e) => handleDataChange('snapshot_date', e.target.value)}
+                    placeholder="YYYY-MM-DD"
                     className="bg-slate-800 border-slate-700 text-white mt-1"
                   />
                 </div>
-              </div>
 
-              {/* Core Metrics */}
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-3">Core Metrics</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label className="text-slate-300">Spend ($)</Label>
                     <Input
                       type="number"
                       step="0.01"
-                      value={spend}
-                      onChange={(e) => setSpend(e.target.value)}
-                      placeholder="523.45"
+                      value={extractedData.spend ?? ''}
+                      onChange={(e) => handleDataChange('spend', e.target.value)}
                       className="bg-slate-800 border-slate-700 text-white mt-1"
-                      required
                     />
                   </div>
                   <div>
                     <Label className="text-slate-300">Impressions</Label>
                     <Input
                       type="number"
-                      value={impressions}
-                      onChange={(e) => setImpressions(e.target.value)}
-                      placeholder="125000"
+                      value={extractedData.impressions ?? ''}
+                      onChange={(e) => handleDataChange('impressions', e.target.value)}
                       className="bg-slate-800 border-slate-700 text-white mt-1"
                     />
                   </div>
@@ -239,9 +265,8 @@ export default function TikTokReviewPage() {
                     <Label className="text-slate-300">Clicks</Label>
                     <Input
                       type="number"
-                      value={clicks}
-                      onChange={(e) => setClicks(e.target.value)}
-                      placeholder="2312"
+                      value={extractedData.clicks ?? ''}
+                      onChange={(e) => handleDataChange('clicks', e.target.value)}
                       className="bg-slate-800 border-slate-700 text-white mt-1"
                     />
                   </div>
@@ -250,9 +275,8 @@ export default function TikTokReviewPage() {
                     <Input
                       type="number"
                       step="0.01"
-                      value={ctr}
-                      onChange={(e) => setCtr(e.target.value)}
-                      placeholder="1.85"
+                      value={extractedData.ctr ?? ''}
+                      onChange={(e) => handleDataChange('ctr', e.target.value)}
                       className="bg-slate-800 border-slate-700 text-white mt-1"
                     />
                   </div>
@@ -261,9 +285,8 @@ export default function TikTokReviewPage() {
                     <Input
                       type="number"
                       step="0.01"
-                      value={cpc}
-                      onChange={(e) => setCpc(e.target.value)}
-                      placeholder="0.23"
+                      value={extractedData.cpc ?? ''}
+                      onChange={(e) => handleDataChange('cpc', e.target.value)}
                       className="bg-slate-800 border-slate-700 text-white mt-1"
                     />
                   </div>
@@ -271,9 +294,8 @@ export default function TikTokReviewPage() {
                     <Label className="text-slate-300">Conversions</Label>
                     <Input
                       type="number"
-                      value={conversions}
-                      onChange={(e) => setConversions(e.target.value)}
-                      placeholder="62"
+                      value={extractedData.conversions ?? ''}
+                      onChange={(e) => handleDataChange('conversions', e.target.value)}
                       className="bg-slate-800 border-slate-700 text-white mt-1"
                     />
                   </div>
@@ -282,9 +304,8 @@ export default function TikTokReviewPage() {
                     <Input
                       type="number"
                       step="0.01"
-                      value={cvr}
-                      onChange={(e) => setCvr(e.target.value)}
-                      placeholder="2.68"
+                      value={extractedData.cvr ?? ''}
+                      onChange={(e) => handleDataChange('cvr', e.target.value)}
                       className="bg-slate-800 border-slate-700 text-white mt-1"
                     />
                   </div>
@@ -293,9 +314,8 @@ export default function TikTokReviewPage() {
                     <Input
                       type="number"
                       step="0.01"
-                      value={cpa}
-                      onChange={(e) => setCpa(e.target.value)}
-                      placeholder="8.44"
+                      value={extractedData.cpa ?? ''}
+                      onChange={(e) => handleDataChange('cpa', e.target.value)}
                       className="bg-slate-800 border-slate-700 text-white mt-1"
                     />
                   </div>
@@ -304,90 +324,169 @@ export default function TikTokReviewPage() {
                     <Input
                       type="number"
                       step="0.01"
-                      value={roas}
-                      onChange={(e) => setRoas(e.target.value)}
-                      placeholder="2.8"
+                      value={extractedData.roas ?? ''}
+                      onChange={(e) => handleDataChange('roas', e.target.value)}
                       className="bg-slate-800 border-slate-700 text-white mt-1"
                     />
                   </div>
                 </div>
+
+                {/* Video Metrics */}
+                <div className="pt-4 border-t border-slate-700">
+                  <h3 className="text-sm font-medium text-slate-400 mb-3">Video Metrics (Optional)</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-slate-300">Video Views</Label>
+                      <Input
+                        type="number"
+                        value={extractedData.video_views ?? ''}
+                        onChange={(e) => handleDataChange('video_views', e.target.value)}
+                        className="bg-slate-800 border-slate-700 text-white mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-slate-300">6s Views</Label>
+                      <Input
+                        type="number"
+                        value={extractedData.six_second_views ?? ''}
+                        onChange={(e) => handleDataChange('six_second_views', e.target.value)}
+                        className="bg-slate-800 border-slate-700 text-white mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-slate-300">6s View Rate (%)</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={extractedData.six_second_view_rate ?? ''}
+                        onChange={(e) => handleDataChange('six_second_view_rate', e.target.value)}
+                        className="bg-slate-800 border-slate-700 text-white mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-slate-300">Avg Watch Time (s)</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        value={extractedData.avg_watch_time ?? ''}
+                        onChange={(e) => handleDataChange('avg_watch_time', e.target.value)}
+                        className="bg-slate-800 border-slate-700 text-white mt-1"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {error && (
+                  <div className="flex items-center gap-2 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+                    <AlertCircle className="h-5 w-5 text-red-500" />
+                    <p className="text-red-400">{error}</p>
+                  </div>
+                )}
+
+                <Button
+                  onClick={handleAnalyze}
+                  disabled={analyzing}
+                  className="w-full bg-cyan-500 hover:bg-cyan-600 text-slate-900 font-semibold"
+                >
+                  {analyzing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    'Confirm and Analyze'
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show upload
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-white mb-2">TikTok Ads Review</h1>
+          <p className="text-slate-400">
+            Upload a screenshot of your TikTok Ads Manager to get a comprehensive analysis
+          </p>
+        </div>
+
+        <Card className="bg-slate-900/50 border-slate-800">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Upload className="h-5 w-5" />
+              Upload Screenshot
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              className="border-2 border-dashed border-slate-700 rounded-xl p-12 text-center cursor-pointer hover:border-cyan-500/50 hover:bg-cyan-500/5 transition-all"
+            >
+              <Upload className="h-12 w-12 text-slate-500 mx-auto mb-4" />
+              <p className="text-lg text-white mb-2">Click or drag to upload TikTok Ads Manager screenshot</p>
+              <p className="text-sm text-slate-400">Supports PNG, JPG, JPEG (max 10MB)</p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleFileSelect(f);
+                }}
+                className="hidden"
+              />
+            </div>
+
+            {file && preview && (
+              <div className="mt-6">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm text-slate-400">{file.name}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setFile(null);
+                      setPreview(null);
+                    }}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                <img src={preview} alt="Preview" className="w-full rounded-lg border border-slate-700" />
               </div>
+            )}
 
-              {/* Video Metrics (Optional) */}
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-3">
-                  Video Metrics <span className="text-sm text-slate-400">(Optional - for Hook analysis)</span>
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div>
-                    <Label className="text-slate-300">Video Views</Label>
-                    <Input
-                      type="number"
-                      value={videoViews}
-                      onChange={(e) => setVideoViews(e.target.value)}
-                      placeholder="125000"
-                      className="bg-slate-800 border-slate-700 text-white mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-slate-300">6s Views</Label>
-                    <Input
-                      type="number"
-                      value={sixSecondViews}
-                      onChange={(e) => setSixSecondViews(e.target.value)}
-                      placeholder="31250"
-                      className="bg-slate-800 border-slate-700 text-white mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-slate-300">6s View Rate (%)</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={sixSecondViewRate}
-                      onChange={(e) => setSixSecondViewRate(e.target.value)}
-                      placeholder="25.0"
-                      className="bg-slate-800 border-slate-700 text-white mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-slate-300">Avg Watch Time (s)</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={avgWatchTime}
-                      onChange={(e) => setAvgWatchTime(e.target.value)}
-                      placeholder="4.2"
-                      className="bg-slate-800 border-slate-700 text-white mt-1"
-                    />
-                  </div>
-                </div>
+            {error && (
+              <div className="flex items-center gap-2 p-4 mt-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+                <AlertCircle className="h-5 w-5 text-red-500" />
+                <p className="text-red-400">{error}</p>
               </div>
+            )}
 
-              {/* Error */}
-              {error && (
-                <div className="flex items-center gap-2 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-                  <AlertCircle className="h-5 w-5 text-red-500" />
-                  <p className="text-red-400">{error}</p>
-                </div>
-              )}
-
-              {/* Submit */}
+            {file && (
               <Button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-cyan-500 hover:bg-cyan-600 text-slate-900 font-semibold"
+                onClick={handleUploadAndAnalyze}
+                disabled={uploading}
+                className="w-full mt-6 bg-cyan-500 hover:bg-cyan-600 text-slate-900 font-semibold"
               >
-                {loading ? (
+                {uploading ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Analyzing...
+                    Recognizing...
                   </>
                 ) : (
-                  'Analyze Campaign'
+                  'Upload and Recognize'
                 )}
               </Button>
-            </form>
+            )}
           </CardContent>
         </Card>
 
@@ -396,10 +495,11 @@ export default function TikTokReviewPage() {
           <CardContent className="pt-6">
             <h3 className="text-lg font-semibold text-white mb-2">About TikTok Analysis</h3>
             <ul className="space-y-2 text-sm text-slate-400">
-              <li>• <strong>Core Metrics:</strong> Spend, Impressions, Clicks, CTR, CPC, Conversions, CVR, CPA, ROAS</li>
-              <li>• <strong>Video Metrics:</strong> Optional, enables Hook and Creative Quality analysis</li>
-              <li>• <strong>Data Requirements:</strong> Spend ≥ $50 and Results ≥ 50 for reliable analysis</li>
-              <li>• <strong>Benchmarks:</strong> Based on TikTok industry standards (CTR 1.5%, CVR 3.5%, ROAS 2.5x)</li>
+              <li>• <strong>4-Layer Review Standard:</strong> Policy Compliance → Performance Metrics → Creative Quality → Marketing Effectiveness</li>
+              <li>• <strong>Core Metrics:</strong> CTR, CVR, CPC, CPA, ROAS, CPM</li>
+              <li>• <strong>Video Metrics:</strong> 6s View Rate, Average Watch Time (for Hook analysis)</li>
+              <li>• <strong>Evidence-Based:</strong> Every diagnosis is backed by evidence with source tracking</li>
+              <li>• <strong>Actionable Insights:</strong> Get specific recommendations to improve your campaigns</li>
             </ul>
           </CardContent>
         </Card>

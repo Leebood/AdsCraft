@@ -84,7 +84,7 @@ interface LLMExplanation {
   action_plan: string;
 }
 
-interface TikTokReportData {
+export interface TikTokReportData {
   report_id: string;
   platform: string;
   campaign_name: string;
