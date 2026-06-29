@@ -295,6 +295,37 @@ export const TIKTOK_BENCHMARKS_DEFAULT: TikTokBenchmarks = {
   avg_watch_time: 4.5,
 };
 
+// ==================== Google Ads Campaign Data ====================
+
+export interface GoogleCampaign {
+  name: string;
+  status: string; // Enabled / Paused
+  budget?: number;
+  cost: number; // Spend
+  impressions: number;
+  clicks: number;
+  ctr: number; // percentage
+  cpc: number;
+  conversions: number;
+  cvr: number; // percentage
+  cpa: number;
+  roas: number;
+  // Google-specific metrics
+  quality_score?: number; // 1-10
+  expected_ctr?: number; // percentage
+  landing_page_exp?: number; // percentage
+  // Optional
+  cpm?: number;
+}
+
+export interface GoogleParsedData {
+  platform: 'google';
+  data_source: DataSource;
+  date_range: string;
+  snapshot_date?: string;
+  campaigns: GoogleCampaign[];
+}
+
 // ==================== Generic Rule Type ====================
 
 export interface Rule {
@@ -314,4 +345,5 @@ export interface Benchmark {
   value: number;
   unit: string;
   description?: string;
+  source?: string;
 }

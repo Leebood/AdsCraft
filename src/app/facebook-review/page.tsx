@@ -7,7 +7,9 @@
 
 import { useState, useEffect } from 'react';
 import { FacebookReport } from '@/components/facebook-report';
-import type { AOSReport, ManualInputData } from '@/lib/are';
+import { ReportExport } from '@/components/report-export';
+import { generateUnifiedReport } from '@/lib/are/report-generator';
+import type { AOSReport, ManualInputData, UnifiedReport } from '@/lib/are';
 
 // Sample data for testing
 const SAMPLE_DATA: ManualInputData = {
@@ -67,6 +69,7 @@ export default function FacebookReviewPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [locale, setLocale] = useState<'en' | 'zh'>('en');
+  const [unifiedReport, setUnifiedReport] = useState<UnifiedReport | null>(null);
   
   const runAnalysis = async () => {
     setLoading(true);
@@ -90,6 +93,28 @@ export default function FacebookReviewPage() {
       
       if (result.success) {
         setReport(result.data);
+        
+        // Generate unified report for export
+        const aosReport = result.data as AOSReport;
+        const unified = generateUnifiedReport(
+          'facebook',
+          aosReport.campaign_name,
+          aosReport.date_range,
+          aosReport.evidence,
+          aosReport.metric_analysis,
+          aosReport.diagnosis,
+          aosReport.scores,
+          aosReport.llm_explanation,
+          aosReport.action_plan,
+          {
+            analysis_duration_ms: aosReport.metadata.analysis_duration_ms,
+            model_used: aosReport.metadata.model_used,
+            ars_version: aosReport.metadata.ars_version,
+            are_version: aosReport.metadata.are_version,
+            data_source: aosReport.data_source.type,
+          }
+        );
+        setUnifiedReport(unified);
       } else {
         throw new Error(result.error || 'Unknown error');
       }
@@ -162,7 +187,16 @@ export default function FacebookReviewPage() {
         )}
         
         {report && !loading && (
-          <FacebookReport report={report} locale={locale} />
+          <>
+            <FacebookReport report={report} locale={locale} />
+            
+            {/* Export Section */}
+            {unifiedReport && (
+              <div className="mt-8">
+                <ReportExport report={unifiedReport} locale={locale} />
+              </div>
+            )}
+          </>
         )}
       </main>
       

@@ -233,3 +233,4 @@ export * from './rule-engine';
 export * from './score-engine';
 export * from './llm-explanation';
 export * from './ars-facebook';
+export * from './report-generator';

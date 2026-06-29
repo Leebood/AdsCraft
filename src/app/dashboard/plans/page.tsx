@@ -31,7 +31,7 @@ export default function PlansPage() {
   const { user } = useAuth();
   const { locale } = useI18n();
 
-  const [activeTab, setActiveTab] = useState<'fb' | 'tk'>('fb');
+  const [activeTab, setActiveTab] = useState<'fb' | 'tk' | 'google'>('fb');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showTkPreview, setShowTkPreview] = useState(false);
 
@@ -41,6 +41,9 @@ export default function PlansPage() {
   const [tkRecognizedData, setTkRecognizedData] = useState<Record<string, unknown> | null>(null);
   const [tkReport, setTkReport] = useState<TikTokReportData | null>(null);
   const [tkStep, setTkStep] = useState<1 | 2 | 3>(1);
+
+  // Google 诊断历史
+  const [googleDiagnosisHistory] = useState<Array<{ id: string; created_at: string; report?: { scores?: { overall?: number } } }>>([]);
 
   // 处理 TikTok 截图上传
   const handleTkScreenshotUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,6 +133,11 @@ export default function PlansPage() {
     router.push('/tiktok-review');
   };
 
+  // 开始 Google 截图诊断
+  const handleStartGoogleDiagnosis = () => {
+    router.push('/google-review');
+  };
+
   // 连接 TikTok
   const handleConnectTikTok = () => {
     // TODO: 实现 TikTok OAuth 连接
@@ -175,7 +183,7 @@ export default function PlansPage() {
             {locale === 'zh' ? 'Facebook 广告诊断' : 'Facebook Ad Diagnosis'}
           </h3>
           <p className="text-blue-200/70 mb-6 max-w-md mx-auto">
-            {locale === 'zh' 
+            {locale === 'zh'  
               ? '上传 Facebook Ads Manager 截图，自动识别数据并进行诊断分析' 
               : 'Upload Facebook Ads Manager screenshot for automatic data recognition and diagnosis'}
           </p>
@@ -187,6 +195,81 @@ export default function PlansPage() {
           </Button>
         </CardContent>
       </Card>
+    );
+  };
+
+  // Google 标签页内容
+  const renderGoogleTab = () => {
+    return (
+      <div className="space-y-6">
+        {/* 连接状态 */}
+        <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold">
+              G
+            </div>
+            <div>
+              <h3 className="text-white font-medium">Google Ads</h3>
+              <p className="text-sm text-white/60">
+                {locale === 'zh' ? '截图诊断' : 'Screenshot Diagnosis'}
+              </p>
+            </div>
+          </div>
+          <p className="text-white/70 text-sm mb-4">
+            {locale === 'zh' 
+              ? '上传 Google Ads 截图，获取专业的广告诊断报告。' 
+              : 'Upload Google Ads screenshot for professional ad diagnosis report.'}
+          </p>
+          <Button
+            onClick={handleStartGoogleDiagnosis}
+            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
+          >
+            <Upload className="w-4 h-4 mr-2" />
+            {locale === 'zh' ? '开始截图诊断' : 'Start Screenshot Diagnosis'}
+          </Button>
+        </div>
+
+        {/* 历史记录 */}
+        {googleDiagnosisHistory.length > 0 && (
+          <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+            <h3 className="text-white font-medium mb-4">
+              {locale === 'zh' ? '历史诊断记录' : 'Diagnosis History'}
+            </h3>
+            <div className="space-y-3">
+              {googleDiagnosisHistory.map((record: { id: string; created_at: string; report?: { scores?: { overall?: number } } }, index: number) => (
+                <div
+                  key={record.id}
+                  className="bg-white/5 border border-white/10 rounded-lg p-4 flex items-center justify-between"
+                >
+                  <div>
+                    <p className="text-white text-sm">
+                      {locale === 'zh' ? '诊断' : 'Diagnosis'} #{googleDiagnosisHistory.length - index}
+                    </p>
+                    <p className="text-white/60 text-xs">
+                      {new Date(record.created_at).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US')}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {record.report?.scores?.overall !== undefined && (
+                      <span className="text-blue-400 font-medium">
+                        {record.report.scores.overall}/100
+                      </span>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => router.push(`/google-review?history=${record.id}`)}
+                      className="border-white/20 text-white/70 hover:bg-white/5"
+                    >
+                      {locale === 'zh' ? '查看' : 'View'}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     );
   };
 
@@ -231,10 +314,21 @@ export default function PlansPage() {
               <span className="w-5 h-5 rounded bg-purple-500/20 flex items-center justify-center text-purple-400 text-xs font-bold">TK</span>
               TikTok
             </button>
+            <button 
+              onClick={() => setActiveTab('google')} 
+              className={`flex items-center gap-2 px-6 py-3 font-medium transition-colors ${
+                activeTab === 'google' 
+                  ? 'text-orange-400 border-b-2 border-orange-400' 
+                  : 'text-blue-200/70 hover:text-white'
+              }`}
+            >
+              <span className="w-5 h-5 rounded bg-orange-500/20 flex items-center justify-center text-orange-400 text-xs font-bold">G</span>
+              Google Ads
+            </button>
           </div>
 
           {/* Tab内容 */}
-          {activeTab === 'fb' ? renderFBTab() : renderTKTab()}
+          {activeTab === 'fb' ? renderFBTab() : activeTab === 'tk' ? renderTKTab() : renderGoogleTab()}
         </div>
       </main>
 
