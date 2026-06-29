@@ -33,6 +33,7 @@ function QuizContent() {
   const platform = (searchParams.get('platform') || 'facebook') as PlatformId;
   const route = searchParams.get('route') || 'free';
   const { t, locale } = useI18n();
+  const { user } = useAuth();
 
   // 获取平台配置
   const platformConfig = PLATFORM_CONFIGS[platform];
@@ -119,6 +120,36 @@ function QuizContent() {
   });
   const [showCompliance, setShowCompliance] = useState(false);
   const [compliancePassed, setCompliancePassed] = useState(false);
+  const [hasLoadedAnswers, setHasLoadedAnswers] = useState(false);
+
+  // 加载历史答题结果
+  useEffect(() => {
+    const loadSavedAnswers = async () => {
+      if (!user?.id || !platform || !route) return;
+      
+      try {
+        const response = await fetch(`/api/diagnosis-answers?platform=${platform}&route=${route}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data?.answers) {
+            // 加载历史答题结果
+            setAnswers(data.data.answers);
+            setCompliancePassed(data.data.compliance_passed || false);
+            // 如果已经通过合规预检，不显示弹窗
+            if (data.data.compliance_passed) {
+              setShowCompliance(false);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load saved answers:', error);
+      } finally {
+        setHasLoadedAnswers(true);
+      }
+    };
+
+    loadSavedAnswers();
+  }, [user?.id, platform, route]);
 
   // 获取当前步骤的配置
   const getCurrentStepConfig = (): QuizStep | null => {
@@ -163,8 +194,26 @@ function QuizContent() {
     proceedToPlan();
   };
 
-  const proceedToPlan = () => {
+  const proceedToPlan = async () => {
     tiktokPixel.initiateCheckout(); // TikTok Pixel: 提交诊断追踪
+    
+    // 存储答题结果到数据库
+    if (user) {
+      try {
+        await fetch('/api/diagnosis-answers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            platform,
+            route,
+            answers,
+            compliance_passed: compliancePassed
+          })
+        });
+      } catch (error) {
+        console.error('Failed to save answers:', error);
+      }
+    }
     
     // 构建 planId，包含平台信息
     const answerKeys = Object.keys(answers).filter(k => k !== 'route');
