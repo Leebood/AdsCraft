@@ -2,11 +2,12 @@
  * 截图识别 API
  * POST /api/analyze-screenshot
  * 
- * 接收图片文件，存储到对象存储，调用LLM提取指标
+ * 接收图片文件，调用沙箱内置 LLM 提取指标
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseServerClientAsync } from '@/storage/database/supabase-client';
+import { LLMClient, Config, HeaderUtils } from 'coze-coding-dev-sdk';
 
 // 截图识别额度映射
 const SCREENSHOT_LIMITS: Record<string, number> = {
@@ -22,9 +23,6 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 // 支持的图片格式
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-
-// 超时时间 30秒（多模态模型处理图片需要更长时间）
-const TIMEOUT_MS = 30000;
 
 // 截图识别 Prompt
 const EXTRACT_PROMPT = `这是一张Facebook Ads Manager的截图。请提取以下指标返回JSON格式：
@@ -148,25 +146,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 直接转 base64 给 OpenAI（跳过 S3）
+    // 转 base64
     const fileBuffer = Buffer.from(await file.arrayBuffer());
     const base64Image = fileBuffer.toString('base64');
     const dataUrl = `data:${file.type};base64,${base64Image}`;
 
-    // 调用 OpenAI API 提取指标（使用 GPT-4o-mini 视觉模型）
-    const openaiApiKey = process.env.OPENAI_API_KEY;
-    if (!openaiApiKey) {
-      throw new Error('OPENAI_API_KEY not configured');
-    }
+    // 使用沙箱内置 LLM 服务（coze-coding-dev-sdk）
+    const config = new Config();
+    const customHeaders = HeaderUtils.extractForwardHeaders(request.headers);
+    const client = new LLMClient(config, customHeaders);
 
     // 创建带图片的多模态消息
-    const messages = [
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const messages: any[] = [
       {
-        role: 'user' as const,
+        role: 'user',
         content: [
-          { type: 'text' as const, text: EXTRACT_PROMPT },
+          { type: 'text', text: EXTRACT_PROMPT },
           {
-            type: 'image_url' as const,
+            type: 'image_url',
             image_url: {
               url: dataUrl,
               detail: 'high',
@@ -176,36 +174,13 @@ export async function POST(request: NextRequest) {
       },
     ];
 
-    // 设置超时
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('识别超时，请重试')), TIMEOUT_MS);
+    // 调用 LLM（使用支持视觉的模型）
+    const response = await client.invoke(messages, {
+      model: 'doubao-seed-1-8-251228', // 支持视觉的模型
+      temperature: 0.3,
     });
 
-    // 调用 OpenAI API
-    const openaiResponse = await Promise.race([
-      fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${openaiApiKey}`,
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages,
-          temperature: 0.3,
-        }),
-      }),
-      timeoutPromise,
-    ]);
-
-    if (!openaiResponse.ok) {
-      const error = await openaiResponse.text();
-      console.error('OpenAI API error:', error);
-      throw new Error('OpenAI API call failed');
-    }
-
-    const result = await openaiResponse.json();
-    const content = result.choices[0]?.message?.content || '';
+    const content = response.content || '';
 
     // 解析 LLM 返回的 JSON
     let extractedData;
@@ -259,7 +234,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: 'Screenshot recognition failed, please retry' },
+      { error: 'Screenshot recognition failed, please retry', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
