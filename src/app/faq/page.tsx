@@ -23,8 +23,8 @@ export default function FAQPage() {
     {
       qEn: 'Do I need API access?',
       qZh: '需要 API 访问吗？',
-      aEn: 'No, just upload a screenshot. No API keys or account connections required. This makes it perfect for reviewing any ad, including competitors\' or examples you find.',
-      aZh: '不需要，只需上传截图。无需 API 密钥或账户连接。这使其非常适合审查任何广告，包括竞争对手的广告或您找到的示例。',
+      aEn: 'All three platforms (Facebook, TikTok, Google) support screenshot analysis — no API keys or account connections required. TikTok additionally supports binding your ad account to fetch backend campaign data for deeper analysis. Your data is only used for generating your report and will never be shared or used for other purposes.',
+      aZh: '三个平台（Facebook、TikTok、Google）都支持截图分析，无需 API 密钥或账户连接。TikTok 还支持绑定广告账号，调取后台广告数据进行更深度的分析。您的数据仅用于生成报告，不会用于其他用途。',
     },
     {
       qEn: 'What metrics are analyzed?',
