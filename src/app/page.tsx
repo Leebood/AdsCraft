@@ -439,7 +439,7 @@ export default function HomePage() {
               className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#F8FAFC] leading-tight mb-6"
             >
               {locale === 'zh' 
-                ? 'Your Ads, Reviewed.' 
+                ? '您的广告，已审查。' 
                 : 'Your Ads, Reviewed.'}
             </motion.h1>
             <motion.p 
