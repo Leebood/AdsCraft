@@ -265,14 +265,13 @@ export default function PricingPage() {
                     className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white"
                   >
                     <CreditCard className="w-4 h-4 mr-2" />
-                    {t('pricing.subscribe')} ({PLAN_INFO.pro.priceUsd})
+                    Creem {t('pricing.subscribe')} ({PLAN_INFO.pro.priceUsd})
                   </Button>
                   {/* 微信支付按钮（仅中文模式） */}
                   {locale === 'zh' && (
                     <Button
                       onClick={() => handleWechatPay('pro')}
-                      variant="outline"
-                      className="w-full border-green-400 text-green-400 hover:bg-green-400/10"
+                      className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white"
                     >
                       {t('pricing.wechatPay')} ({PLAN_INFO.pro.priceCn})
                     </Button>
@@ -320,14 +319,13 @@ export default function PricingPage() {
                     className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
                   >
                     <CreditCard className="w-4 h-4 mr-2" />
-                    {t('pricing.upgrade')} ({PLAN_INFO.pro_plus.priceUsd})
+                    Creem {t('pricing.upgrade')} ({PLAN_INFO.pro_plus.priceUsd})
                   </Button>
                   {/* 微信支付按钮（仅中文模式） */}
                   {locale === 'zh' && (
                     <Button
                       onClick={() => handleWechatPay('pro_plus')}
-                      variant="outline"
-                      className="w-full border-green-400 text-green-400 hover:bg-green-400/10"
+                      className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
                     >
                       {t('pricing.wechatPay')} ({PLAN_INFO.pro_plus.priceCn})
                     </Button>
