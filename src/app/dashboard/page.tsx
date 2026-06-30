@@ -27,12 +27,35 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<DashboardTab>('platforms');
   const [records, setRecords] = useState<DiagnosisRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [quota, setQuota] = useState<{ used: number; limit: number; remaining: number } | null>(null);
 
   useEffect(() => {
     if (user) {
       fetchRecords();
+      fetchQuota();
     }
   }, [user]);
+
+  const fetchQuota = async () => {
+    try {
+      const client = await getSupabaseBrowserClientAsync();
+      const { data } = await client.auth.getSession();
+      const token = data.session?.access_token;
+      
+      if (!token) return;
+
+      const response = await fetch('/api/screenshot-quota', {
+        headers: { 'x-session': token }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setQuota({ used: data.used, limit: data.limit, remaining: data.remaining });
+      }
+    } catch (error) {
+      console.error('Fetch quota error:', error);
+    }
+  };
 
   const fetchRecords = async () => {
     try {
@@ -303,41 +326,123 @@ export default function DashboardPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8">
-                  <div className={`w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center ${
-                    isPremium 
-                      ? 'bg-gradient-to-br from-cyan-500/30 to-blue-500/30 border-cyan-400/30' 
-                      : 'bg-white/10 border-white/20'
-                  } border`}>
-                    {isPremium ? (
-                      <svg className="w-10 h-10 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                      </svg>
-                    ) : (
-                      <svg className="w-10 h-10 text-blue-200/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
-                      </svg>
+                <div className="space-y-6">
+                  {/* Plan Info */}
+                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                        isPremium 
+                          ? 'bg-gradient-to-br from-cyan-500/30 to-blue-500/30 border-cyan-400/30' 
+                          : 'bg-white/10 border-white/20'
+                      } border`}>
+                        {isPremium ? (
+                          <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                          </svg>
+                        ) : (
+                          <svg className="w-6 h-6 text-blue-200/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+                          </svg>
+                        )}
+                      </div>
+                      <div>
+                        <h3 className="text-white font-semibold">
+                          {locale === 'zh' ? '当前套餐' : 'Current Plan'}
+                        </h3>
+                        <p className="text-blue-200/70 text-sm">
+                          {isPremium 
+                            ? (locale === 'zh' ? '付费会员' : 'Premium Member')
+                            : (locale === 'zh' ? '免费会员' : 'Free Member')
+                          }
+                        </p>
+                      </div>
+                    </div>
+                    {!isPremium && (
+                      <Link href="/pricing">
+                        <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-sm">
+                          {locale === 'zh' ? '升级套餐' : 'Upgrade Plan'}
+                        </Button>
+                      </Link>
                     )}
                   </div>
-                  <h3 className="text-white text-xl font-semibold mb-2">
-                    {isPremium 
-                      ? (locale === 'zh' ? '付费会员' : 'Premium Member')
-                      : (locale === 'zh' ? '免费会员' : 'Free Member')
-                    }
-                  </h3>
-                  <p className="text-blue-200/70 mb-6">
-                    {isPremium
-                      ? (locale === 'zh' ? '您已解锁所有高级功能' : 'You have unlocked all premium features')
-                      : (locale === 'zh' ? '升级以解锁更多功能' : 'Upgrade to unlock more features')
-                    }
-                  </p>
-                  {!isPremium && (
-                    <Link href="/pricing">
-                      <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white">
-                        {locale === 'zh' ? '查看套餐' : 'View Plans'}
-                      </Button>
-                    </Link>
+
+                  {/* Screenshot Usage */}
+                  {quota && (
+                    <div className="p-4 bg-white/5 rounded-lg border border-white/10">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-white font-medium text-sm">
+                          {locale === 'zh' ? '截图分析次数' : 'Screenshot Analysis'}
+                        </h4>
+                        <span className="text-cyan-400 font-semibold">
+                          {quota.used} / {quota.limit}
+                        </span>
+                      </div>
+                      <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-cyan-500 to-blue-600 transition-all duration-300"
+                          style={{ width: `${Math.min((quota.used / quota.limit) * 100, 100)}%` }}
+                        />
+                      </div>
+                      <p className="text-blue-200/50 text-xs mt-2">
+                        {locale === 'zh' 
+                          ? `剩余 ${quota.remaining} 次`
+                          : `${quota.remaining} remaining`
+                        }
+                      </p>
+                    </div>
                   )}
+
+                  {/* Features */}
+                  <div className="p-4 bg-white/5 rounded-lg border border-white/10">
+                    <h4 className="text-white font-medium text-sm mb-3">
+                      {locale === 'zh' ? '当前功能' : 'Current Features'}
+                    </h4>
+                    <ul className="space-y-2">
+                      {isPremium ? (
+                        <>
+                          <li className="flex items-center gap-2 text-blue-200/70 text-sm">
+                            <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            {locale === 'zh' ? '更多截图分析次数' : 'More screenshot analyses'}
+                          </li>
+                          <li className="flex items-center gap-2 text-blue-200/70 text-sm">
+                            <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            {locale === 'zh' ? '高级诊断报告' : 'Advanced diagnosis reports'}
+                          </li>
+                          <li className="flex items-center gap-2 text-blue-200/70 text-sm">
+                            <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            {locale === 'zh' ? '优先客服支持' : 'Priority support'}
+                          </li>
+                        </>
+                      ) : (
+                        <>
+                          <li className="flex items-center gap-2 text-blue-200/70 text-sm">
+                            <svg className="w-4 h-4 text-blue-200/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            {locale === 'zh' ? '每月 3 次截图分析' : '3 screenshot analyses per month'}
+                          </li>
+                          <li className="flex items-center gap-2 text-blue-200/70 text-sm">
+                            <svg className="w-4 h-4 text-blue-200/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            {locale === 'zh' ? '基础诊断报告' : 'Basic diagnosis reports'}
+                          </li>
+                          <li className="flex items-center gap-2 text-blue-200/70 text-sm">
+                            <svg className="w-4 h-4 text-blue-200/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            {locale === 'zh' ? '标准客服支持' : 'Standard support'}
+                          </li>
+                        </>
+                      )}
+                    </ul>
+                  </div>
                 </div>
               </CardContent>
             </Card>
