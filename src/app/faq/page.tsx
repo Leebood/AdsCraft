@@ -47,8 +47,8 @@ export default function FAQPage() {
     {
       qEn: 'Is it free?',
       qZh: '免费吗？',
-      aEn: 'Basic analysis is free, no login required. For advanced features like history tracking and team collaboration, you can upgrade to a paid plan.',
-      aZh: '基础分析免费，无需登录。对于高级功能如历史追踪和团队协作，您可以升级到付费计划。',
+      aEn: 'Free plan includes limited analyses per month. Login required. For unlimited access and advanced features like history tracking and team collaboration, you can upgrade to a paid plan.',
+      aZh: '免费版每月有分析次数限制，需要登录注册。如需无限次使用和高级功能（如历史追踪和团队协作），可升级到付费计划。',
     },
     {
       qEn: 'How accurate is the diagnosis?',
