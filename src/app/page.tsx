@@ -820,6 +820,14 @@ export default function HomePage() {
 
       {/* ========== 第七屏：Pricing ========== */}
       <section className="relative z-10 max-w-[1200px] mx-auto px-6 py-24">
+        <motion.h2 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center text-3xl font-bold text-white mb-4"
+        >
+          {locale === 'zh' ? '简单透明的定价' : 'Simple, Transparent Pricing'}
+        </motion.h2>
         <motion.p 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -831,90 +839,136 @@ export default function HomePage() {
             : 'Start for free. Upgrade when you need deeper recommendations.'}
         </motion.p>
 
-        {/* 这里保留原有的 Pricing 逻辑，但简化展示 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
-          {/* Facebook */}
-          <div className="rounded-xl bg-[#101827] border border-white/8 p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-8" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.facebook.icon }} />
-              <h3 className="text-lg font-semibold text-white">Facebook</h3>
+        {/* 新统一三档定价 */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {/* Free */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="rounded-xl bg-[#101827] border border-white/8 p-6"
+          >
+            <h3 className="text-xl font-bold text-white mb-2">Free</h3>
+            <div className="text-3xl font-bold text-white mb-4">
+              $0
+              <span className="text-sm text-[#94A3B8] font-normal">/{locale === 'zh' ? '月' : 'mo'}</span>
             </div>
-            <div className="space-y-3">
-              {PLATFORM_CONFIGS.facebook.routes.map((route) => (
-                <div
-                  key={route.id}
-                  onClick={() => handleRouteClick('facebook', route)}
-                  className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/8 hover:border-white/20 cursor-pointer transition-all"
-                >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-white text-sm font-medium">
-                        {locale === 'zh' ? route.nameZh : route.name}
-                      </span>
-                      {route.isFree && (
-                        <span className="px-2 py-0.5 text-xs bg-[#00D4FF]/20 text-[#00D4FF] rounded">
-                          {locale === 'zh' ? '免费' : 'Free'}
-                        </span>
-                      )}
-                      {route.screenshotLimit && (
-                        <span className="px-2 py-0.5 text-xs bg-white/10 text-[#94A3B8] rounded">
-                          {route.screenshotLimit}{locale === 'zh' ? '次截图/月' : ' screenshots/mo'}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[#94A3B8] text-xs mt-1">
-                      {locale === 'zh' ? route.descriptionZh : route.description}
-                    </p>
-                  </div>
-                  <span className="text-[#94A3B8] text-sm ml-4">
-                    {locale === 'zh' ? route.priceTextZh : route.priceText}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+            <ul className="space-y-3 text-sm text-[#94A3B8] mb-6">
+              <li className="flex items-center gap-2">
+                <span className="text-[#22C55E]">✓</span>
+                {locale === 'zh' ? '每月 3 次 Review' : '3 Reviews/month'}
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-[#22C55E]">✓</span>
+                {locale === 'zh' ? '健康评分' : 'Health Score'}
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-[#22C55E]">✓</span>
+                {locale === 'zh' ? '主要问题与证据' : 'Top Issues & Evidence'}
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-[#22C55E]">✓</span>
+                {locale === 'zh' ? '优化建议预览' : 'Optimization Preview'}
+              </li>
+            </ul>
+            <button 
+              onClick={() => handleAuthRequiredAction('/dashboard')}
+              className="w-full py-2 px-4 rounded-lg border border-white/20 text-white hover:bg-white/5 transition-all"
+            >
+              {locale === 'zh' ? '开始使用' : 'Get Started'}
+            </button>
+          </motion.div>
 
-          {/* TikTok */}
-          <div className="rounded-xl bg-[#101827] border border-white/8 p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-8" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.tiktok.icon }} />
-              <h3 className="text-lg font-semibold text-white">TikTok</h3>
+          {/* Pro */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="rounded-xl bg-[#101827] border border-[#00D4FF]/30 p-6 relative"
+          >
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-[#00D4FF] text-[#08111F] text-xs font-semibold rounded-full">
+              {locale === 'zh' ? '推荐' : 'POPULAR'}
             </div>
-            <div className="space-y-3">
-              {PLATFORM_CONFIGS.tiktok.routes.map((route) => (
-                <div
-                  key={route.id}
-                  onClick={() => handleRouteClick('tiktok', route)}
-                  className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/8 hover:border-white/20 cursor-pointer transition-all"
-                >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-white text-sm font-medium">
-                        {locale === 'zh' ? route.nameZh : route.name}
-                      </span>
-                      {route.isFree && (
-                        <span className="px-2 py-0.5 text-xs bg-[#00D4FF]/20 text-[#00D4FF] rounded">
-                          {locale === 'zh' ? '免费' : 'Free'}
-                        </span>
-                      )}
-                      {route.screenshotLimit && (
-                        <span className="px-2 py-0.5 text-xs bg-white/10 text-[#94A3B8] rounded">
-                          {route.screenshotLimit}{locale === 'zh' ? '次截图/月' : ' screenshots/mo'}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[#94A3B8] text-xs mt-1">
-                      {locale === 'zh' ? route.descriptionZh : route.description}
-                    </p>
-                  </div>
-                  <span className="text-[#94A3B8] text-sm ml-4">
-                    {locale === 'zh' ? route.priceTextZh : route.priceText}
-                  </span>
-                </div>
-              ))}
+            <h3 className="text-xl font-bold text-white mb-2">Pro</h3>
+            <div className="text-3xl font-bold text-white mb-4">
+              $19.9
+              <span className="text-sm text-[#94A3B8] font-normal">/{locale === 'zh' ? '月' : 'mo'}</span>
             </div>
-          </div>
+            <ul className="space-y-3 text-sm text-[#94A3B8] mb-6">
+              <li className="flex items-center gap-2">
+                <span className="text-[#22C55E]">✓</span>
+                {locale === 'zh' ? '每月 20 次 Review' : '20 Reviews/month'}
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-[#22C55E]">✓</span>
+                {locale === 'zh' ? '完整优化化工具包' : 'Full Optimization Package'}
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-[#22C55E]">✓</span>
+                {locale === 'zh' ? 'AI 生成内容' : 'AI Generation'}
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-[#22C55E]">✓</span>
+                {locale === 'zh' ? '完整优化建议' : 'Full Optimization Plan'}
+              </li>
+            </ul>
+            <button 
+              onClick={() => handleAuthRequiredAction('/pricing?plan=pro')}
+              className="w-full py-2 px-4 rounded-lg bg-[#00D4FF] text-[#08111F] font-semibold hover:bg-[#35E1FF] transition-all"
+            >
+              {locale === 'zh' ? '订阅 Pro' : 'Subscribe to Pro'}
+            </button>
+          </motion.div>
+
+          {/* Pro+ */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="rounded-xl bg-[#101827] border border-white/8 p-6"
+          >
+            <h3 className="text-xl font-bold text-white mb-2">Pro+</h3>
+            <div className="text-3xl font-bold text-white mb-4">
+              $24.9
+              <span className="text-sm text-[#94A3B8] font-normal">/{locale === 'zh' ? '月' : 'mo'}</span>
+            </div>
+            <ul className="space-y-3 text-sm text-[#94A3B8] mb-6">
+              <li className="flex items-center gap-2">
+                <span className="text-[#22C55E]">✓</span>
+                {locale === 'zh' ? '无限 Review' : 'Unlimited Reviews'}
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-[#22C55E]">✓</span>
+                {locale === 'zh' ? '完整优化工具包' : 'Full Optimization Package'}
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-[#22C55E]">✓</span>
+                {locale === 'zh' ? 'AI 生成内容' : 'AI Generation'}
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-[#22C55E]">✓</span>
+                {locale === 'zh' ? '新功能优先体验' : 'Early Access to New Features'}
+              </li>
+            </ul>
+            <button 
+              onClick={() => handleAuthRequiredAction('/pricing?plan=pro_plus')}
+              className="w-full py-2 px-4 rounded-lg bg-white/10 text-white font-semibold hover:bg-white/20 transition-all"
+            >
+              {locale === 'zh' ? '订阅 Pro+' : 'Subscribe to Pro+'}
+            </button>
+          </motion.div>
         </div>
+
+        <motion.p 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="text-center text-[#94A3B8] text-sm mt-8"
+        >
+          {locale === 'zh' 
+            ? '所有平台（Facebook、TikTok、Google）统一使用此定价。' 
+            : 'Same pricing for all platforms (Facebook, TikTok, Google).'}
+        </motion.p>
       </section>
 
       {/* Selected Route Action Button */}

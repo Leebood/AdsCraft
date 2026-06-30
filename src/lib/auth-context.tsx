@@ -15,7 +15,8 @@ interface User {
 
 // 订阅状态
 interface Subscription {
-  route: string; // 零售商、制造商、品牌方、本地服务商、localService
+  route: string; // 旧的路线标识（兼容）
+  plan?: 'free' | 'pro' | 'pro_plus'; // 新的计划类型
   status: 'active' | 'expired' | 'none';
   expiresAt?: string;
 }

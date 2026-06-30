@@ -1,210 +1,129 @@
 'use client';
 
-import { Suspense, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { useI18n } from '@/lib/i18n-context';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Check, X, CreditCard } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
-import { CREEM_PRODUCTS } from '@/lib/creem-config';
+import { CREEM_PRODUCTS, PLAN_INFO, PlanType } from '@/lib/creem-config';
 
-function PricingContent() {
-  const { t, locale } = useI18n();
-  const { user, refreshSubscription } = useAuth();
+export default function PricingPage() {
+  const { locale } = useI18n();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const route = searchParams.get('route') || '';
-  const [isLoading, setIsLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'creem' | 'wechat'>('creem');
-  const [error, setError] = useState('');
-  const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const { user, subscription, refreshSubscription } = useAuth();
   const [showQrModal, setShowQrModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<PlanType | null>(null);
 
-  // Creem支付：直接跳转到Creem支付页面（无需登录验证，Creem会处理）
-  const handleCreemPayment = () => {
-    const product = CREEM_PRODUCTS[route as keyof typeof CREEM_PRODUCTS];
-    if (product) {
-      window.open(product.url, '_blank');
-    } else {
-      setError(t('pricing.error.invalidRoute'));
-    }
+  const t = (key: string) => {
+    const translations: Record<string, Record<string, string>> = {
+      'pricing.title': { en: 'Simple, Transparent Pricing', zh: '简单透明的定价' },
+      'pricing.subtitle': { en: 'Choose the plan that fits your needs', zh: '选择适合您的套餐' },
+      'pricing.free': { en: 'Free', zh: '免费' },
+      'pricing.pro': { en: 'Pro', zh: 'Pro' },
+      'pricing.proPlus': { en: 'Pro+', zh: 'Pro+' },
+      'pricing.perMonth': { en: '/month', zh: '/月' },
+      'pricing.reviewsPerMonth': { en: 'Reviews/month', zh: '次 Review/月' },
+      'pricing.subscribe': { en: 'Subscribe', zh: '订阅' },
+      'pricing.currentPlan': { en: 'Current Plan', zh: '当前套餐' },
+      'pricing.upgrade': { en: 'Upgrade', zh: '升级' },
+      'pricing.wechatPay': { en: 'WeChat Pay', zh: '微信支付' },
+      'pricing.creemPay': { en: 'Credit Card', zh: '信用卡支付' },
+      'pricing.qr.title': { en: 'WeChat Pay', zh: '微信支付' },
+      'pricing.qr.instruction': { en: 'Scan QR code with WeChat to pay', zh: '使用微信扫码支付' },
+      'pricing.qr.copied': { en: 'Link copied!', zh: '链接已复制！' },
+      'pricing.qr.copyLink': { en: 'Copy Payment Link', zh: '复制支付链接' },
+      'pricing.qr.paymentComplete': { en: 'Payment Complete', zh: '支付完成' },
+      'pricing.qr.close': { en: 'Close', zh: '关闭' },
+      'pricing.upgradeNote': { en: 'After upgrading, your current Pro subscription will be recalculated from today, Pro+ subscription starts from the upgrade day, remaining Pro reviews will be cleared and replaced with unlimited reviews.', zh: '升级后，当前 Pro 订阅将从今日起重新计算，Pro+ 订阅从升级当天开始，剩余 Pro 次数将清零，替换为无限次数。' },
+    };
+    return translations[key]?.[locale] || key;
   };
 
-  // 微信支付：调用API创建订单，显示二维码
-  const handleWechatPayment = async () => {
+  // 免费功能
+  const freeFeatures = {
+    en: [
+      'Upload & Screenshot',
+      'Health Score',
+      'Top Issues & Evidence',
+      'Priority Ranking',
+      'Optimization suggestions preview (first 1-2 items)',
+      '3 Reviews per month',
+    ],
+    zh: [
+      '上传截图',
+      '健康评分',
+      '核心问题与证据',
+      '优先级排序',
+      '优化建议预览（前 1-2 条）',
+      '每月 3 次 Review',
+    ],
+  };
+
+  // Pro 功能
+  const proFeatures = {
+    en: [
+      'All Free features',
+      'Complete Optimization Package',
+      'AI Headline / Primary Text / CTA Generation',
+      'Creative Suggestions',
+      '20 Reviews per month',
+    ],
+    zh: [
+      '包含所有免费功能',
+      '完整优化方案解锁',
+      'AI 标题/正文/CTA 生成',
+      '创意建议',
+      '每月 20 次 Review',
+    ],
+  };
+
+  // Pro+ 功能
+  const proPlusFeatures = {
+    en: [
+      'All Pro features',
+      'Unlimited Reviews',
+      'Early access to new features',
+    ],
+    zh: [
+      '包含所有 Pro 功能',
+      '无限 Review 次数',
+      '新功能优先体验',
+    ],
+  };
+
+  const handleSubscribe = (plan: PlanType) => {
     if (!user) {
-      // 用户未登录时，显示提示而不是跳转
-      setError(t('pricing.error.loginRequired'));
+      router.push('/login');
       return;
     }
 
-    setIsLoading(true);
-    setError('');
-
-    try {
-      const response = await fetch('/api/payment/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          route,
-          user_id: user.id,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Payment creation failed');
-      }
-
-      // Native支付返回code_url（二维码链接）
-      if (data.code_url) {
-        setQrCodeUrl(data.code_url);
-        setShowQrModal(true);
-      } else {
-        throw new Error('Payment link not received');
-      }
-    } catch (err) {
-      console.error('Payment error:', err);
-      setError(err instanceof Error ? err.message : 'Payment failed, please try again');
-    } finally {
-      setIsLoading(false);
+    if (plan === 'pro') {
+      window.open(CREEM_PRODUCTS.pro.url, '_blank');
+    } else if (plan === 'pro_plus') {
+      window.open(CREEM_PRODUCTS.pro_plus.url, '_blank');
     }
   };
 
-  const handleUpgrade = () => {
-    if (paymentMethod === 'creem') {
-      handleCreemPayment();
-    } else {
-      handleWechatPayment();
+  const handleWechatPay = (plan: PlanType) => {
+    if (!user) {
+      router.push('/login');
+      return;
     }
+    setSelectedPlan(plan);
+    setShowQrModal(true);
   };
 
-  // 使用 creem-config.ts 中的价格数据，确保与首页一致
-  const getRoutePricing = (currentLocale: string) => {
-    const product = CREEM_PRODUCTS[route as keyof typeof CREEM_PRODUCTS];
-    if (!product) return null;
-
-    // 根据线路类型设置样式和标题
-    const styleMap: Record<string, {
-      titleEn: string;
-      titleZh: string;
-      borderColor: string;
-      iconColor: string;
-      buttonBg: string;
-      buttonHover: string;
-      shadowColor: string;
-    }> = {
-      // Facebook 线路
-      fb_retailer: {
-        titleEn: 'Retailer Plan',
-        titleZh: '零售商方案',
-        borderColor: 'border-yellow-400',
-        iconColor: 'text-yellow-600',
-        buttonBg: 'bg-yellow-500',
-        buttonHover: 'hover:bg-yellow-600',
-        shadowColor: 'shadow-yellow-500/20'
-      },
-      fb_manufacturer: {
-        titleEn: 'Manufacturer Plan',
-        titleZh: '制造商方案',
-        borderColor: 'border-violet-400',
-        iconColor: 'text-violet-600',
-        buttonBg: 'bg-violet-500',
-        buttonHover: 'hover:bg-violet-600',
-        shadowColor: 'shadow-violet-500/20'
-      },
-      fb_brand: {
-        titleEn: 'Brand Plan',
-        titleZh: '品牌方方案',
-        borderColor: 'border-rose-400',
-        iconColor: 'text-rose-600',
-        buttonBg: 'bg-rose-500',
-        buttonHover: 'hover:bg-rose-600',
-        shadowColor: 'shadow-rose-500/20'
-      },
-      fb_local_service: {
-        titleEn: 'Local Service Plan',
-        titleZh: '本地服务方案',
-        borderColor: 'border-emerald-400',
-        iconColor: 'text-emerald-600',
-        buttonBg: 'bg-emerald-500',
-        buttonHover: 'hover:bg-emerald-600',
-        shadowColor: 'shadow-emerald-500/20'
-      },
-      // TikTok 线路
-      tiktok_local_service: {
-        titleEn: 'TikTok Local Service',
-        titleZh: 'TikTok 本地服务',
-        borderColor: 'border-emerald-400',
-        iconColor: 'text-emerald-600',
-        buttonBg: 'bg-emerald-500',
-        buttonHover: 'hover:bg-emerald-600',
-        shadowColor: 'shadow-emerald-500/20'
-      },
-      tiktok_website_conv: {
-        titleEn: 'TikTok Website Conversion',
-        titleZh: 'TikTok 网站转化',
-        borderColor: 'border-blue-400',
-        iconColor: 'text-blue-600',
-        buttonBg: 'bg-blue-500',
-        buttonHover: 'hover:bg-blue-600',
-        shadowColor: 'shadow-blue-500/20'
-      },
-      tiktok_brand_awareness: {
-        titleEn: 'TikTok Brand Awareness',
-        titleZh: 'TikTok 品牌曝光',
-        borderColor: 'border-pink-400',
-        iconColor: 'text-pink-600',
-        buttonBg: 'bg-pink-500',
-        buttonHover: 'hover:bg-pink-600',
-        shadowColor: 'shadow-pink-500/20'
-      }
-    };
-
-    const style = styleMap[route];
-    if (!style) return null;
-
-    return {
-      title: currentLocale === 'zh' ? style.titleZh : style.titleEn,
-      priceUsd: product.price,      // 美元价格（Creem支付用）
-      priceCn: product.priceCn,     // 人民币价格（微信支付用）
-      borderColor: style.borderColor,
-      iconColor: style.iconColor,
-      buttonBg: style.buttonBg,
-      buttonHover: style.buttonHover,
-      shadowColor: style.shadowColor,
-      features: product.features,   // 每个线路的功能列表
-      screenshotLimit: product.screenshotLimit, // 截图分析次数
-    };
+  const getUserPlan = (): PlanType => {
+    if (!subscription) return 'free';
+    if (subscription.plan === 'pro_plus') return 'pro_plus';
+    if (subscription.plan === 'pro') return 'pro';
+    return 'free';
   };
 
-  const pricingData = getRoutePricing(locale);
-
-  if (!pricingData) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
-        <main className="container mx-auto px-4 py-12 relative z-10">
-          <div className="max-w-2xl mx-auto">
-            <Card className="bg-white/5 border-white/20 backdrop-blur-xl">
-              <CardContent className="p-12 text-center">
-                <p className="text-blue-300 text-lg">{t('pricing.selectRoute')}</p>
-              </CardContent>
-            </Card>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  const features = pricingData?.features?.[locale as 'en' | 'zh'] || [
-    t('pricing.premium.feature1'),
-    t('pricing.premium.feature2'),
-    t('pricing.premium.feature3'),
-    t('pricing.premium.feature4'),
-    t('pricing.premium.feature5')
-  ];
+  const userPlan = getUserPlan();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
@@ -212,17 +131,22 @@ function PricingContent() {
       <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
       
       {/* 二维码弹窗 */}
-      {showQrModal && qrCodeUrl && (
+      {showQrModal && selectedPlan && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <Card className="bg-white border border-gray-200 shadow-xl max-w-sm w-full">
             <CardHeader className="text-center">
-              <CardTitle className="text-gray-800 text-xl">{t('pricing.qr.title')}</CardTitle>
+              <CardTitle className="text-gray-800 text-xl">
+                {selectedPlan === 'pro' ? 'AdsCraft Pro' : 'AdsCraft Pro+'}
+              </CardTitle>
+              <p className="text-gray-600 text-lg">
+                {selectedPlan === 'pro' ? PLAN_INFO.pro.priceCn : PLAN_INFO.pro_plus.priceCn}/月
+              </p>
             </CardHeader>
             <CardContent className="text-center">
               {/* 二维码显示 */}
               <div className="bg-gray-50 p-4 rounded-xl mb-4 inline-block border border-gray-200">
                 <img 
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrCodeUrl)}`}
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(selectedPlan === 'pro' ? CREEM_PRODUCTS.pro.url : CREEM_PRODUCTS.pro_plus.url)}`}
                   alt="WeChat Pay QR Code"
                   className="w-[200px] h-[200px]"
                 />
@@ -232,7 +156,7 @@ function PricingContent() {
               {/* 复制链接按钮 */}
               <Button
                 onClick={() => {
-                  navigator.clipboard.writeText(qrCodeUrl);
+                  navigator.clipboard.writeText(selectedPlan === 'pro' ? CREEM_PRODUCTS.pro.url : CREEM_PRODUCTS.pro_plus.url);
                   alert(t('pricing.qr.copied'));
                 }}
                 variant="outline"
@@ -267,156 +191,157 @@ function PricingContent() {
       )}
       
       <main className="container mx-auto px-4 py-12 relative z-10">
-        <div className="max-w-2xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">{t('pricing.title')}</h1>
-            <p className="text-blue-200 text-lg">{t('pricing.subtitle')}</p>
-          </div>
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-white mb-4">{t('pricing.title')}</h1>
+          <p className="text-blue-200 text-lg">{t('pricing.subtitle')}</p>
+        </div>
 
-          {/* 单一付费方案卡片 - 白底配色 */}
-          <Card className={`bg-white border-2 ${pricingData.borderColor} shadow-xl ${pricingData.shadowColor} hover:shadow-2xl transition-all duration-300`}>
-            <CardHeader className="text-center pb-4">
-              <CardTitle className={`text-2xl font-bold ${pricingData.iconColor}`}>
-                {pricingData.title}
-              </CardTitle>
+        {/* 三档定价卡片 */}
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {/* Free 套餐 */}
+          <Card className="bg-white/5 border-white/20 backdrop-blur-xl hover:border-white/40 transition-all">
+            <CardHeader>
+              <CardTitle className="text-white text-2xl">{t('pricing.free')}</CardTitle>
               <div className="mt-4">
-                <span className="text-5xl font-bold text-gray-800">
-                  {paymentMethod === 'creem' ? pricingData.priceUsd : pricingData.priceCn}
-                </span>
-                <span className="text-gray-500 text-lg ml-2">{t('pricing.premium.period')}</span>
+                <span className="text-4xl font-bold text-white">$0</span>
               </div>
+              <p className="text-blue-200 text-sm mt-2">{PLAN_INFO.free.reviewsPerMonth} {t('pricing.reviewsPerMonth')}</p>
             </CardHeader>
-            
             <CardContent>
-              {/* 支付方式说明 */}
-              <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-gray-700 font-medium">
-                  {paymentMethod === 'creem' 
-                    ? (locale === 'zh' ? 'Creem 支付支持信用卡，价格以美元结算' : 'Creem payment supports credit cards, priced in USD')
-                    : (locale === 'zh' ? '微信支付仅支持人民币结算' : 'WeChat Pay only supports RMB')
-                  }
-                </p>
-              </div>
-              
-              {/* 功能列表 */}
-              <ul className="space-y-3 mb-8">
-                {features.map((feature, index) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span className="text-gray-700">{feature}</span>
+              <ul className="space-y-3">
+                {freeFeatures[locale as 'en' | 'zh'].map((feature, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-blue-100 text-sm">{feature}</span>
                   </li>
                 ))}
               </ul>
-              
-              {/* 支付方式选择 */}
-              <div className="mb-6">
-                <p className="text-gray-600 text-sm mb-3">{t('pricing.payment.select')}</p>
-                <div className="grid grid-cols-2 gap-3">
-                  {/* Creem支付 */}
-                  <button
-                    onClick={() => setPaymentMethod('creem')}
-                    className={`p-4 rounded-xl border-2 transition-all duration-300 ${
-                      paymentMethod === 'creem'
-                        ? 'bg-blue-50 border-blue-400 shadow-lg'
-                        : 'bg-gray-50 border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-center gap-2">
-                      <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                      </svg>
-                      <span className="text-gray-700 font-medium">{t('pricing.payment.creem')}</span>
-                    </div>
-                    <p className="text-gray-500 text-xs mt-2">{t('pricing.payment.creemDesc')}</p>
-                  </button>
-                  
-                  {/* 微信支付 */}
-                  <button
-                    onClick={() => setPaymentMethod('wechat')}
-                    className={`p-4 rounded-xl border-2 transition-all duration-300 ${
-                      paymentMethod === 'wechat'
-                        ? 'bg-green-50 border-green-400 shadow-lg'
-                        : 'bg-gray-50 border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-center gap-2">
-                      <svg className="w-6 h-6 text-green-500" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.3c0 1.785.794 3.415 2.127 4.638l-.826 2.463 2.553-1.185c.954.303 1.993.465 3.037.462 4.8 0 8.691-3.288 8.691-7.378 0-4.09-3.891-7.378-8.691-7.378zm4.033 6.052c.044.477-.144.943-.5 1.22-.357.277-.82.358-1.234.205-.413-.152-.713-.5-.775-.945-.062-.444.1-.887.427-1.152.327-.266.77-.324 1.174-.149.404.174.688.545.708.971zm-5.4 0c.044.477-.144.943-.5 1.22-.357.277-.82.358-1.234.205-.413-.152-.713-.5-.775-.945-.062-.444.1-.887.427-1.152.327-.266.77-.324 1.174-.149.404.174.688.545.708.971z"/>
-                      </svg>
-                      <span className="text-gray-700 font-medium">{t('pricing.payment.wechat')}</span>
-                    </div>
-                    <p className="text-gray-500 text-xs mt-2">{t('pricing.payment.wechatDesc')}</p>
-                  </button>
-                </div>
-              </div>
-              
-              {/* 升级按钮 */}
-              <Button
-                onClick={handleUpgrade}
-                disabled={isLoading && paymentMethod === 'wechat'}
-                className={`w-full font-semibold py-4 rounded-xl shadow-lg transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed text-white ${
-                  paymentMethod === 'creem'
-                    ? 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600'
-                    : `${pricingData.buttonBg} ${pricingData.buttonHover}`
-                }`}
-              >
-                {isLoading && paymentMethod === 'wechat' ? (
-                  <span className="flex items-center">
-                    <svg className="animate-spin w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    {t('pricing.premium.processing')}
-                  </span>
-                ) : (
-                  <>
-                    {paymentMethod === 'creem' ? t('pricing.payment.creemButton') : t('pricing.premium.button')}
-                    <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </>
-                )}
-              </Button>
-
-              {/* 错误提示 */}
-              {error && (
-                <p className="text-center text-red-500 text-sm mt-4">{error}</p>
+              {userPlan === 'free' ? (
+                <Button className="w-full mt-6 bg-gray-500 text-white" disabled>
+                  {t('pricing.currentPlan')}
+                </Button>
+              ) : (
+                <Button className="w-full mt-6 bg-white/10 text-white hover:bg-white/20" disabled>
+                  {t('pricing.free')}
+                </Button>
               )}
-              
-              {/* 提示 */}
-              <p className="text-center text-gray-500 text-sm mt-4">
-                {t('pricing.premium.note')}
-              </p>
             </CardContent>
           </Card>
 
-          {/* 返回按钮 */}
-          <div className="text-center mt-8">
-            <Button
-              variant="ghost"
-              onClick={() => router.back()}
-              className="text-gray-600 hover:text-gray-800 hover:bg-gray-100"
-            >
-              {t('common.backPrevious')}
-            </Button>
-          </div>
+          {/* Pro 套餐 */}
+          <Card className="bg-white/5 border-cyan-400/50 backdrop-blur-xl hover:border-cyan-400 transition-all relative">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-cyan-400 text-slate-900 px-4 py-1 rounded-full text-sm font-semibold">
+              {locale === 'zh' ? '推荐' : 'Recommended'}
+            </div>
+            <CardHeader>
+              <CardTitle className="text-cyan-400 text-2xl">{t('pricing.pro')}</CardTitle>
+              <div className="mt-4">
+                <span className="text-4xl font-bold text-white">
+                  {locale === 'zh' ? PLAN_INFO.pro.priceCn : PLAN_INFO.pro.priceUsd}
+                </span>
+                <span className="text-blue-200 text-lg ml-2">{t('pricing.perMonth')}</span>
+              </div>
+              <p className="text-blue-200 text-sm mt-2">{PLAN_INFO.pro.reviewsPerMonth} {t('pricing.reviewsPerMonth')}</p>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-3">
+                {proFeatures[locale as 'en' | 'zh'].map((feature, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-blue-100 text-sm">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              {userPlan === 'pro' ? (
+                <Button className="w-full mt-6 bg-gray-500 text-white" disabled>
+                  {t('pricing.currentPlan')}
+                </Button>
+              ) : (
+                <div className="mt-6 space-y-2">
+                  {/* Creem 支付按钮 */}
+                  <Button
+                    onClick={() => handleSubscribe('pro')}
+                    className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white"
+                  >
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    {t('pricing.subscribe')} ({PLAN_INFO.pro.priceUsd})
+                  </Button>
+                  {/* 微信支付按钮（仅中文模式） */}
+                  {locale === 'zh' && (
+                    <Button
+                      onClick={() => handleWechatPay('pro')}
+                      variant="outline"
+                      className="w-full border-green-400 text-green-400 hover:bg-green-400/10"
+                    >
+                      {t('pricing.wechatPay')} ({PLAN_INFO.pro.priceCn})
+                    </Button>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Pro+ 套餐 */}
+          <Card className="bg-white/5 border-purple-400/50 backdrop-blur-xl hover:border-purple-400 transition-all">
+            <CardHeader>
+              <CardTitle className="text-purple-400 text-2xl">{t('pricing.proPlus')}</CardTitle>
+              <div className="mt-4">
+                <span className="text-4xl font-bold text-white">
+                  {locale === 'zh' ? PLAN_INFO.pro_plus.priceCn : PLAN_INFO.pro_plus.priceUsd}
+                </span>
+                <span className="text-blue-200 text-lg ml-2">{t('pricing.perMonth')}</span>
+              </div>
+              <p className="text-blue-200 text-sm mt-2">{PLAN_INFO.pro_plus.reviewsPerMonth} {t('pricing.reviewsPerMonth')}</p>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-3">
+                {proPlusFeatures[locale as 'en' | 'zh'].map((feature, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-blue-100 text-sm">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              {userPlan === 'pro_plus' ? (
+                <Button className="w-full mt-6 bg-gray-500 text-white" disabled>
+                  {t('pricing.currentPlan')}
+                </Button>
+              ) : (
+                <div className="mt-6 space-y-2">
+                  {/* Creem 支付按钮 */}
+                  <Button
+                    onClick={() => handleSubscribe('pro_plus')}
+                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                  >
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    {t('pricing.upgrade')} ({PLAN_INFO.pro_plus.priceUsd})
+                  </Button>
+                  {/* 微信支付按钮（仅中文模式） */}
+                  {locale === 'zh' && (
+                    <Button
+                      onClick={() => handleWechatPay('pro_plus')}
+                      variant="outline"
+                      className="w-full border-green-400 text-green-400 hover:bg-green-400/10"
+                    >
+                      {t('pricing.wechatPay')} ({PLAN_INFO.pro_plus.priceCn})
+                    </Button>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
+
+        {/* Pro → Pro+ 升级提示 */}
+        {userPlan === 'pro' && (
+          <div className="max-w-2xl mx-auto mt-8 p-4 bg-yellow-500/10 border border-yellow-400/30 rounded-lg">
+            <p className="text-yellow-200 text-sm text-center">
+              ⚠️ {t('pricing.upgradeNote')}
+            </p>
+          </div>
+        )}
       </main>
     </div>
-  );
-}
-
-export default function PricingPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-        <div className="text-white text-lg">Loading...</div>
-      </div>
-    }>
-      <PricingContent />
-    </Suspense>
   );
 }
