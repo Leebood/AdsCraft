@@ -372,7 +372,7 @@ export default function HomePage() {
       handleAuthRequiredAction('/google-review');
     } else {
       // Facebook 跳转截图分析页面
-      handleAuthRequiredAction('/dashboard/analysis');
+      handleAuthRequiredAction('/facebook-review');
     }
   };
 
