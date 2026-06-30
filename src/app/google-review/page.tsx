@@ -124,21 +124,21 @@ export default function GoogleReviewPage() {
 
       const result = await response.json();
       
-      if (result.success && result.data) {
+      if (response.ok) {
         // 将识别结果转换为 Google Campaign 数据
         const data: GoogleCampaignData = {
-          name: result.data.campaign_name || 'Google Ads Campaign',
-          campaign_type: result.data.campaign_type || 'search',
-          spend: result.data.spend || 0,
-          impressions: result.data.impressions,
-          clicks: result.data.clicks,
-          ctr: result.data.ctr,
-          cpc: result.data.cpc,
-          cpm: result.data.cpm,
-          conversions: result.data.conversions,
-          cvr: result.data.cvr,
-          roas: result.data.roas,
-          quality_score: result.data.quality_score,
+          name: result.campaign_name || 'Google Ads Campaign',
+          campaign_type: result.campaign_type || 'search',
+          spend: result.spend || 0,
+          impressions: result.impressions,
+          clicks: result.clicks,
+          ctr: result.ctr,
+          cpc: result.cpc,
+          cpm: result.cpm,
+          conversions: result.conversions,
+          cvr: result.cvr,
+          roas: result.roas,
+          quality_score: result.quality_score,
         };
         setExtractedData(data);
         setStep(2);

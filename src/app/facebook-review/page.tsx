@@ -113,11 +113,11 @@ export default function FacebookReviewPage() {
 
       const result = await response.json();
 
-      if (!response.ok || !result.success) {
+      if (!response.ok) {
         throw new Error(result.error || 'Screenshot recognition failed');
       }
 
-      setExtractedData(result.data);
+      setExtractedData(result);
       setStep('preview');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Recognition failed, please try again');
