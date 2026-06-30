@@ -57,6 +57,7 @@ export default function GoogleReviewPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
   const [screenshotPreview, setShowPreview] = useState(false);
   const [extractedData, setExtractedData] = useState<GoogleCampaignData | null>(null);
   const [report, setReport] = useState<GoogleReportData | null>(null);
@@ -64,25 +65,42 @@ export default function GoogleReviewPage() {
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 处理截图上传
-  const handleScreenshotUpload = useCallback(async (file: File) => {
+  // 处理文件选择（只设置预览，不上传）
+  const handleFileSelect = (file: File) => {
     setScreenshotFile(file);
     setError(null);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setPreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // 处理拖放
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      handleFileSelect(file);
+    }
+  };
+
+  // 处理上传并识别
+  const handleUploadAndAnalyze = async () => {
+    if (!screenshotFile) return;
+    
     setIsUploading(true);
+    setError(null);
 
     try {
       const formData = new FormData();
-      formData.append('image', file);
+      formData.append('image', screenshotFile);
       formData.append('platform', 'google');
 
       const response = await fetch('/api/analyze-screenshot', {
         method: 'POST',
         body: formData,
       });
-
-      if (!response.ok) {
-        throw new Error('Screenshot recognition failed');
-      }
 
       const result = await response.json();
       
@@ -112,22 +130,13 @@ export default function GoogleReviewPage() {
     } finally {
       setIsUploading(false);
     }
-  }, []);
+  };
 
-  // 处理文件选择
+  // 处理文件选择（input change）
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      handleScreenshotUpload(file);
-    }
-  };
-
-  // 处理拖放
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith('image/')) {
-      handleScreenshotUpload(file);
+      handleFileSelect(file);
     }
   };
 
@@ -224,49 +233,87 @@ export default function GoogleReviewPage() {
 
         {/* Step 1: Upload */}
         {step === 1 && (
-          <Card className="bg-slate-900/50 border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-xl text-white flex items-center gap-2">
-                <Upload className="h-5 w-5 text-blue-400" />
-                Upload Google Ads Screenshot
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div
-                className="border-2 border-dashed border-slate-700 rounded-lg p-12 text-center cursor-pointer hover:border-blue-500/50 transition-colors"
-                onClick={() => fileInputRef.current?.click()}
-                onDrop={handleDrop}
-                onDragOver={(e) => e.preventDefault()}
-              >
-                {isUploading ? (
-                  <div className="flex flex-col items-center gap-4">
-                    <Loader2 className="h-12 w-12 text-blue-400 animate-spin" />
-                    <p className="text-slate-400">Uploading and recognizing...</p>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center gap-4">
-                    <ImageIcon className="h-12 w-12 text-slate-500" />
-                    <div>
-                      <p className="text-white font-medium mb-1">
-                        Drag & drop or click to upload
-                      </p>
-                      <p className="text-slate-400 text-sm">
-                        Google Ads Manager screenshot
-                      </p>
+          <Card className="bg-white/5 border-white/10">
+            <CardContent className="py-12">
+              <div className="text-center">
+                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center border border-blue-400/30">
+                  <Upload className="w-10 h-10 text-blue-400" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-2">
+                  Upload Google Ads Screenshot
+                </h3>
+                <p className="text-slate-400 mb-8 max-w-md mx-auto">
+                  Upload a screenshot of your Google Ads Manager to get a professional diagnosis report.
+                </p>
+                
+                {/* Upload area */}
+                <div
+                  onDrop={handleDrop}
+                  onDragOver={(e) => e.preventDefault()}
+                  className="border-2 border-dashed border-white/20 rounded-xl p-12 hover:border-[#00D4FF]/50 transition-colors cursor-pointer"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {isUploading ? (
+                    <div className="space-y-4">
+                      <Loader2 className="w-12 h-12 mx-auto text-blue-400 animate-spin" />
+                      <p className="text-slate-400">Uploading and recognizing...</p>
                     </div>
-                    <p className="text-slate-500 text-xs">
-                      Supported: PNG, JPG
-                    </p>
+                  ) : preview ? (
+                    <div className="space-y-4">
+                      <img src={preview} alt="Preview" className="max-h-64 mx-auto rounded-lg" />
+                      <p className="text-sm text-slate-400">{screenshotFile?.name}</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <Upload className="w-12 h-12 mx-auto text-slate-500" />
+                      <div>
+                        <p className="text-white font-medium">Click to upload or drag and drop</p>
+                        <p className="text-sm text-slate-500 mt-1">PNG, JPG, WEBP up to 10MB</p>
+                      </div>
+                    </div>
+                  )}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
+                </div>
+                
+                {/* Upload button */}
+                {screenshotFile && !isUploading && (
+                  <div className="mt-6 flex justify-center gap-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setScreenshotFile(null);
+                        setPreview(null);
+                      }}
+                      className="border-white/20 text-white hover:bg-white/5"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleUploadAndAnalyze}
+                      disabled={isUploading}
+                      className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white"
+                    >
+                      {isUploading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Recognizing...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Upload & Recognize
+                        </>
+                      )}
+                    </Button>
                   </div>
                 )}
               </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
             </CardContent>
           </Card>
         )}
