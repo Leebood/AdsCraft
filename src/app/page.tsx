@@ -18,7 +18,7 @@ interface SubscriptionStatus {
 // Hero 动态模拟组件
 function HeroSimulation() {
   const { locale } = useI18n();
-  const [phase, setPhase] = useState<'facebook' | 'tiktok' | 'pause'>('facebook');
+  const [phase, setPhase] = useState<'facebook' | 'tiktok' | 'google' | 'pause'>('facebook');
   const [step, setStep] = useState(0);
   
   useEffect(() => {
@@ -32,6 +32,12 @@ function HeroSimulation() {
           return s + 1;
         } else if (phase === 'tiktok') {
           if (s >= 4) {
+            setPhase('google');
+            return 0;
+          }
+          return s + 1;
+        } else if (phase === 'google') {
+          if (s >= 6) {
             setPhase('pause');
             return 0;
           }
@@ -53,14 +59,24 @@ function HeroSimulation() {
   ];
 
   const tiktokSteps = [
-    { text: locale === 'zh' ? '合规检查' : 'Compliance', done: step >= 1 || phase === 'pause' },
-    { text: locale === 'zh' ? '素材审查' : 'Creative', done: step >= 2 || phase === 'pause' },
+    { text: locale === 'zh' ? '合规检查' : 'Compliance', done: step >= 1 || phase === 'pause' || phase === 'google' },
+    { text: locale === 'zh' ? '素材审查' : 'Creative', done: step >= 2 || phase === 'pause' || phase === 'google' },
+    { text: locale === 'zh' ? '落地页检查' : 'Landing Page', done: step >= 3 || phase === 'pause' || phase === 'google' },
+    { text: locale === 'zh' ? '追踪验证' : 'Tracking', done: step >= 4 || phase === 'pause' || phase === 'google' },
+  ];
+
+  const googleSteps = [
+    { text: locale === 'zh' ? '政策合规检查' : 'Compliance', done: step >= 1 || phase === 'pause' },
+    { text: locale === 'zh' ? '广告素材审查' : 'Creative', done: step >= 2 || phase === 'pause' },
     { text: locale === 'zh' ? '落地页检查' : 'Landing Page', done: step >= 3 || phase === 'pause' },
-    { text: locale === 'zh' ? '追踪验证' : 'Tracking', done: step >= 4 || phase === 'pause' },
+    { text: locale === 'zh' ? '转化追踪验证' : 'Tracking', done: step >= 4 || phase === 'pause' },
+    { text: locale === 'zh' ? '质量得分分析' : 'Quality Score', done: step >= 5 || phase === 'pause' },
+    { text: locale === 'zh' ? '出价策略优化' : 'Bid Strategy', done: step >= 6 || phase === 'pause' },
   ];
 
   const showFacebook = phase === 'facebook' || phase === 'pause';
-  const showTiktok = phase === 'tiktok' || phase === 'pause';
+  const showTiktok = phase === 'tiktok' || phase === 'pause' || phase === 'google';
+  const showGoogle = phase === 'google' || phase === 'pause';
 
   return (
     <div className="space-y-4">
@@ -116,6 +132,46 @@ function HeroSimulation() {
         </div>
         <div className="space-y-2">
           {tiktokSteps.map((s, i) => (
+            <motion.div 
+              key={i}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: s.done ? 1 : 0.3, y: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="flex items-center gap-2"
+            >
+              {s.done ? (
+                <motion.svg 
+                  initial={{ scale: 0.5 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.2 }}
+                  className="w-4 h-4 text-green-400" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </motion.svg>
+              ) : (
+                <div className="w-4 h-4 rounded-full border border-white/20" />
+              )}
+              <span className="text-sm text-white/70">{s.text}</span>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Google Ads Section */}
+      <motion.div 
+        animate={{ opacity: showGoogle ? 1 : 0.3 }}
+        transition={{ duration: 0.3 }}
+        className="rounded-xl border border-white/10 bg-[#101827] p-4"
+      >
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-5 h-5 overflow-hidden flex-shrink-0" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.google.icon.replace('w-10 h-10', 'w-5 h-5') }} />
+          <span className="text-sm font-medium text-white/80">{locale === 'zh' ? 'Google Ads 6步审查' : 'Google Ads 6-Step Audit'}</span>
+        </div>
+        <div className="space-y-2">
+          {googleSteps.map((s, i) => (
             <motion.div 
               key={i}
               initial={{ opacity: 0, y: 5 }}
