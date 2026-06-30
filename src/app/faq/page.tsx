@@ -122,7 +122,7 @@ export default function FAQPage() {
                 : 'Our technical support team is here to help. Send us an email and we\'ll get back to you within 24 hours.'}
             </p>
             <a
-              href="mailto:support@adscraft.com"
+              href="mailto:support@adscraft.cn"
               className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-medium rounded-lg transition-all"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -130,8 +130,8 @@ export default function FAQPage() {
               </svg>
               {locale === 'zh' ? '联系技术支持' : 'Contact Support'}
             </a>
-            <p className="mt-4 text-[#64748B] text-xs">
-              support@adscraft.com
+            <p className="mt-4 text-white text-base font-bold">
+              support@adscraft.cn
             </p>
           </div>
         </motion.div>
