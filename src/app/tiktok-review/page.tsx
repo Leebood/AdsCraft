@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback, useMemo } from 'react';
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { Upload, Loader2, AlertCircle, X, CheckCircle2, TrendingUp, Target, Ligh
 import { TikTokReport, type TikTokReportData } from '@/components/tiktok-report';
 import { ReportExport } from '@/components/report-export';
 import { StepIndicator } from '@/components/step-indicator';
+import { AnalysisProgress, type AnalysisStage } from '@/components/analysis-progress';
 import { generateUnifiedReport, type UnifiedReport } from '@/lib/are/report-generator';
 
 type Step = 'upload' | 'preview' | 'result';
@@ -40,6 +41,9 @@ export default function TikTokReviewPage() {
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
   const [reportData, setReportData] = useState<TikTokReportData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [analysisStage, setAnalysisStage] = useState<AnalysisStage | null>(null);
+  const [metricsCount, setMetricsCount] = useState(0);
+  const [issuesCount, setIssuesCount] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = useCallback((selectedFile: File) => {
@@ -104,8 +108,26 @@ export default function TikTokReviewPage() {
 
     setAnalyzing(true);
     setError(null);
-
+    
+    // Start analysis progress
+    setAnalysisStage('upload_complete');
+    
+    // Simulate progress stages
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+    
     try {
+      // Stage 1: Upload complete (already done)
+      await delay(800);
+      
+      // Stage 2: OCR complete - count metrics
+      const metricsFound = Object.values(extractedData).filter(v => v !== null && v !== undefined).length;
+      setMetricsCount(metricsFound);
+      setAnalysisStage('ocr_complete');
+      await delay(1000);
+      
+      // Stage 3: Rule engine analysis
+      setAnalysisStage('rule_engine');
+      
       const response = await fetch('/api/tiktok-review', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -137,12 +159,29 @@ export default function TikTokReviewPage() {
         throw new Error(result.error || 'Analysis failed');
       }
 
-      setReportData(result.data);
+      // Stage 4: Issues identified
+      const report = result.data as TikTokReportData;
+      const issuesFound = report.diagnosis?.length || 0;
+      setIssuesCount(issuesFound);
+      setAnalysisStage('issues_identified');
+      await delay(800);
+      
+      // Stage 5: Generating plan
+      setAnalysisStage('generating_plan');
+      await delay(800);
+      
+      setReportData(report);
+      
+      // Stage 6: Complete
+      setAnalysisStage('complete');
+      await delay(500);
+      
       setStep('result');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Analysis failed');
     } finally {
       setAnalyzing(false);
+      setAnalysisStage(null);
     }
   };
 
@@ -481,6 +520,16 @@ export default function TikTokReviewPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-8">
       <div className="max-w-4xl mx-auto">
+        {/* Analysis Progress */}
+        {analysisStage && (
+          <AnalysisProgress
+            currentStage={analysisStage}
+            metricsCount={metricsCount}
+            issuesCount={issuesCount}
+            isVisible={!!analysisStage}
+          />
+        )}
+
         {/* Header with Step Indicator */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">

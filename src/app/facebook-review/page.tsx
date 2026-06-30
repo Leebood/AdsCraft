@@ -7,13 +7,14 @@
  * 流程：Upload → Preview → Result
  */
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Upload, Loader2, AlertCircle, X, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { FacebookReport } from '@/components/facebook-report';
 import { ReportExport } from '@/components/report-export';
 import { StepIndicator } from '@/components/step-indicator';
+import { AnalysisProgress, type AnalysisStage } from '@/components/analysis-progress';
 import { generateUnifiedReport } from '@/lib/are/report-generator';
 import type { AOSReport, UnifiedReport } from '@/lib/are';
 
@@ -46,6 +47,9 @@ export default function FacebookReviewPage() {
   const [report, setReport] = useState<AOSReport | null>(null);
   const [unifiedReport, setUnifiedReport] = useState<UnifiedReport | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [analysisStage, setAnalysisStage] = useState<AnalysisStage | null>(null);
+  const [metricsCount, setMetricsCount] = useState(0);
+  const [issuesCount, setIssuesCount] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Handle file selection
@@ -114,8 +118,27 @@ export default function FacebookReviewPage() {
 
     setAnalyzing(true);
     setError(null);
-
+    
+    // Start analysis progress
+    setAnalysisStage('upload_complete');
+    
+    // Simulate progress stages
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+    
     try {
+      // Stage 1: Upload complete (already done)
+      await delay(800);
+      
+      // Stage 2: OCR complete - count metrics
+      const metricsFound = Object.values(extractedData).filter(v => v !== null && v !== undefined).length;
+      setMetricsCount(metricsFound);
+      setAnalysisStage('ocr_complete');
+      await delay(1000);
+      
+      // Stage 3: Rule engine analysis
+      setAnalysisStage('rule_engine');
+      
+      // Make API call
       const response = await fetch('/api/facebook-review', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -148,6 +171,17 @@ export default function FacebookReviewPage() {
       }
 
       const aosReport = result.data as AOSReport;
+      
+      // Stage 4: Issues identified
+      const issuesFound = aosReport.diagnosis?.length || 0;
+      setIssuesCount(issuesFound);
+      setAnalysisStage('issues_identified');
+      await delay(800);
+      
+      // Stage 5: Generating plan
+      setAnalysisStage('generating_plan');
+      await delay(800);
+      
       setReport(aosReport);
       
       // Generate unified report for export
@@ -171,11 +205,16 @@ export default function FacebookReviewPage() {
       );
       setUnifiedReport(unified);
       
+      // Stage 6: Complete
+      setAnalysisStage('complete');
+      await delay(500);
+      
       setStep('result');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Analysis failed');
     } finally {
       setAnalyzing(false);
+      setAnalysisStage(null);
     }
   };
 
@@ -205,6 +244,14 @@ export default function FacebookReviewPage() {
 
   return (
     <div className="min-h-screen bg-[#08111F] text-white p-6">
+      {/* Analysis Progress Overlay */}
+      <AnalysisProgress
+        currentStage={analysisStage || 'upload_complete'}
+        metricsCount={metricsCount}
+        issuesCount={issuesCount}
+        isVisible={analysisStage !== null}
+      />
+      
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">

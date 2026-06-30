@@ -25,6 +25,7 @@ import {
 import { GoogleReport, GoogleReportData } from '@/components/google-report';
 import { ReportExport } from '@/components/report-export';
 import { StepIndicator } from '@/components/step-indicator';
+import { AnalysisProgress, AnalysisStage } from '@/components/analysis-progress';
 import { generateUnifiedReport, UnifiedReport } from '@/lib/are';
 import { useRouter } from 'next/navigation';
 
@@ -64,6 +65,11 @@ export default function GoogleReviewPage() {
   const [unifiedReport, setUnifiedReport] = useState<UnifiedReport | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Analysis progress states
+  const [analysisStage, setAnalysisStage] = useState<AnalysisStage | null>(null);
+  const [metricsCount, setMetricsCount] = useState(0);
+  const [issuesCount, setIssuesCount] = useState(0);
 
   // 处理文件选择（只设置预览，不上传）
   const handleFileSelect = (file: File) => {
@@ -146,8 +152,26 @@ export default function GoogleReviewPage() {
 
     setIsAnalyzing(true);
     setError(null);
-
+    
+    // Start analysis progress
+    setAnalysisStage('upload_complete');
+    
+    // Simulate progress stages
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+    
     try {
+      // Stage 1: Upload complete (already done)
+      await delay(800);
+      
+      // Stage 2: OCR complete - count metrics
+      const metricsFound = Object.values(extractedData).filter(v => v !== null && v !== undefined && v !== '').length;
+      setMetricsCount(metricsFound);
+      setAnalysisStage('ocr_complete');
+      await delay(1000);
+      
+      // Stage 3: Rule engine analysis
+      setAnalysisStage('rule_engine');
+      
       const response = await fetch('/api/google-review', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -166,6 +190,17 @@ export default function GoogleReviewPage() {
       
       if (result.success && result.data) {
         setReport(result.data);
+        
+        // Stage 4: Issues identified
+        const issuesFound = result.data.diagnosis?.length || 0;
+        setIssuesCount(issuesFound);
+        setAnalysisStage('issues_identified');
+        await delay(800);
+        
+        // Stage 5: Generating plan
+        setAnalysisStage('generating_plan');
+        await delay(800);
+        
         // 生成统一报告用于导出
         const unified = generateUnifiedReport(
           'google',
@@ -186,6 +221,11 @@ export default function GoogleReviewPage() {
           }
         );
         setUnifiedReport(unified);
+        
+        // Stage 6: Complete
+        setAnalysisStage('complete');
+        await delay(500);
+        
         setStep(3);
       } else {
         throw new Error(result.error || 'Analysis failed');
@@ -194,6 +234,7 @@ export default function GoogleReviewPage() {
       setError(err instanceof Error ? err.message : 'Analysis failed');
     } finally {
       setIsAnalyzing(false);
+      setAnalysisStage(null);
     }
   };
 
@@ -205,6 +246,16 @@ export default function GoogleReviewPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
       <div className="max-w-6xl mx-auto">
+        {/* Analysis Progress */}
+        {analysisStage && (
+          <AnalysisProgress
+            currentStage={analysisStage}
+            metricsCount={metricsCount}
+            issuesCount={issuesCount}
+            isVisible={!!analysisStage}
+          />
+        )}
+
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
           <h1 className="text-2xl font-bold text-white">Google Ads Review</h1>
