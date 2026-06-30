@@ -706,8 +706,8 @@ export default function HomePage() {
             <h3 className="text-xl font-semibold text-white mb-2">TikTok</h3>
             <p className="text-[#94A3B8] text-sm mb-6">
               {locale === 'zh'
-                ? '完成引导式广告审查。获取平台特定推荐。'
-                : 'Complete a guided campaign audit. Get platform-specific recommendations.'}
+                ? '智能分析创意合规与拒审诊断'
+                : 'Smart analysis for creative compliance and rejection diagnosis'}
             </p>
             <button
               onClick={() => handleFreeDiagnosis('tiktok')}
