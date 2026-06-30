@@ -201,51 +201,27 @@ export default function FacebookReviewPage() {
     setError(null);
   };
 
+  const currentStepNum = step === 'upload' ? 1 : step === 'preview' ? 2 : 3;
+
   return (
-    <div className="min-h-screen bg-[#08111F] text-white">
-      {/* Header */}
-      <header className="border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            {step !== 'upload' && (
-              <button
-                onClick={handleBack}
-                className="p-2 hover:bg-white/5 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-            )}
-            <h1 className="text-xl font-bold text-[#00D4FF]">AdsCraft</h1>
-            <span className="text-slate-400">|</span>
-            <h2 className="text-lg text-white">Facebook Ad Diagnosis</h2>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            {/* Step indicator */}
-            <div className="hidden md:flex items-center gap-2">
-              <StepIndicator step={1} currentStep={step === 'upload' ? 1 : step === 'preview' ? 2 : 3} label="Upload" icon={<Upload className="h-4 w-4" />} />
-              <div className="w-8 h-px bg-slate-700" />
-              <StepIndicator step={2} currentStep={step === 'upload' ? 1 : step === 'preview' ? 2 : 3} label="Preview" icon={<CheckCircle2 className="h-4 w-4" />} />
-              <div className="w-8 h-px bg-slate-700" />
-              <StepIndicator step={3} currentStep={step === 'upload' ? 1 : step === 'preview' ? 2 : 3} label="Result" icon={<CheckCircle2 className="h-4 w-4" />} />
-            </div>
-            
-            {/* New Diagnosis button */}
-            {step === 'result' && (
-              <Button
-                onClick={handleReset}
-                variant="outline"
-                className="border-white/20 text-white hover:bg-white/5"
-              >
-                New Diagnosis
-              </Button>
-            )}
-          </div>
+    <div className="min-h-screen bg-[#08111F] text-white p-6">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-6">
+          <h1 className="text-2xl font-bold text-white">Facebook Ads Review</h1>
         </div>
-      </header>
+
+        {/* Stepper */}
+        <div className="flex items-center gap-2 mb-8">
+          <StepIndicator step={1} currentStep={currentStepNum} label="Upload" icon={<Upload className="h-4 w-4" />} />
+          <div className="flex-1 h-px bg-slate-700" />
+          <StepIndicator step={2} currentStep={currentStepNum} label="Preview" icon={<CheckCircle2 className="h-4 w-4" />} />
+          <div className="flex-1 h-px bg-slate-700" />
+          <StepIndicator step={3} currentStep={currentStepNum} label="Result" icon={<CheckCircle2 className="h-4 w-4" />} />
+        </div>
       
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <main className="max-w-4xl mx-auto">
         {/* Error message */}
         {error && (
           <div className="mb-6 bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-start gap-3">
@@ -433,14 +409,7 @@ export default function FacebookReviewPage() {
           </div>
         )}
       </main>
-      
-      {/* Footer */}
-      <footer className="border-t border-white/10 mt-12">
-        <div className="max-w-7xl mx-auto px-4 py-6 text-center text-slate-500 text-sm">
-          <p>Powered by AdsCraft Review Engine v1 | ARS v1</p>
-          <p className="mt-1">All diagnoses are backed by evidence. Scores are calculated by rules, not AI.</p>
-        </div>
-      </footer>
+      </div>
     </div>
   );
 }
