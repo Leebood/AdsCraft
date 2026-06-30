@@ -439,18 +439,28 @@ export default function HomePage() {
               className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#F8FAFC] leading-tight mb-6"
             >
               {locale === 'zh' 
-                ? 'Launch Better Ads Before Spending Your Budget.' 
-                : 'Launch Better Ads Before Spending Your Budget.'}
+                ? 'Your Ads, Reviewed.' 
+                : 'Your Ads, Reviewed.'}
             </motion.h1>
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-lg md:text-xl text-[#94A3B8] mb-8 leading-relaxed"
+              className="text-lg md:text-xl text-[#94A3B8] mb-4 leading-relaxed"
             >
               {locale === 'zh'
-                ? 'AdsCraft 在您投放前审查 Facebook 和 TikTok 广告 — 结合 AI 分析、平台特定规则和技术验证。'
-                : 'AdsCraft reviews your Facebook and TikTok campaigns before you launch—combining AI analysis, platform-specific rules, and technical validation.'}
+                ? '多平台广告审查，支持 Facebook、TikTok 和 Google Ads。上传截图，几分钟内获取诊断和行动计划。'
+                : 'Multi-platform ad review for Facebook, TikTok & Google Ads. Upload a screenshot, get diagnosis and action plan in minutes.'}
+            </motion.p>
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.15 }}
+              className="text-sm text-[#64748B] mb-8"
+            >
+              {locale === 'zh'
+                ? '无需登录。适用于任何广告平台截图。'
+                : 'No login required. Works with any ad platform screenshot.'}
             </motion.p>
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -466,16 +476,7 @@ export default function HomePage() {
                 disabled={loading}
                 className="px-6 py-3 bg-[#00D4FF] text-[#08111F] font-semibold rounded-lg hover:bg-[#35E1FF] transition-all disabled:opacity-50"
               >
-                {locale === 'zh' ? '开始免费诊断' : 'Start Free Diagnosis'}
-              </button>
-              <button
-                onClick={() => {
-                  const demoSection = document.getElementById('how-it-works');
-                  demoSection?.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="px-6 py-3 border border-[#00D4FF] text-[#00D4FF] font-semibold rounded-lg hover:bg-[#00D4FF]/10 transition-all"
-              >
-                {locale === 'zh' ? '观看演示' : 'Watch Demo'}
+                {locale === 'zh' ? '开始免费审查' : 'Start Free Review'}
               </button>
             </motion.div>
           </div>
@@ -544,7 +545,7 @@ export default function HomePage() {
         </p>
       </section>
 
-      {/* ========== 第三屏：Sample Report ========== */}
+      {/* ========== 第三屏：What You Get ========== */}
       <section className="relative z-10 max-w-[1200px] mx-auto px-6 py-24">
         <motion.h2 
           initial={{ opacity: 0, y: 20 }}
@@ -555,76 +556,48 @@ export default function HomePage() {
           {locale === 'zh' ? '您将获得' : 'What You Get'}
         </motion.h2>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="max-w-2xl mx-auto rounded-xl bg-[#101827] border border-white/10 overflow-hidden"
-        >
-          {/* Report Header */}
-          <div className="p-6 border-b border-white/10">
-            <h3 className="text-lg font-semibold text-white mb-4">{locale === 'zh' ? '广告系列审查' : 'Campaign Review'}</h3>
-            <div className="flex items-center gap-4">
-              <span className="text-[#94A3B8]">{locale === 'zh' ? '综合评分:' : 'Overall Score:'}</span>
-              <span className="text-3xl font-bold text-[#3B82F6]">
-                <AnimatedScore target={78} />
-                <span className="text-[#94A3B8] text-lg">/100</span>
-              </span>
-            </div>
-          </div>
-
-          {/* Score Bars - 5 Dimensions */}
-          <div className="p-6 space-y-4 border-b border-white/10">
-            {[
-              { label: locale === 'zh' ? '合规' : 'Compliance', value: 92, color: 'bg-green-500' },
-              { label: locale === 'zh' ? '投放策略' : 'Campaign Strategy', value: 65, color: 'bg-orange-500' },
-              { label: locale === 'zh' ? '素材' : 'Creative', value: 74, color: 'bg-blue-500' },
-              { label: locale === 'zh' ? '落地页' : 'Landing Page', value: 68, color: 'bg-purple-500' },
-              { label: locale === 'zh' ? '追踪' : 'Tracking', value: 81, color: 'bg-cyan-500' },
-            ].map((item, i) => (
-              <div key={i}>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm text-white/80">{item.label}</span>
-                  <span className="text-sm text-white/60"><AnimatedScore target={item.value} /></span>
-                </div>
-                <AnimatedBar value={item.value} color={item.color} />
-              </div>
-            ))}
-          </div>
-
-          {/* Optimization Level */}
-          <div className="px-6 py-3 border-b border-white/10">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-[#94A3B8]">{locale === 'zh' ? '优化优先级:' : 'Optimization Level:'}</span>
-              <span className="text-sm font-medium text-[#F59E0B]">{locale === 'zh' ? '高优先级' : 'High Priority'}</span>
-            </div>
-          </div>
-
-          {/* Next Actions */}
-          <div className="p-6">
-            <h4 className="text-sm font-semibold text-white mb-4">{locale === 'zh' ? '下一步行动' : 'Next Actions'}</h4>
-            <div className="space-y-3">
-              {[
-                locale === 'zh' ? '修复结账页面的像素触发 — 未检测到事件' : 'Fix pixel firing — checkout page event not detected',
-                locale === 'zh' ? '减少受众重叠 — 3个广告组重叠68%' : 'Reduce audience overlap — 3 ad sets share 68% overlap',
-                locale === 'zh' ? '视频前3秒添加钩子 — 提升完播率' : 'Add hook in first 3 seconds of video',
-                locale === 'zh' ? '为所有广告链接添加 UTM 参数' : 'Add UTM parameters to all ad links',
-              ].map((action, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -10 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.5 + i * 0.3 }}
-                  className="flex items-start gap-3"
-                >
-                  <span className="text-[#00D4FF] font-medium">{i + 1}</span>
-                  <span className="text-sm text-white/70">{action}</span>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {[
+            {
+              icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>,
+              title: locale === 'zh' ? '诊断' : 'Diagnosis',
+              desc: locale === 'zh' ? '您的广告有什么问题？获取清晰的问题诊断 — 低 CTR、高 CPC、转化率差。' : 'What\'s wrong with your ads? Get clear diagnosis of issues — low CTR, high CPC, poor conversion rate.'
+            },
+            {
+              icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>,
+              title: locale === 'zh' ? '趋势' : 'Trends',
+              desc: locale === 'zh' ? '您的指标如何变化？将当前表现与历史时期进行比较。' : 'How are your metrics changing? Compare current performance with previous periods.'
+            },
+            {
+              icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>,
+              title: locale === 'zh' ? '行动计划' : 'Action Plan',
+              desc: locale === 'zh' ? '下一步该做什么？获取具体建议 — 优化落地页、调整定位、更换素材。' : 'What should you do next? Get specific recommendations — optimize landing page, adjust targeting, change creative.'
+            },
+            {
+              icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>,
+              title: locale === 'zh' ? '证据' : 'Evidence',
+              desc: locale === 'zh' ? '为什么信任这个诊断？每个洞察都有从广告截图中提取的数据支持。没有猜测。' : 'Why trust this diagnosis? Every insight is backed by data extracted from your ad screenshot. No guessing.'
+            },
+            {
+              icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>,
+              title: locale === 'zh' ? '导出' : 'Export',
+              desc: locale === 'zh' ? '与团队分享。下载 PDF 或 PPT 报告。专业格式，可直接用于演示。' : 'Share with your team. Download PDF or PPT report. Professional format, ready for presentations.'
+            },
+          ].map((item, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className="p-6 rounded-xl bg-[#101827] border border-white/10 hover:border-[#00D4FF]/30 transition-all"
+            >
+              <div className="text-[#00D4FF] mb-4">{item.icon}</div>
+              <h3 className="text-lg font-semibold text-white mb-2">{item.title}</h3>
+              <p className="text-sm text-[#94A3B8]">{item.desc}</p>
+            </motion.div>
+          ))}
+        </div>
       </section>
 
       {/* ========== 第四屏：Why AdsCraft Is Different ========== */}
@@ -638,72 +611,45 @@ export default function HomePage() {
           {locale === 'zh' ? '为什么选择 AdsCraft' : 'Why AdsCraft Is Different'}
         </motion.h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {[
             {
-              icon: (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              ),
-              title: locale === 'zh' ? 'Facebook 截图分析' : 'Facebook Screenshot Analysis',
-              desc: locale === 'zh' 
-                ? '上传广告截图。系统自动提取结构、指标和受众 — 无需手动输入数据。'
-                : 'Upload your campaign screenshots. System extracts structure, metrics, and targeting automatically — no manual data entry.',
+              icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>,
+              title: locale === 'zh' ? '基于证据，非 AI 猜测' : 'Evidence-Based, Not AI Guesswork',
+              desc: locale === 'zh' ? '每个诊断都有实际数据支持。AI 只负责解释 — 不会编造数字。' : 'Every diagnosis is backed by actual data. AI only explains — it doesn\'t make up numbers.'
             },
             {
-              icon: (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-              ),
-              title: locale === 'zh' ? 'TikTok 4层审查引擎' : 'TikTok 4-Layer Review Engine',
-              desc: locale === 'zh'
-                ? '每个广告系列都经过合规、风险、AI 和验证层。基于真实 TikTok 广告政策构建。'
-                : 'Every campaign goes through Compliance, Risk, AI, and Validation layers. Built on real TikTok advertising policies.',
-              note: locale === 'zh' ? '专业媒体代理机构使用的相同 4 层框架。' : 'The same 4-layer framework used by professional media agencies.',
+              icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+              title: locale === 'zh' ? '多平台，统一标准' : 'Multi-Platform, One Standard',
+              desc: locale === 'zh' ? '支持 Facebook、TikTok 和 Google Ads。标准化的审查流程。' : 'Works with Facebook, TikTok, and Google Ads. Same standardized review process.'
             },
             {
-              icon: (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              ),
-              title: locale === 'zh' ? '平台特定逻辑' : 'Platform-Specific Logic',
-              desc: locale === 'zh'
-                ? 'Facebook 和 TikTok 遵循不同的优化规则。AdsCraft 为每个平台应用正确的框架。'
-                : 'Facebook and TikTok follow different optimization rules. AdsCraft applies the right framework for each platform.',
+              icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>,
+              title: locale === 'zh' ? '标准化审查流程' : 'Standardized Review Process',
+              desc: locale === 'zh' ? '指标分析 → 规则检查 → 分数计算 → AI 解释。' : 'Metric Analysis → Rule Checking → Score Calculation → AI Explanation.'
             },
             {
-              icon: (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                </svg>
-              ),
-              title: locale === 'zh' ? '可执行报告' : 'Actionable Report',
-              desc: locale === 'zh'
-                ? '不仅仅是问题 — 带有优先级的具体下一步行动。确切知道先修复什么。'
-                : 'Not just problems — specific next actions with priority levels. Know exactly what to fix first.',
+              icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
+              title: locale === 'zh' ? '可执行，非仅提供信息' : 'Actionable, Not Just Informational',
+              desc: locale === 'zh' ? '不只是获取报告 — 获取清晰的行动计划。' : 'Don\'t just get a report — get a clear action plan.'
             },
-          ].map((card, i) => (
+            {
+              icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>,
+              title: locale === 'zh' ? '专业导出' : 'Professional Export',
+              desc: locale === 'zh' ? '下载 PDF 或 PPT。专业格式，可直接用于演示。' : 'Download PDF or PPT. Professional format, ready for presentations.'
+            },
+          ].map((item, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="p-6 rounded-xl bg-[#101827] border border-white/8 hover:border-white/20 hover:-translate-y-0.5 transition-all"
+              className="p-6 rounded-xl bg-[#101827] border border-white/10 hover:border-[#00D4FF]/30 transition-all"
             >
-              <div className="w-10 h-10 rounded-lg bg-[#00D4FF]/10 flex items-center justify-center text-[#00D4FF] mb-4">
-                {card.icon}
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-2">{card.title}</h3>
-              <p className="text-[#94A3B8] text-sm leading-relaxed">{card.desc}</p>
-              {card.note && (
-                <p className="text-[#94A3B8]/60 text-xs mt-2 italic">{card.note}</p>
-              )}
+              <div className="text-[#00D4FF] mb-4">{item.icon}</div>
+              <h3 className="text-lg font-semibold text-white mb-2">{item.title}</h3>
+              <p className="text-sm text-[#94A3B8]">{item.desc}</p>
             </motion.div>
           ))}
         </div>
@@ -800,7 +746,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ========== 第六屏：Features ========== */}
+      {/* ========== 第六屏：Everything You Need ========== */}
       <section className="relative z-10 max-w-[1200px] mx-auto px-6 py-24">
         <motion.h2 
           initial={{ opacity: 0, y: 20 }}
@@ -814,48 +760,44 @@ export default function HomePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
           {[
             {
-              icon: (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              ),
-              title: locale === 'zh' ? 'AI 分析' : 'AI Analysis',
-              desc: locale === 'zh' 
-                ? 'AI 推理分析广告结构和效果' 
-                : 'Campaign structure and performance analyzed by AI reasoning',
+              icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>,
+              title: locale === 'zh' ? '广告诊断' : 'Ad Diagnosis',
+              desc: locale === 'zh' ? '识别问题' : 'Identify issues',
             },
             {
-              icon: (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              ),
-              title: locale === 'zh' ? '合规审查' : 'Compliance Review',
-              desc: locale === 'zh'
-                ? '投放前检查平台广告政策'
-                : 'Check against platform advertising policies before launch',
+              icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>,
+              title: locale === 'zh' ? '趋势分析' : 'Trend Analysis',
+              desc: locale === 'zh' ? '比较不同时期的表现' : 'Compare performance over time',
             },
             {
-              icon: (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              ),
-              title: locale === 'zh' ? '优化报告' : 'Optimization Report',
-              desc: locale === 'zh'
-                ? '优先级推荐和具体行动项'
-                : 'Prioritized recommendations with specific action items',
+              icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>,
+              title: locale === 'zh' ? '行动计划' : 'Action Plan',
+              desc: locale === 'zh' ? '具体建议' : 'Specific recommendations',
             },
             {
-              icon: (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-              ),
-              title: locale === 'zh' ? '报告导出' : 'Report Export',
-              desc: locale === 'zh'
-                ? '下载完整报告为 PDF'
-                : 'Download your full report as PDF',
+              icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+              title: locale === 'zh' ? '多平台支持' : 'Multi-Platform Support',
+              desc: locale === 'zh' ? 'FB / TikTok / Google' : 'FB / TikTok / Google',
+            },
+            {
+              icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>,
+              title: locale === 'zh' ? '专业报告' : 'Professional Reports',
+              desc: locale === 'zh' ? 'PDF / PPT 导出' : 'PDF / PPT export',
+            },
+            {
+              icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
+              title: locale === 'zh' ? '截图上传' : 'Screenshot Upload',
+              desc: locale === 'zh' ? '无需 API' : 'No API required',
+            },
+            {
+              icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+              title: locale === 'zh' ? '历史追踪' : 'History Tracking',
+              desc: locale === 'zh' ? '保存并追踪进度' : 'Save and track progress',
+            },
+            {
+              icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+              title: locale === 'zh' ? '免费开始' : 'Free to Start',
+              desc: locale === 'zh' ? '基础分析无需登录' : 'No login required for basic analysis',
             },
           ].map((feature, i) => (
             <motion.div
@@ -972,43 +914,6 @@ export default function HomePage() {
               ))}
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* ========== 第八屏：FAQ ========== */}
-      <section className="relative z-10 max-w-[1200px] mx-auto px-6 py-24">
-        <motion.h2 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-3xl md:text-4xl font-bold text-[#F8FAFC] text-center mb-16"
-        >
-          {locale === 'zh' ? '常见问题' : 'FAQ'}
-        </motion.h2>
-
-        <div className="max-w-3xl mx-auto space-y-3">
-          {faqs.map((faq, i) => (
-            <motion.details
-              key={i}
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.05 }}
-              className="group rounded-xl bg-[#101827] border border-white/8 overflow-hidden"
-            >
-              <summary className="flex items-center justify-between p-5 cursor-pointer list-none">
-                <span className="text-white font-medium">
-                  {locale === 'zh' ? faq.qZh : faq.qEn}
-                </span>
-                <svg className="w-5 h-5 text-[#94A3B8] group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </summary>
-              <div className="px-5 pb-5 text-[#94A3B8] text-sm leading-relaxed">
-                {locale === 'zh' ? faq.aZh : faq.aEn}
-              </div>
-            </motion.details>
-          ))}
         </div>
       </section>
 

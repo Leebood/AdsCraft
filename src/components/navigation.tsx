@@ -52,11 +52,17 @@ export function Navigation() {
     return <SmartDiagnosisButton isHomePage={isSimpleNavPage} />;
   }
 
-  // 首页和诊断相关页面显示简化导航（避免与页面内容重复）
+  // 首页和诊断相关页面的简化导航
   if (isSimpleNavPage) {
     return (
       <nav className="flex items-center gap-4">
         <SmartDiagnosisButton isHomePage={true} />
+        <Link 
+          href="/faq"
+          className="text-blue-200/60 hover:text-cyan-300 transition-colors font-medium px-3 py-2 rounded-lg hover:bg-white/5"
+        >
+          {locale === 'zh' ? '常见问题' : 'FAQ'}
+        </Link>
         <div className="w-px h-6 bg-white/20" />
         {!loading && user && (
           <button 
