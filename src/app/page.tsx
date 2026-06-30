@@ -672,13 +672,13 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="p-8 rounded-xl bg-[#101827] border border-white/8 hover:border-[#1877F2]/30 transition-all text-center"
+            className="p-8 rounded-xl bg-[#101827] border border-white/8 hover:border-[#1877F2]/30 transition-all text-center flex flex-col"
           >
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#1877F2]/10 flex items-center justify-center overflow-hidden">
               <div className="w-10 h-10" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.facebook.icon }} />
             </div>
             <h3 className="text-xl font-semibold text-white mb-2">Facebook</h3>
-            <p className="text-[#94A3B8] text-sm mb-6">
+            <p className="text-[#94A3B8] text-sm mb-6 flex-1">
               {locale === 'zh' 
                 ? '上传广告截图。获取完整分析报告。' 
                 : 'Upload campaign screenshots. Get a full analysis report.'}
@@ -698,13 +698,13 @@ export default function HomePage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="p-8 rounded-xl bg-[#101827] border border-white/8 hover:border-[#FE2C55]/30 transition-all text-center"
+            className="p-8 rounded-xl bg-[#101827] border border-white/8 hover:border-[#FE2C55]/30 transition-all text-center flex flex-col"
           >
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center overflow-hidden">
               <div className="w-10 h-10" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.tiktok.icon }} />
             </div>
             <h3 className="text-xl font-semibold text-white mb-2">TikTok</h3>
-            <p className="text-[#94A3B8] text-sm mb-6">
+            <p className="text-[#94A3B8] text-sm mb-6 flex-1">
               {locale === 'zh'
                 ? '智能分析创意合规与拒审诊断'
                 : 'Smart analysis for creative compliance and rejection diagnosis'}
@@ -724,13 +724,13 @@ export default function HomePage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="p-8 rounded-xl bg-[#101827] border border-white/8 hover:border-[#4285F4]/30 transition-all text-center"
+            className="p-8 rounded-xl bg-[#101827] border border-white/8 hover:border-[#4285F4]/30 transition-all text-center flex flex-col"
           >
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#4285F4]/10 flex items-center justify-center overflow-hidden">
               <div className="w-10 h-10" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.google.icon }} />
             </div>
             <h3 className="text-xl font-semibold text-white mb-2">Google Ads</h3>
-            <p className="text-[#94A3B8] text-sm mb-6">
+            <p className="text-[#94A3B8] text-sm mb-6 flex-1">
               {locale === 'zh' 
                 ? '上传广告截图。获取完整分析报告。' 
                 : 'Upload campaign screenshots. Get a full analysis report.'}
