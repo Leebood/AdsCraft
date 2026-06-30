@@ -37,7 +37,7 @@ export default function PricingPage() {
       'pricing.qr.copyLink': { en: 'Copy Payment Link', zh: '复制支付链接' },
       'pricing.qr.paymentComplete': { en: 'Payment Complete', zh: '支付完成' },
       'pricing.qr.close': { en: 'Close', zh: '关闭' },
-      'pricing.upgradeNote': { en: 'After upgrading, your current Pro subscription will be recalculated from today, Pro+ subscription starts from the upgrade day, remaining Pro reviews will be cleared and replaced with unlimited reviews.', zh: '升级后，当前 Pro 订阅将从今日起重新计算，Pro+ 订阅从升级当天开始，剩余 Pro 次数将清零，替换为无限次数。' },
+      'pricing.upgradeNote': { en: 'After upgrading, your current Pro subscription will be recalculated from today, Pro+ subscription starts from the upgrade day, remaining Pro reviews will be cleared and replaced with more reviews.', zh: '升级后，当前 Pro 订阅将从今日起重新计算，Pro+ 订阅从升级当天开始，剩余 Pro 次数将清零，替换为更多分析次数。' },
     };
     return translations[key]?.[locale] || key;
   };
@@ -89,7 +89,7 @@ export default function PricingPage() {
     ],
     zh: [
       '包含所有 Pro 功能',
-      '无限 Review 次数',
+      '更多 Review 次数',
       '新功能优先体验',
     ],
   };
@@ -292,7 +292,12 @@ export default function PricingPage() {
                 </span>
                 <span className="text-blue-200 text-lg ml-2">{t('pricing.perMonth')}</span>
               </div>
-              <p className="text-blue-200 text-sm mt-2">{PLAN_INFO.pro_plus.reviewsPerMonth} {t('pricing.reviewsPerMonth')}</p>
+              <p className="text-blue-200 text-sm mt-2">
+                {PLAN_INFO.pro_plus.reviewsPerMonthValue > 0 
+                  ? `${PLAN_INFO.pro_plus.reviewsPerMonth} ${t('pricing.reviewsPerMonth')}`
+                  : (locale === 'zh' ? '更多 Review 次数/月' : 'Unlimited Reviews/month')
+                }
+              </p>
             </CardHeader>
             <CardContent>
               <ul className="space-y-3">

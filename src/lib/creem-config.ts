@@ -44,7 +44,7 @@ export const CREEM_PRODUCTS = {
       ],
       zh: [
         '包含所有 Pro 功能',
-        '无限 Review 次数',
+        '更多 Review 次数',
         '新功能优先体验',
       ],
     },

@@ -871,12 +871,6 @@ export default function HomePage() {
                 {locale === 'zh' ? '优化建议预览' : 'Optimization Preview'}
               </li>
             </ul>
-            <button 
-              onClick={() => handleAuthRequiredAction('/dashboard')}
-              className="w-full py-2 px-4 rounded-lg border border-white/20 text-white hover:bg-white/5 transition-all"
-            >
-              {locale === 'zh' ? '开始使用' : 'Get Started'}
-            </button>
           </motion.div>
 
           {/* Pro */}
@@ -912,12 +906,6 @@ export default function HomePage() {
                 {locale === 'zh' ? '完整优化建议' : 'Full Optimization Plan'}
               </li>
             </ul>
-            <button 
-              onClick={() => handleAuthRequiredAction('/pricing?plan=pro')}
-              className="w-full py-2 px-4 rounded-lg bg-[#00D4FF] text-[#08111F] font-semibold hover:bg-[#35E1FF] transition-all"
-            >
-              {locale === 'zh' ? '订阅 Pro' : 'Subscribe to Pro'}
-            </button>
           </motion.div>
 
           {/* Pro+ */}
@@ -935,7 +923,7 @@ export default function HomePage() {
             <ul className="space-y-3 text-sm text-[#94A3B8] mb-6">
               <li className="flex items-center gap-2">
                 <span className="text-[#22C55E]">✓</span>
-                {locale === 'zh' ? '无限 Review' : 'Unlimited Reviews'}
+                {locale === 'zh' ? '更多 Review 次数' : 'Unlimited Reviews'}
               </li>
               <li className="flex items-center gap-2">
                 <span className="text-[#22C55E]">✓</span>
@@ -950,12 +938,6 @@ export default function HomePage() {
                 {locale === 'zh' ? '新功能优先体验' : 'Early Access to New Features'}
               </li>
             </ul>
-            <button 
-              onClick={() => handleAuthRequiredAction('/pricing?plan=pro_plus')}
-              className="w-full py-2 px-4 rounded-lg bg-white/10 text-white font-semibold hover:bg-white/20 transition-all"
-            >
-              {locale === 'zh' ? '订阅 Pro+' : 'Subscribe to Pro+'}
-            </button>
           </motion.div>
         </div>
 
