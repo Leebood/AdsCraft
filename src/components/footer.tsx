@@ -11,7 +11,7 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 text-center">
         {/* 版权 */}
         <p className="text-blue-300/50 text-sm mb-4">
-          &copy; 2026 AdsCraft. AI Ad Decision Engine for Facebook & TikTok
+          &copy; 2026 AdsCraft. Ad Review Platform for Facebook, TikTok &amp; Google
         </p>
         
         {/* 链接 */}
