@@ -459,8 +459,8 @@ export default function HomePage() {
               className="text-sm text-[#64748B] mb-8"
             >
               {locale === 'zh'
-                ? '无需登录。适用于任何广告平台截图。'
-                : 'No login required. Works with any ad platform screenshot.'}
+                ? '支持 Facebook、TikTok 和 Google Ads 截图。'
+                : 'Works with Facebook, TikTok & Google Ads screenshots.'}
             </motion.p>
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -795,9 +795,9 @@ export default function HomePage() {
               desc: locale === 'zh' ? '保存并追踪进度' : 'Save and track progress',
             },
             {
-              icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-              title: locale === 'zh' ? '免费开始' : 'Free to Start',
-              desc: locale === 'zh' ? '基础分析无需登录' : 'No login required for basic analysis',
+              icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+              title: locale === 'zh' ? '快速上手' : 'Quick Start',
+              desc: locale === 'zh' ? '注册后即可开始分析' : 'Sign up and start analyzing',
             },
           ].map((feature, i) => (
             <motion.div
