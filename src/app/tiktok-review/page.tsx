@@ -481,98 +481,104 @@ export default function TikTokReviewPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-8">
       <div className="max-w-4xl mx-auto">
+        {/* Header with Step Indicator */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">TikTok Ads Review</h1>
-          <p className="text-slate-400">
-            Upload a screenshot of your TikTok Ads Manager to get a comprehensive analysis
-          </p>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-2xl font-bold text-white">TikTok Ads Review</h1>
+              <p className="text-slate-400 mt-1">Upload a screenshot of your TikTok Ads Manager to get a comprehensive analysis</p>
+            </div>
+          </div>
+
+          {/* Stepper */}
+          <div className="flex items-center gap-2">
+            <StepIndicator step={1} currentStep={currentStepNum} label="Upload" icon={<Upload className="h-4 w-4" />} />
+            <div className="flex-1 h-px bg-slate-700" />
+            <StepIndicator step={2} currentStep={currentStepNum} label="Preview" icon={<CheckCircle2 className="h-4 w-4" />} />
+            <div className="flex-1 h-px bg-slate-700" />
+            <StepIndicator step={3} currentStep={currentStepNum} label="Result" icon={<CheckCircle2 className="h-4 w-4" />} />
+          </div>
         </div>
 
-        <Card className="bg-slate-900/50 border-slate-800">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Upload className="h-5 w-5" />
-              Upload Screenshot
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-              className="border-2 border-dashed border-slate-700 rounded-xl p-12 text-center cursor-pointer hover:border-cyan-500/50 hover:bg-cyan-500/5 transition-all"
-            >
-              <Upload className="h-12 w-12 text-slate-500 mx-auto mb-4" />
-              <p className="text-lg text-white mb-2">Click or drag to upload TikTok Ads Manager screenshot</p>
-              <p className="text-sm text-slate-400">Supports PNG, JPG, JPEG (max 10MB)</p>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) handleFileSelect(f);
-                }}
-                className="hidden"
-              />
-            </div>
-
-            {file && preview && (
-              <div className="mt-6">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm text-slate-400">{file.name}</span>
+        <Card className="bg-white/5 border-white/10">
+          <CardContent className="py-12">
+            <div className="text-center">
+              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-cyan-500/20 to-teal-500/20 flex items-center justify-center border border-cyan-400/30">
+                <Upload className="w-10 h-10 text-cyan-400" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-2">
+                Upload TikTok Ads Screenshot
+              </h3>
+              <p className="text-slate-400 mb-8 max-w-md mx-auto">
+                Upload a screenshot of your TikTok Ads Manager to get a professional diagnosis report.
+              </p>
+              
+              {/* Upload area */}
+              <div
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                className="border-2 border-dashed border-white/20 rounded-xl p-12 hover:border-[#00D4FF]/50 transition-colors cursor-pointer"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {preview ? (
+                  <div className="space-y-4">
+                    <img src={preview} alt="Preview" className="max-h-64 mx-auto rounded-lg" />
+                    <p className="text-sm text-slate-400">{file?.name}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <Upload className="w-12 h-12 mx-auto text-slate-500" />
+                    <div>
+                      <p className="text-white font-medium">Click to upload or drag and drop</p>
+                      <p className="text-sm text-slate-500 mt-1">PNG, JPG, WEBP up to 10MB</p>
+                    </div>
+                  </div>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) handleFileSelect(f);
+                  }}
+                />
+              </div>
+              
+              {/* Upload button */}
+              {file && (
+                <div className="mt-6 flex justify-center gap-4">
                   <Button
-                    variant="ghost"
-                    size="sm"
+                    variant="outline"
                     onClick={() => {
                       setFile(null);
                       setPreview(null);
                     }}
+                    className="border-white/20 text-white hover:bg-white/5"
                   >
-                    <X className="h-4 w-4" />
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleUploadAndAnalyze}
+                    disabled={uploading}
+                    className="bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700 text-white"
+                  >
+                    {uploading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Recognizing...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-4 h-4 mr-2" />
+                        Upload & Recognize
+                      </>
+                    )}
                   </Button>
                 </div>
-                <img src={preview} alt="Preview" className="w-full rounded-lg border border-slate-700" />
-              </div>
-            )}
-
-            {error && (
-              <div className="flex items-center gap-2 p-4 mt-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-                <AlertCircle className="h-5 w-5 text-red-500" />
-                <p className="text-red-400">{error}</p>
-              </div>
-            )}
-
-            {file && (
-              <Button
-                onClick={handleUploadAndAnalyze}
-                disabled={uploading}
-                className="w-full mt-6 bg-cyan-500 hover:bg-cyan-600 text-slate-900 font-semibold"
-              >
-                {uploading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Recognizing...
-                  </>
-                ) : (
-                  'Upload and Recognize'
-                )}
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Info */}
-        <Card className="mt-8 bg-slate-900/30 border-slate-800">
-          <CardContent className="pt-6">
-            <h3 className="text-lg font-semibold text-white mb-2">About TikTok Analysis</h3>
-            <ul className="space-y-2 text-sm text-slate-400">
-              <li>• <strong>4-Layer Review Standard:</strong> Policy Compliance → Performance Metrics → Creative Quality → Marketing Effectiveness</li>
-              <li>• <strong>Core Metrics:</strong> CTR, CVR, CPC, CPA, ROAS, CPM</li>
-              <li>• <strong>Video Metrics:</strong> 6s View Rate, Average Watch Time (for Hook analysis)</li>
-              <li>• <strong>Evidence-Based:</strong> Every diagnosis is backed by evidence with source tracking</li>
-              <li>• <strong>Actionable Insights:</strong> Get specific recommendations to improve your campaigns</li>
-            </ul>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
