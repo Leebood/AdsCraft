@@ -86,7 +86,7 @@ function HeroSimulation() {
       >
         <div className="flex items-center gap-2 mb-3">
           <div className="w-5 h-5 overflow-hidden flex-shrink-0" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.facebook.icon.replace('w-10 h-10', 'w-5 h-5') }} />
-          <span className="text-sm font-medium text-white/80">Facebook</span>
+          <span className="text-sm font-medium text-white/80">Facebook Ads</span>
         </div>
         <div className="space-y-2">
           {facebookSteps.map((s, i) => (
@@ -126,7 +126,7 @@ function HeroSimulation() {
       >
         <div className="flex items-center gap-2 mb-3">
           <div className="w-5 h-5 overflow-hidden flex-shrink-0" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.tiktok.icon.replace('w-10 h-10', 'w-5 h-5') }} />
-          <span className="text-sm font-medium text-white/80">{locale === 'zh' ? 'TikTok 6步审查' : 'TikTok 6-Step Audit'}</span>
+          <span className="text-sm font-medium text-white/80">TikTok Ads</span>
         </div>
         <div className="space-y-2">
           {tiktokSteps.map((s, i) => (
@@ -166,7 +166,7 @@ function HeroSimulation() {
       >
         <div className="flex items-center gap-2 mb-3">
           <div className="w-5 h-5 overflow-hidden flex-shrink-0" dangerouslySetInnerHTML={{ __html: PLATFORM_CONFIGS.google.icon.replace('w-10 h-10', 'w-5 h-5') }} />
-          <span className="text-sm font-medium text-white/80">Google</span>
+          <span className="text-sm font-medium text-white/80">Google Ads</span>
         </div>
         <div className="space-y-2">
           {googleSteps.map((s, i) => (
