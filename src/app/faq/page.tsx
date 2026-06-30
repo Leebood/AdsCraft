@@ -104,6 +104,37 @@ export default function FAQPage() {
             </motion.details>
           ))}
         </div>
+
+        {/* 联系客服 */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="mt-16 max-w-3xl mx-auto"
+        >
+          <div className="rounded-xl bg-[#101827] border border-white/8 p-8 text-center">
+            <h2 className="text-xl font-semibold text-white mb-3">
+              {locale === 'zh' ? '还有其他问题？' : 'Still have questions?'}
+            </h2>
+            <p className="text-[#94A3B8] text-sm mb-6">
+              {locale === 'zh' 
+                ? '我们的技术支持团队随时为您服务。发送邮件后，我们会在 24 小时内尽快回复您。' 
+                : 'Our technical support team is here to help. Send us an email and we\'ll get back to you within 24 hours.'}
+            </p>
+            <a
+              href="mailto:support@adscraft.com"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-medium rounded-lg transition-all"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              {locale === 'zh' ? '联系技术支持' : 'Contact Support'}
+            </a>
+            <p className="mt-4 text-[#64748B] text-xs">
+              support@adscraft.com
+            </p>
+          </div>
+        </motion.div>
       </div>
     </div>
   );
