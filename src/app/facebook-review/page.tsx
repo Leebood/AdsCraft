@@ -17,6 +17,7 @@ import { StepIndicator } from '@/components/step-indicator';
 import AnalysisProgress, { type AnalysisStage } from '@/components/analysis-progress';
 import { generateUnifiedReport } from '@/lib/are/report-generator';
 import type { AOSReport, UnifiedReport } from '@/lib/are';
+import { getSupabaseBrowserClientAsync } from '@/lib/supabase-browser';
 
 type Step = 'upload' | 'preview' | 'result';
 
@@ -88,6 +89,16 @@ export default function FacebookReviewPage() {
     setError(null);
 
     try {
+      // 获取 session token
+      const client = await getSupabaseBrowserClientAsync();
+      const { data: { session } } = await client.auth.getSession();
+      
+      if (!session) {
+        setError('Please login first');
+        setUploading(false);
+        return;
+      }
+
       const formData = new FormData();
       formData.append('image', file);
       formData.append('platform', 'facebook');
@@ -95,6 +106,9 @@ export default function FacebookReviewPage() {
       const response = await fetch('/api/analyze-screenshot', {
         method: 'POST',
         body: formData,
+        headers: {
+          'x-session': session.access_token,
+        },
       });
 
       const result = await response.json();
@@ -334,12 +348,12 @@ export default function FacebookReviewPage() {
                 {file && (
                   <div className="mt-6 flex justify-center gap-4">
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       onClick={() => {
                         setFile(null);
                         setPreview(null);
                       }}
-                      className="border-white/20 text-white hover:bg-white/5"
+                      className="border border-white/20 text-white hover:bg-white/10 bg-transparent"
                     >
                       Cancel
                     </Button>

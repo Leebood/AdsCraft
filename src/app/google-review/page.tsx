@@ -28,6 +28,7 @@ import { StepIndicator } from '@/components/step-indicator';
 import AnalysisProgress, { type AnalysisStage } from '@/components/analysis-progress';
 import { generateUnifiedReport, UnifiedReport } from '@/lib/are';
 import { useRouter } from 'next/navigation';
+import { getSupabaseBrowserClientAsync } from '@/lib/supabase-browser';
 
 // ============================================================================
 // Types
@@ -99,6 +100,16 @@ export default function GoogleReviewPage() {
     setError(null);
 
     try {
+      // 获取 session token
+      const client = await getSupabaseBrowserClientAsync();
+      const { data: { session } } = await client.auth.getSession();
+      
+      if (!session) {
+        setError('Please login first');
+        setIsUploading(false);
+        return;
+      }
+
       const formData = new FormData();
       formData.append('image', screenshotFile);
       formData.append('platform', 'google');
@@ -106,6 +117,9 @@ export default function GoogleReviewPage() {
       const response = await fetch('/api/analyze-screenshot', {
         method: 'POST',
         body: formData,
+        headers: {
+          'x-session': session.access_token,
+        },
       });
 
       const result = await response.json();
@@ -336,12 +350,12 @@ export default function GoogleReviewPage() {
                 {screenshotFile && !isUploading && (
                   <div className="mt-6 flex justify-center gap-4">
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       onClick={() => {
                         setScreenshotFile(null);
                         setPreview(null);
                       }}
-                      className="border-white/20 text-white hover:bg-white/5"
+                      className="border border-white/20 text-white hover:bg-white/10 bg-transparent"
                     >
                       Cancel
                     </Button>
