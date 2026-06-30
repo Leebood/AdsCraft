@@ -256,7 +256,9 @@ export function TikTokReport({ data, locale = 'en' }: TikTokReportProps) {
         <div>
           <h1 className="text-3xl font-bold text-white">TikTok Ads Review</h1>
           <p className="text-slate-400 mt-1">
-            {data.campaign_name} • {data.date_range}
+            {!data.campaign_name || data.campaign_name === 'Unknown Campaign'
+              ? 'TikTok Analysis'
+              : data.campaign_name} • {data.date_range}
           </p>
         </div>
         <Badge variant="outline" className="text-sm">

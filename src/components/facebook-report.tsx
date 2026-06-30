@@ -74,7 +74,11 @@ function SummaryPage({ report, locale }: { report: AOSReport; locale: 'en' | 'zh
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-white">{t.overallScore}</h2>
-            <p className="text-slate-400 mt-1">{report.campaign_name}</p>
+            <p className="text-slate-400 mt-1">
+              {!report.campaign_name || report.campaign_name === 'Unknown Campaign'
+                ? 'Facebook Analysis'
+                : report.campaign_name}
+            </p>
           </div>
           <div className="text-right">
             <div 
