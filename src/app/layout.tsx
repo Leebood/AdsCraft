@@ -4,7 +4,6 @@ import './globals.css';
 import { SupabaseConfigProvider } from '@/lib/supabase-config-inject';
 import { AuthProvider } from '@/lib/auth-context';
 import { I18nProvider } from '@/lib/i18n-context';
-import { LanguageSwitcher } from '@/components/language-switcher';
 import { Navigation } from '@/components/navigation';
 import { Footer } from '@/components/footer';
 import Link from 'next/link';
@@ -81,9 +80,8 @@ export default function RootLayout({
                 </Link>
                 <div className="flex items-center gap-6">
                   <Navigation />
-                  <LanguageSwitcher />
+                </div>
               </div>
-            </div>
           </header>
 
           {/* Main Content */}
