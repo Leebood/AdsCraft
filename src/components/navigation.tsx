@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/i18n-context';
 import { useAuth } from '@/lib/auth-context';
+import { Globe } from 'lucide-react';
 
 export function Navigation() {
   const { t, locale, setLocale } = useI18n();
@@ -92,9 +93,10 @@ export function Navigation() {
       {/* 语言切换 */}
       <button
         onClick={toggleLocale}
-        className="px-3 py-1.5 rounded-lg transition-colors font-medium text-xs border border-white/20 text-blue-200/80 hover:text-cyan-300 hover:border-cyan-400/50 hover:bg-cyan-500/10"
+        className="p-2 rounded-lg transition-colors text-blue-200/70 hover:text-cyan-300 hover:bg-white/5"
+        title={locale === 'zh' ? 'Switch to English' : '切换到中文'}
       >
-        {locale === 'zh' ? 'EN' : '中'}
+        <Globe className="w-4 h-4" />
       </button>
     </nav>
   );
