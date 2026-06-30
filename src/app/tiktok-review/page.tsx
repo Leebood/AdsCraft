@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Upload, Loader2, AlertCircle, X, CheckCircle2, TrendingUp, Target, Lightbulb, Image as ImageIcon } from 'lucide-react';
+import { Upload, Loader2, AlertCircle, X, CheckCircle2, TrendingUp, Target, Lightbulb, Image as ImageIcon, AlertTriangle } from 'lucide-react';
 import { TikTokReport, type TikTokReportData } from '@/components/tiktok-report';
 import { ReportExport } from '@/components/report-export';
 import { StepIndicator } from '@/components/step-indicator';
@@ -42,6 +42,7 @@ export default function TikTokReviewPage() {
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
   const [reportData, setReportData] = useState<TikTokReportData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [platformWarning, setPlatformWarning] = useState<string | null>(null);
   const [analysisStage, setAnalysisStage] = useState<AnalysisStage | null>(null);
   const [metricsCount, setMetricsCount] = useState(0);
   const [issuesCount, setIssuesCount] = useState(0);
@@ -106,6 +107,19 @@ export default function TikTokReviewPage() {
 
       if (!response.ok) {
         throw new Error(result.error || 'Screenshot recognition failed');
+      }
+
+      // Check platform mismatch
+      const platformDetected = result.platform_detected;
+      if (platformDetected && platformDetected !== 'tiktok') {
+        const platformNames: Record<string, string> = {
+          tiktok: 'TikTok',
+          google: 'Google Ads',
+          facebook: 'Facebook',
+        };
+        setPlatformWarning(`Detected ${platformNames[platformDetected] || platformDetected} screenshot, but you selected TikTok. Please upload the correct platform screenshot.`);
+      } else {
+        setPlatformWarning(null);
       }
 
       setExtractedData(result);
@@ -316,6 +330,17 @@ export default function TikTokReviewPage() {
             <div className="flex-1 h-px bg-slate-700" />
             <StepIndicator step={3} currentStep={currentStepNum} label="Result" icon={<CheckCircle2 className="h-4 w-4" />} />
           </div>
+
+          {/* Platform mismatch warning */}
+          {platformWarning && (
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex items-start gap-3 mb-6">
+              <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-amber-200 font-medium">Platform Mismatch</p>
+                <p className="text-amber-200/80 text-sm mt-1">{platformWarning}</p>
+              </div>
+            </div>
+          )}
 
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-white mb-2">Confirm Extracted Data</h2>

@@ -10,7 +10,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Upload, Loader2, AlertCircle, X, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { Upload, Loader2, AlertCircle, X, CheckCircle2, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { FacebookReport } from '@/components/facebook-report';
 import { ReportExport } from '@/components/report-export';
 import { StepIndicator } from '@/components/step-indicator';
@@ -48,6 +48,7 @@ export default function FacebookReviewPage() {
   const [report, setReport] = useState<AOSReport | null>(null);
   const [unifiedReport, setUnifiedReport] = useState<UnifiedReport | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [platformWarning, setPlatformWarning] = useState<string | null>(null);
   const [analysisStage, setAnalysisStage] = useState<AnalysisStage | null>(null);
   const [metricsCount, setMetricsCount] = useState(0);
   const [issuesCount, setIssuesCount] = useState(0);
@@ -115,6 +116,19 @@ export default function FacebookReviewPage() {
 
       if (!response.ok) {
         throw new Error(result.error || 'Screenshot recognition failed');
+      }
+
+      // Check platform mismatch
+      const platformDetected = result.platform_detected;
+      if (platformDetected && platformDetected !== 'facebook') {
+        const platformNames: Record<string, string> = {
+          tiktok: 'TikTok',
+          google: 'Google Ads',
+          facebook: 'Facebook',
+        };
+        setPlatformWarning(`Detected ${platformNames[platformDetected] || platformDetected} screenshot, but you selected Facebook. Please upload the correct platform screenshot.`);
+      } else {
+        setPlatformWarning(null);
       }
 
       setExtractedData(result);
@@ -384,6 +398,16 @@ export default function FacebookReviewPage() {
         {/* Step 2: Preview extracted data */}
         {step === 'preview' && extractedData && (
           <div className="space-y-6">
+            {/* Platform mismatch warning */}
+            {platformWarning && (
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-amber-200 font-medium">Platform Mismatch</p>
+                  <p className="text-amber-200/80 text-sm mt-1">{platformWarning}</p>
+                </div>
+              </div>
+            )}
             <Card className="bg-white/5 border-white/10">
               <CardHeader>
                 <CardTitle className="text-xl text-white flex items-center gap-2">

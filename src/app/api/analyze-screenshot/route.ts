@@ -24,12 +24,22 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024;
 // 支持的图片格式
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
-// 截图识别 Prompt - 只提取原始数据，不做分析
-const EXTRACT_PROMPT = `你是一个数据提取工具。请从这张 Facebook Ads Manager 截图中提取原始数据，不要进行任何分析或诊断。
+// 截图识别 Prompt - 通用平台，同时检测平台归属
+const EXTRACT_PROMPT = `你是一个数据提取工具。请从这张广告管理后台截图中提取原始数据，同时判断这是哪个广告平台的截图。
 
-严格返回以下 JSON 格式，只填写从截图中看到的数值，找不到的填 null：
+**任务1：平台识别**
+根据截图中的视觉特征判断平台：
+- Facebook/Meta：蓝色主题、"Ads Manager"、"Campaign Name" 等英文字段
+- TikTok：黑色/红色主题、"Campaign name"、"Cost"、"CPA" 等字段，可能有 TikTok logo
+- Google Ads：白色/蓝色主题、"Campaign"、"Cost (USD)"、"Clicks" 等字段，Google 风格 UI
+
+**任务2：数据提取**
+从截图中提取原始数据，不要进行任何分析或诊断。
+
+严格返回以下 JSON 格式：
 
 {
+  "platform_detected": "facebook" 或 "tiktok" 或 "google"（根据截图判断的平台），
   "campaign_name": "广告系列名称（从截图中提取）",
   "snapshot_date": "截图日期（YYYY-MM-DD格式，从截图中提取）",
   "spend": 花费金额（数字，如 1234.56）,
@@ -44,7 +54,7 @@ const EXTRACT_PROMPT = `你是一个数据提取工具。请从这张 Facebook A
 
 重要：
 1. 只返回 JSON，不要任何分析、诊断、建议
-2. 不要添加 Diagnosis、Trends、Actions 等字段
+2. platform_detected 必须是 "facebook"、"tiktok" 或 "google" 之一
 3. 只提取截图中实际显示的数值
 4. 如果找不到某个指标，返回 null`;
 
@@ -129,6 +139,7 @@ export async function POST(request: NextRequest) {
     // 解析 multipart/form-data
     const formData = await request.formData();
     const file = formData.get('image') as File | null;
+    const platformSelected = formData.get('platform') as string | null;
     
     if (!file) {
       return NextResponse.json(
@@ -239,6 +250,9 @@ export async function POST(request: NextRequest) {
       limit: updatedUserData?.screenshot_count_limit || limit,
       remaining: (updatedUserData?.screenshot_count_limit || limit) - (updatedUserData?.screenshot_count_used || used + 1),
     };
+
+    // 添加用户选择的平台信息
+    extractedData.platform_selected = platformSelected || 'unknown';
 
     // 添加调试信息（开发环境）
     if (process.env.NODE_ENV === 'development') {

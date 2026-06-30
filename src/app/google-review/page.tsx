@@ -20,7 +20,8 @@ import {
   Loader2, 
   ArrowLeft,
   Image as ImageIcon,
-  AlertCircle
+  AlertCircle,
+  AlertTriangle
 } from 'lucide-react';
 import { GoogleReport, GoogleReportData } from '@/components/google-report';
 import { ReportExport } from '@/components/report-export';
@@ -65,6 +66,7 @@ export default function GoogleReviewPage() {
   const [report, setReport] = useState<GoogleReportData | null>(null);
   const [unifiedReport, setUnifiedReport] = useState<UnifiedReport | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [platformWarning, setPlatformWarning] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Analysis progress states
@@ -125,6 +127,19 @@ export default function GoogleReviewPage() {
       const result = await response.json();
       
       if (response.ok) {
+        // Check platform mismatch
+        const platformDetected = result.platform_detected;
+        if (platformDetected && platformDetected !== 'google') {
+          const platformNames: Record<string, string> = {
+            tiktok: 'TikTok',
+            google: 'Google Ads',
+            facebook: 'Facebook',
+          };
+          setPlatformWarning(`Detected ${platformNames[platformDetected] || platformDetected} screenshot, but you selected Google Ads. Please upload the correct platform screenshot.`);
+        } else {
+          setPlatformWarning(null);
+        }
+
         // 将识别结果转换为 Google Campaign 数据
         const data: GoogleCampaignData = {
           name: result.campaign_name || 'Google Ads Campaign',
@@ -385,6 +400,17 @@ export default function GoogleReviewPage() {
 
         {/* Step 2: Preview */}
         {step === 2 && extractedData && (
+          <>
+          {/* Platform mismatch warning */}
+          {platformWarning && (
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex items-start gap-3 mb-6">
+              <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-amber-200 font-medium">Platform Mismatch</p>
+                <p className="text-amber-200/80 text-sm mt-1">{platformWarning}</p>
+              </div>
+            </div>
+          )}
           <Card className="bg-slate-900/50 border-slate-700">
             <CardHeader>
               <CardTitle className="text-xl text-white flex items-center gap-2">
@@ -553,6 +579,7 @@ export default function GoogleReviewPage() {
               </div>
             </CardContent>
           </Card>
+          </>
         )}
 
         {/* Step 3: Result */}
