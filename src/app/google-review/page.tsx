@@ -25,7 +25,7 @@ import {
 import { GoogleReport, GoogleReportData } from '@/components/google-report';
 import { ReportExport } from '@/components/report-export';
 import { StepIndicator } from '@/components/step-indicator';
-import { AnalysisProgress, AnalysisStage } from '@/components/analysis-progress';
+import AnalysisProgress, { type AnalysisStage } from '@/components/analysis-progress';
 import { generateUnifiedReport, UnifiedReport } from '@/lib/are';
 import { useRouter } from 'next/navigation';
 

@@ -9,7 +9,7 @@ import { Upload, Loader2, AlertCircle, X, CheckCircle2, TrendingUp, Target, Ligh
 import { TikTokReport, type TikTokReportData } from '@/components/tiktok-report';
 import { ReportExport } from '@/components/report-export';
 import { StepIndicator } from '@/components/step-indicator';
-import { AnalysisProgress, type AnalysisStage } from '@/components/analysis-progress';
+import AnalysisProgress, { type AnalysisStage } from '@/components/analysis-progress';
 import { generateUnifiedReport, type UnifiedReport } from '@/lib/are/report-generator';
 
 type Step = 'upload' | 'preview' | 'result';

@@ -14,7 +14,7 @@ import { Upload, Loader2, AlertCircle, X, CheckCircle2, ArrowLeft } from 'lucide
 import { FacebookReport } from '@/components/facebook-report';
 import { ReportExport } from '@/components/report-export';
 import { StepIndicator } from '@/components/step-indicator';
-import { AnalysisProgress, type AnalysisStage } from '@/components/analysis-progress';
+import AnalysisProgress, { type AnalysisStage } from '@/components/analysis-progress';
 import { generateUnifiedReport } from '@/lib/are/report-generator';
 import type { AOSReport, UnifiedReport } from '@/lib/are';
 
