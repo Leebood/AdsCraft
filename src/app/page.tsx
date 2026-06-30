@@ -37,7 +37,7 @@ function HeroSimulation() {
           }
           return s + 1;
         } else if (phase === 'google') {
-          if (s >= 6) {
+          if (s >= 4) {
             setPhase('pause');
             return 0;
           }
@@ -66,12 +66,10 @@ function HeroSimulation() {
   ];
 
   const googleSteps = [
-    { text: locale === 'zh' ? '政策合规检查' : 'Compliance', done: step >= 1 || phase === 'pause' },
-    { text: locale === 'zh' ? '广告素材审查' : 'Creative', done: step >= 2 || phase === 'pause' },
-    { text: locale === 'zh' ? '落地页检查' : 'Landing Page', done: step >= 3 || phase === 'pause' },
-    { text: locale === 'zh' ? '转化追踪验证' : 'Tracking', done: step >= 4 || phase === 'pause' },
-    { text: locale === 'zh' ? '质量得分分析' : 'Quality Score', done: step >= 5 || phase === 'pause' },
-    { text: locale === 'zh' ? '出价策略优化' : 'Bid Strategy', done: step >= 6 || phase === 'pause' },
+    { text: locale === 'zh' ? '截图已上传' : 'Screenshot Uploaded', done: step >= 1 || phase === 'pause' },
+    { text: locale === 'zh' ? '读取广告系列' : 'Reading Campaign', done: step >= 2 || phase === 'pause' },
+    { text: locale === 'zh' ? '检查指标' : 'Checking Metrics', done: step >= 3 || phase === 'pause' },
+    { text: locale === 'zh' ? '生成报告' : 'Building Report', done: step >= 4 || phase === 'pause' },
   ];
 
   const showFacebook = phase === 'facebook' || phase === 'pause';
