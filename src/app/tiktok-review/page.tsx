@@ -533,21 +533,35 @@ export default function TikTokReviewPage() {
                   </div>
                 )}
 
-                <Button
-                  variant="ghost"
-                  onClick={handleAnalyze}
-                  disabled={analyzing}
-                  className="w-full bg-cyan-500 hover:bg-cyan-600 text-slate-900 font-semibold"
-                >
-                  {analyzing ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Analyzing...
-                    </>
-                  ) : (
-                    'Confirm and Analyze'
-                  )}
-                </Button>
+                <div className="flex gap-3">
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setFile(null);
+                      setPreview(null);
+                      setExtractedData(null);
+                      setStep('upload');
+                    }}
+                    className="flex-1 bg-slate-800 hover:bg-slate-700 text-white border border-slate-600"
+                  >
+                    Re-upload
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={handleAnalyze}
+                    disabled={analyzing}
+                    className="flex-1 bg-cyan-500 hover:bg-cyan-600 text-slate-900 font-semibold"
+                  >
+                    {analyzing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      'Confirm and Analyze'
+                    )}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>

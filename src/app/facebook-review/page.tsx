@@ -439,9 +439,8 @@ export default function FacebookReviewPage() {
                 
                 <div className="mt-6 flex justify-center gap-4">
                   <Button
-                    variant="ghost"
                     onClick={handleBack}
-                    className="border-white/20 text-white hover:bg-white/10"
+                    className="bg-slate-700 hover:bg-slate-600 text-white border border-white/20"
                   >
                     Re-upload
                   </Button>
