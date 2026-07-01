@@ -556,9 +556,9 @@ export default function GoogleReviewPage() {
               {/* Action Buttons */}
               <div className="flex gap-4 pt-4">
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   onClick={() => setStep(1)}
-                  className="border-slate-700 text-slate-300 hover:bg-slate-800"
+                  className="border border-slate-700 text-slate-300 hover:bg-slate-800"
                 >
                   Back
                 </Button>
