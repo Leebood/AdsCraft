@@ -80,15 +80,22 @@ export function Navigation() {
       {/* 分隔线 */}
       <div className="w-px h-5 bg-white/20 mx-1" />
 
-      {/* Logout */}
-      {user && !loading && (
+      {/* Login / Logout */}
+      {user && !loading ? (
         <button 
           onClick={handleSignOut}
           className="px-3 py-2 rounded-lg transition-colors font-medium text-sm text-blue-200/70 hover:text-red-400 hover:bg-red-500/10"
         >
           {locale === 'zh' ? '退出' : 'Logout'}
         </button>
-      )}
+      ) : !loading ? (
+        <Link 
+          href="/login"
+          className="px-3 py-2 rounded-lg transition-colors font-medium text-sm text-blue-200/70 hover:text-cyan-300 hover:bg-white/5"
+        >
+          {locale === 'zh' ? '登录' : 'Login'}
+        </Link>
+      ) : null}
 
       {/* 语言切换 */}
       <button
