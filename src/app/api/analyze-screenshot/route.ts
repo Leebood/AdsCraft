@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseServerClientAsync } from '@/storage/database/supabase-client';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 // 截图识别额度映射
 const SCREENSHOT_LIMITS: Record<string, number> = {
@@ -22,6 +23,70 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 // 支持的图片格式
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+async function consumeScreenshotQuota(
+  supabase: SupabaseClient,
+  userId: string,
+  limit: number
+): Promise<{ used: number; limit: number; remaining: number } | null> {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const { data: currentData, error: currentError } = await supabase
+      .from('users')
+      .select('screenshot_count_used, screenshot_count_limit')
+      .eq('id', userId)
+      .single();
+
+    if (currentError) {
+      console.error('Failed to fetch current screenshot quota:', currentError);
+      return null;
+    }
+
+    const rawUsed = currentData?.screenshot_count_used;
+    const currentUsed = rawUsed || 0;
+    if (currentUsed >= limit) {
+      return null;
+    }
+
+    const nextUsed = currentUsed + 1;
+    const updatePayload = {
+      screenshot_count_used: nextUsed,
+      screenshot_count_limit: limit,
+    };
+
+    const { data: updatedData, error: updateError } = rawUsed == null
+      ? await supabase
+        .from('users')
+        .update(updatePayload)
+        .eq('id', userId)
+        .is('screenshot_count_used', null)
+        .select('screenshot_count_used, screenshot_count_limit')
+        .maybeSingle()
+      : await supabase
+        .from('users')
+        .update(updatePayload)
+        .eq('id', userId)
+        .eq('screenshot_count_used', currentUsed)
+        .select('screenshot_count_used, screenshot_count_limit')
+        .maybeSingle();
+
+    if (updateError) {
+      console.error('Failed to consume screenshot quota:', updateError);
+      return null;
+    }
+
+    if (updatedData) {
+      const used = updatedData.screenshot_count_used || nextUsed;
+      const updatedLimit = updatedData.screenshot_count_limit || limit;
+      return {
+        used,
+        limit: updatedLimit,
+        remaining: Math.max(0, updatedLimit - used),
+      };
+    }
+  }
+
+  return null;
+}
 
 // 截图识别 Prompt - 通用平台，同时检测平台归属
 const EXTRACT_PROMPT = `你是一个数据提取工具。请从这张广告管理后台截图中提取原始数据，同时判断这是哪个广告平台的截图。
@@ -248,27 +313,19 @@ export async function POST(request: NextRequest) {
       };
     }
 
-    // 识别成功后再消耗1次额度
-    await supabase
-      .from('users')
-      .update({
-        screenshot_count_used: effectiveUsed + 1,
-        screenshot_count_limit: limit,
-      })
-      .eq('id', user.id);
+    // 识别成功后再消耗1次额度，使用条件更新避免并发覆盖
+    const quota = await consumeScreenshotQuota(supabase, user.id, limit);
+    if (!quota) {
+      return NextResponse.json(
+        {
+          error: "You've used all your campaign reviews this month. Upgrade your plan to continue.",
+          quota: { used: limit, limit, remaining: 0 },
+        },
+        { status: 429 }
+      );
+    }
 
-    // 添加额度信息
-    const { data: updatedUserData } = await supabase
-      .from('users')
-      .select('screenshot_count_used, screenshot_count_limit')
-      .eq('id', user.id)
-      .single();
-
-    extractedData.quota = {
-      used: updatedUserData?.screenshot_count_used || effectiveUsed + 1,
-      limit: updatedUserData?.screenshot_count_limit || limit,
-      remaining: (updatedUserData?.screenshot_count_limit || limit) - (updatedUserData?.screenshot_count_used || effectiveUsed + 1),
-    };
+    extractedData.quota = quota;
 
     // 添加用户选择的平台信息
     extractedData.platform_selected = platformSelected || 'unknown';

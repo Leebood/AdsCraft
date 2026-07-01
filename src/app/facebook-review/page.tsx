@@ -7,17 +7,17 @@
  * 流程：Upload → Preview → Result
  */
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Upload, Loader2, AlertCircle, X, CheckCircle2, ArrowLeft, AlertTriangle } from 'lucide-react';
+import { Upload, Loader2, AlertCircle, X, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { FacebookReport } from '@/components/facebook-report';
 import { ReportExport } from '@/components/report-export';
 import { StepIndicator } from '@/components/step-indicator';
 import AnalysisProgress, { type AnalysisStage } from '@/components/analysis-progress';
 import { generateUnifiedReport } from '@/lib/are/report-generator';
 import type { AOSReport, UnifiedReport } from '@/lib/are';
-import { getSupabaseBrowserClientAsync } from '@/lib/supabase-browser';
+import { useScreenshotAnalysis } from '@/hooks/use-screenshot-analysis';
 
 type Step = 'upload' | 'preview' | 'result';
 
@@ -40,36 +40,30 @@ interface ExtractedData {
 
 export default function FacebookReviewPage() {
   const [step, setStep] = useState<Step>('upload');
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
   const [report, setReport] = useState<AOSReport | null>(null);
   const [unifiedReport, setUnifiedReport] = useState<UnifiedReport | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [platformWarning, setPlatformWarning] = useState<string | null>(null);
   const [analysisStage, setAnalysisStage] = useState<AnalysisStage | null>(null);
   const [metricsCount, setMetricsCount] = useState(0);
   const [issuesCount, setIssuesCount] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const {
+    file,
+    preview,
+    uploading,
+    error,
+    platformWarning,
+    setError,
+    selectFile,
+    clearFile,
+    uploadAndAnalyze,
+  } = useScreenshotAnalysis('facebook');
 
   // Handle file selection
   const handleFileSelect = useCallback((selectedFile: File) => {
-    if (!selectedFile.type.startsWith('image/')) {
-      setError('Please upload an image file');
-      return;
-    }
-    if (selectedFile.size > 10 * 1024 * 1024) {
-      setError('Image size cannot exceed 10MB');
-      return;
-    }
-    setError(null);
-    setFile(selectedFile);
-    const reader = new FileReader();
-    reader.onload = (e) => setPreview(e.target?.result as string);
-    reader.readAsDataURL(selectedFile);
-  }, []);
+    void selectFile(selectedFile);
+  }, [selectFile]);
 
   // Handle drag and drop
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -85,58 +79,11 @@ export default function FacebookReviewPage() {
   // Upload and analyze screenshot
   const handleUploadAndAnalyze = async () => {
     if (!file) return;
-    
-    setUploading(true);
-    setError(null);
 
-    try {
-      // 获取 session token
-      const client = await getSupabaseBrowserClientAsync();
-      const { data: { session } } = await client.auth.getSession();
-      
-      if (!session) {
-        setError('Please login first');
-        setUploading(false);
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('image', file);
-      formData.append('platform', 'facebook');
-
-      const response = await fetch('/api/analyze-screenshot', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'x-session': session.access_token,
-        },
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Screenshot recognition failed');
-      }
-
-      // Check platform mismatch
-      const platformDetected = result.platform_detected;
-      if (platformDetected && platformDetected !== 'facebook') {
-        const platformNames: Record<string, string> = {
-          tiktok: 'TikTok',
-          google: 'Google Ads',
-          facebook: 'Facebook',
-        };
-        setPlatformWarning(`Detected ${platformNames[platformDetected] || platformDetected} screenshot, but you selected Facebook. Please upload the correct platform screenshot.`);
-      } else {
-        setPlatformWarning(null);
-      }
-
-      setExtractedData(result);
+    const result = await uploadAndAnalyze();
+    if (result) {
+      setExtractedData(result as ExtractedData);
       setStep('preview');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Recognition failed, please try again');
-    } finally {
-      setUploading(false);
     }
   };
 
@@ -249,8 +196,7 @@ export default function FacebookReviewPage() {
   // Reset to upload step
   const handleReset = () => {
     setStep('upload');
-    setFile(null);
-    setPreview(null);
+    clearFile();
     setExtractedData(null);
     setReport(null);
     setUnifiedReport(null);
@@ -364,8 +310,7 @@ export default function FacebookReviewPage() {
                     <Button
                       variant="ghost"
                       onClick={() => {
-                        setFile(null);
-                        setPreview(null);
+                        clearFile();
                       }}
                       className="border border-white/20 text-white hover:bg-white/10 bg-transparent"
                     >

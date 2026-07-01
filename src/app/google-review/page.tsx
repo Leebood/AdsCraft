@@ -10,7 +10,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
@@ -18,8 +17,6 @@ import {
   FileText, 
   CheckCircle, 
   Loader2, 
-  ArrowLeft,
-  Image as ImageIcon,
   AlertCircle,
   AlertTriangle
 } from 'lucide-react';
@@ -29,7 +26,7 @@ import { StepIndicator } from '@/components/step-indicator';
 import AnalysisProgress, { type AnalysisStage } from '@/components/analysis-progress';
 import { generateUnifiedReport, UnifiedReport } from '@/lib/are';
 import { useRouter } from 'next/navigation';
-import { getSupabaseBrowserClientAsync } from '@/lib/supabase-browser';
+import { useScreenshotAnalysis } from '@/hooks/use-screenshot-analysis';
 
 // ============================================================================
 // Types
@@ -57,17 +54,23 @@ interface GoogleCampaignData {
 export default function GoogleReviewPage() {
   const router = useRouter();
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [isUploading, setIsUploading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
   const [screenshotPreview, setShowPreview] = useState(false);
   const [extractedData, setExtractedData] = useState<GoogleCampaignData | null>(null);
   const [report, setReport] = useState<GoogleReportData | null>(null);
   const [unifiedReport, setUnifiedReport] = useState<UnifiedReport | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [platformWarning, setPlatformWarning] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const {
+    file: screenshotFile,
+    preview,
+    uploading: isUploading,
+    error,
+    platformWarning,
+    setError,
+    selectFile,
+    clearFile,
+    uploadAndAnalyze,
+  } = useScreenshotAnalysis('google');
   
   // Analysis progress states
   const [analysisStage, setAnalysisStage] = useState<AnalysisStage | null>(null);
@@ -75,95 +78,42 @@ export default function GoogleReviewPage() {
   const [issuesCount, setIssuesCount] = useState(0);
 
   // 处理文件选择（只设置预览，不上传）
-  const handleFileSelect = (file: File) => {
-    setScreenshotFile(file);
-    setError(null);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreview(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
+  const handleFileSelect = useCallback((file: File) => {
+    void selectFile(file);
+  }, [selectFile]);
 
   // 处理拖放
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith('image/')) {
+    if (file) {
       handleFileSelect(file);
     }
-  };
+  }, [handleFileSelect]);
 
   // 处理上传并识别
   const handleUploadAndAnalyze = async () => {
     if (!screenshotFile) return;
-    
-    setIsUploading(true);
-    setError(null);
 
-    try {
-      // 获取 session token
-      const client = await getSupabaseBrowserClientAsync();
-      const { data: { session } } = await client.auth.getSession();
-      
-      if (!session) {
-        setError('Please login first');
-        setIsUploading(false);
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('image', screenshotFile);
-      formData.append('platform', 'google');
-
-      const response = await fetch('/api/analyze-screenshot', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'x-session': session.access_token,
-        },
-      });
-
-      const result = await response.json();
-      
-      if (response.ok) {
-        // Check platform mismatch
-        const platformDetected = result.platform_detected;
-        if (platformDetected && platformDetected !== 'google') {
-          const platformNames: Record<string, string> = {
-            tiktok: 'TikTok',
-            google: 'Google Ads',
-            facebook: 'Facebook',
-          };
-          setPlatformWarning(`Detected ${platformNames[platformDetected] || platformDetected} screenshot, but you selected Google Ads. Please upload the correct platform screenshot.`);
-        } else {
-          setPlatformWarning(null);
-        }
-
-        // 将识别结果转换为 Google Campaign 数据
-        const data: GoogleCampaignData = {
-          name: result.campaign_name || 'Google Ads Campaign',
-          campaign_type: result.campaign_type || 'search',
-          spend: result.spend || 0,
-          impressions: result.impressions,
-          clicks: result.clicks,
-          ctr: result.ctr,
-          cpc: result.cpc,
-          cpm: result.cpm,
-          conversions: result.conversions,
-          cvr: result.cvr,
-          roas: result.roas,
-          quality_score: result.quality_score,
-        };
-        setExtractedData(data);
-        setStep(2);
-      } else {
-        throw new Error(result.error || 'Failed to extract data');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed');
-    } finally {
-      setIsUploading(false);
+    const result = await uploadAndAnalyze();
+    if (result) {
+      // 将识别结果转换为 Google Campaign 数据
+      const data: GoogleCampaignData = {
+        name: typeof result.campaign_name === 'string' ? result.campaign_name : 'Google Ads Campaign',
+        campaign_type: result.campaign_type === 'display' || result.campaign_type === 'shopping' ? result.campaign_type : 'search',
+        spend: typeof result.spend === 'number' ? result.spend : 0,
+        impressions: typeof result.impressions === 'number' ? result.impressions : undefined,
+        clicks: typeof result.clicks === 'number' ? result.clicks : undefined,
+        ctr: typeof result.ctr === 'number' ? result.ctr : undefined,
+        cpc: typeof result.cpc === 'number' ? result.cpc : undefined,
+        cpm: typeof result.cpm === 'number' ? result.cpm : undefined,
+        conversions: typeof result.conversions === 'number' ? result.conversions : undefined,
+        cvr: typeof result.cvr === 'number' ? result.cvr : undefined,
+        roas: typeof result.roas === 'number' ? result.roas : undefined,
+        quality_score: typeof result.quality_score === 'number' ? result.quality_score : undefined,
+      };
+      setExtractedData(data);
+      setStep(2);
     }
   };
 
@@ -367,8 +317,7 @@ export default function GoogleReviewPage() {
                     <Button
                       variant="ghost"
                       onClick={() => {
-                        setScreenshotFile(null);
-                        setPreview(null);
+                        clearFile();
                       }}
                       className="border border-white/20 text-white hover:bg-white/10 bg-transparent"
                     >
@@ -433,7 +382,7 @@ export default function GoogleReviewPage() {
                   {screenshotPreview && (
                     <div className="border border-slate-700 rounded-lg overflow-hidden">
                       <img
-                        src={URL.createObjectURL(screenshotFile)}
+                        src={preview || ''}
                         alt="Screenshot"
                         className="max-h-96 w-auto mx-auto"
                       />
@@ -612,4 +561,3 @@ export default function GoogleReviewPage() {
 // ============================================================================
 // Helper Components
 // ============================================================================
-
