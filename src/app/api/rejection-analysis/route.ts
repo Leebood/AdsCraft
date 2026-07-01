@@ -70,7 +70,9 @@ export async function POST(request: NextRequest) {
     
     // 使用 LLMClient 进行诊断
     const customHeaders = HeaderUtils.extractForwardHeaders(request.headers);
-    const config = new Config();
+    // 显式传递 API key 从环境变量
+    const apiKey = process.env.COZE_WORKLOAD_API_TOKEN || process.env.OPENAI_API_KEY;
+    const config = apiKey ? new Config({ apiKey }) : new Config();
     const client = new LLMClient(config, customHeaders);
     
     const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [

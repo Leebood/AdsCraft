@@ -170,7 +170,9 @@ export async function POST(request: NextRequest) {
     const dataUrl = `data:${file.type};base64,${base64Image}`;
 
     // 使用沙箱内置 LLM 服务（coze-coding-dev-sdk）
-    const config = new Config();
+    // 显式传递 API key 从环境变量
+    const apiKey = process.env.COZE_WORKLOAD_API_TOKEN || process.env.OPENAI_API_KEY;
+    const config = apiKey ? new Config({ apiKey }) : new Config();
     const customHeaders = HeaderUtils.extractForwardHeaders(request.headers);
     const client = new LLMClient(config, customHeaders);
 
