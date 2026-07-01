@@ -107,7 +107,7 @@ ${rejectionContent}
     
     // 调用 LLM
     const response = await client.invoke(messages, {
-      model: 'doubao-seed-2-0-mini-260215',
+      model: 'deepseek-v3-2-251201',
       temperature: 0.7
     });
     
