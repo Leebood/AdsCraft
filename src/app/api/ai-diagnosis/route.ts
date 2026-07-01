@@ -8,7 +8,7 @@ import { TierKey, Platform, getCreditExhaustedUI } from '@/lib/tierLimits';
 
 // Coze智能体配置
 const COZE_API_BASE = process.env.COZE_API_BASE_URL || 'https://api.coze.cn';
-const COZE_API_TOKEN = process.env.COZE_WORKLOAD_API_TOKEN || 'pat_5D6p3jtzrjPUcw2T4Z2nHPmYpAzRhAE9fAsd8SLRkZ5bJoPEkaWpX2rAjwpd4eO1';
+const COZE_API_TOKEN = process.env.COZE_WORKLOAD_API_TOKEN;
 const COZE_BOT_ID = process.env.COZE_BOT_ID || '7648850096180330548';
 
 interface DiagnosisRequest {
@@ -28,6 +28,13 @@ interface DiagnosisRequest {
 
 export async function POST(request: NextRequest) {
   try {
+    if (!COZE_API_TOKEN) {
+      return new Response(JSON.stringify({ error: 'AI service not configured' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     const body: DiagnosisRequest = await request.json();
     const {
       route,

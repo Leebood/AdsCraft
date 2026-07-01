@@ -1,132 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/lib/auth-context';
 import { useI18n } from '@/lib/i18n-context';
-import { FileText, Upload, Zap, CheckCircle, Loader2, X } from 'lucide-react';
-import { TikTokReport, type TikTokReportData } from '@/components/tiktok-report';
-
-interface DiagnosisRecord {
-  id: string;
-  campaign_name: string;
-  campaign_type: string;
-  overall_score: number;
-  created_at: string;
-  spend?: number;
-}
-
-interface TikTokAuth {
-  is_connected: boolean;
-  advertiser_id?: string;
-  advertiser_info?: {
-    advertiser_name?: string;
-  };
-}
+import { Upload } from 'lucide-react';
 
 export default function PlansPage() {
   const router = useRouter();
-  const { user } = useAuth();
   const { locale } = useI18n();
 
   const [activeTab, setActiveTab] = useState<'fb' | 'tk' | 'google'>('fb');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [showTkPreview, setShowTkPreview] = useState(false);
-
-  // TikTok 截图上传状态
-  const [tkScreenshotFile, setTkScreenshotFile] = useState<File | null>(null);
-  const [tkScreenshotPreview, setTkScreenshotPreview] = useState<string | null>(null);
-  const [tkRecognizedData, setTkRecognizedData] = useState<Record<string, unknown> | null>(null);
-  const [tkReport, setTkReport] = useState<TikTokReportData | null>(null);
-  const [tkStep, setTkStep] = useState<1 | 2 | 3>(1);
 
   // Google 诊断历史
   const [googleDiagnosisHistory] = useState<Array<{ id: string; created_at: string; report?: { scores?: { overall?: number } } }>>([]);
-
-  // 处理 TikTok 截图上传
-  const handleTkScreenshotUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setTkScreenshotFile(file);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setTkScreenshotPreview(event.target?.result as string);
-    };
-    reader.readAsDataURL(file);
-
-    // 调用截图识别 API
-    setIsAnalyzing(true);
-    try {
-      const formData = new FormData();
-      formData.append('image', file);
-
-      const response = await fetch('/api/analyze-screenshot', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (data.success && data.data) {
-        setTkRecognizedData(data.data);
-        setTkStep(2);
-      } else {
-        alert(locale === 'zh' ? '截图识别失败，请重试' : 'Screenshot recognition failed, please try again');
-      }
-    } catch (error) {
-      console.error('Screenshot analysis error:', error);
-      alert(locale === 'zh' ? '截图识别失败，请重试' : 'Screenshot recognition failed, please try again');
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
-  // 处理 TikTok 诊断
-  const handleTkDiagnosis = async () => {
-    if (!tkRecognizedData) return;
-
-    setIsAnalyzing(true);
-    try {
-      const response = await fetch('/api/tiktok-review', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          campaigns: [tkRecognizedData],
-          date_range: 'Last 7 days',
-          locale,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success && data.data) {
-        setTkReport(data.data);
-        setTkStep(3);
-      } else {
-        alert(locale === 'zh' ? '诊断失败，请重试' : 'Diagnosis failed, please try again');
-      }
-    } catch (error) {
-      console.error('Diagnosis error:', error);
-      alert(locale === 'zh' ? '诊断失败，请重试' : 'Diagnosis failed, please try again');
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
-  // 重置 TikTok 截图上传
-  const resetTkScreenshot = () => {
-    setTkScreenshotFile(null);
-    setTkScreenshotPreview(null);
-    setTkRecognizedData(null);
-    setTkReport(null);
-    setTkStep(1);
-    setShowTkPreview(false);
-  };
 
   // 开始截图诊断 - 跳转到 TikTok 报告页面
   const handleStartDiagnosis = () => {
@@ -136,12 +24,6 @@ export default function PlansPage() {
   // 开始 Google 截图诊断
   const handleStartGoogleDiagnosis = () => {
     router.push('/google-review');
-  };
-
-  // 连接 TikTok
-  const handleConnectTikTok = () => {
-    // TODO: 实现 TikTok OAuth 连接
-    alert(locale === 'zh' ? 'TikTok 连接功能开发中...' : 'TikTok connection feature is under development...');
   };
 
   // TK Tab内容 - 与 FB Tab 保持一致
@@ -332,165 +214,6 @@ export default function PlansPage() {
         </div>
       </main>
 
-      {/* TikTok 截图预览弹窗 */}
-      {showTkPreview && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-white/20 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-slate-900 border-b border-white/10 p-4 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white">
-                {locale === 'zh' ? 'TikTok 广告诊断' : 'TikTok Ad Diagnosis'}
-              </h2>
-              <button
-                onClick={resetTkScreenshot}
-                className="text-blue-200/70 hover:text-white transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="p-6">
-              {/* 步骤指示器 */}
-              <div className="flex items-center justify-center mb-8">
-                <div className="flex items-center gap-2">
-                  <div className={`flex items-center gap-2 ${tkStep >= 1 ? 'text-purple-400' : 'text-blue-200/30'}`}>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      tkStep >= 1 ? 'bg-purple-500/20 border border-purple-400/30' : 'bg-white/5 border border-white/10'
-                    }`}>
-                      {tkStep > 1 ? <CheckCircle className="w-4 h-4" /> : <span className="text-sm">1</span>}
-                    </div>
-                    <span className="text-sm font-medium">
-                      {locale === 'zh' ? '上传截图' : 'Upload'}
-                    </span>
-                  </div>
-                  <div className={`w-12 h-px ${tkStep >= 2 ? 'bg-purple-400' : 'bg-white/10'}`}></div>
-                  <div className={`flex items-center gap-2 ${tkStep >= 2 ? 'text-purple-400' : 'text-blue-200/30'}`}>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      tkStep >= 2 ? 'bg-purple-500/20 border border-purple-400/30' : 'bg-white/5 border border-white/10'
-                    }`}>
-                      {tkStep > 2 ? <CheckCircle className="w-4 h-4" /> : <span className="text-sm">2</span>}
-                    </div>
-                    <span className="text-sm font-medium">
-                      {locale === 'zh' ? '预览数据' : 'Preview'}
-                    </span>
-                  </div>
-                  <div className={`w-12 h-px ${tkStep >= 3 ? 'bg-purple-400' : 'bg-white/10'}`}></div>
-                  <div className={`flex items-center gap-2 ${tkStep >= 3 ? 'text-purple-400' : 'text-blue-200/30'}`}>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      tkStep >= 3 ? 'bg-purple-500/20 border border-purple-400/30' : 'bg-white/5 border border-white/10'
-                    }`}>
-                      <span className="text-sm">3</span>
-                    </div>
-                    <span className="text-sm font-medium">
-                      {locale === 'zh' ? '查看结果' : 'Result'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Step 1: 上传截图 */}
-              {tkStep === 1 && (
-                <div className="space-y-6">
-                  <div className="border-2 border-dashed border-white/20 rounded-xl p-8 text-center hover:border-purple-400/50 transition-colors">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleTkScreenshotUpload}
-                      className="hidden"
-                      id="tk-screenshot-upload"
-                      disabled={isAnalyzing}
-                    />
-                    <label htmlFor="tk-screenshot-upload" className="cursor-pointer">
-                      {isAnalyzing ? (
-                        <div className="space-y-4">
-                          <Loader2 className="w-12 h-12 mx-auto text-purple-400 animate-spin" />
-                          <p className="text-white">
-                            {locale === 'zh' ? '正在识别截图...' : 'Recognizing screenshot...'}
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          <Upload className="w-12 h-12 mx-auto text-purple-400" />
-                          <div>
-                            <p className="text-white font-medium">
-                              {locale === 'zh' ? '点击或拖拽上传 TikTok 截图' : 'Click or drag to upload TikTok screenshot'}
-                            </p>
-                            <p className="text-blue-200/70 text-sm mt-1">
-                              {locale === 'zh' ? '支持 PNG、JPG 格式' : 'Supports PNG, JPG format'}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </label>
-                  </div>
-                </div>
-              )}
-
-              {/* Step 2: 预览数据 */}
-              {tkStep === 2 && tkRecognizedData && (
-                <div className="space-y-6">
-                  <Card className="bg-white/5 border-white/10">
-                    <CardContent className="py-6">
-                      <h3 className="text-lg font-semibold text-white mb-4">
-                        {locale === 'zh' ? '识别结果' : 'Recognized Data'}
-                      </h3>
-                      <div className="grid grid-cols-2 gap-4">
-                        {Object.entries(tkRecognizedData).map(([key, value]) => (
-                          <div key={key} className="p-3 bg-white/5 rounded-lg">
-                            <p className="text-blue-200/70 text-sm">{key}</p>
-                            <p className="text-white font-medium">{String(value)}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <div className="flex gap-4">
-                    <Button
-                      onClick={resetTkScreenshot}
-                      variant="outline"
-                      className="flex-1 border-white/20 text-blue-200 hover:bg-white/5"
-                    >
-                      {locale === 'zh' ? '重新上传' : 'Re-upload'}
-                    </Button>
-                    <Button
-                      onClick={handleTkDiagnosis}
-                      disabled={isAnalyzing}
-                      className="flex-1 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-400 hover:to-pink-500 text-white"
-                    >
-                      {isAnalyzing ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          {locale === 'zh' ? '诊断中...' : 'Diagnosing...'}
-                        </>
-                      ) : (
-                        <>
-                          <Zap className="w-4 h-4 mr-2" />
-                          {locale === 'zh' ? '开始诊断' : 'Start Diagnosis'}
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Step 3: 查看结果 */}
-              {tkStep === 3 && tkReport && (
-                <div className="space-y-6">
-                  <TikTokReport data={tkReport} locale={locale} />
-                  <div className="flex gap-4">
-                    <Button
-                      onClick={resetTkScreenshot}
-                      variant="outline"
-                      className="flex-1 border-white/20 text-blue-200 hover:bg-white/5"
-                    >
-                      {locale === 'zh' ? '新的诊断' : 'New Diagnosis'}
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

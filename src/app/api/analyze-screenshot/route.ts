@@ -2,12 +2,11 @@
  * 截图识别 API
  * POST /api/analyze-screenshot
  * 
- * 接收图片文件，调用沙箱内置 LLM 提取指标
+ * 接收图片文件，调用 OpenAI 视觉模型提取指标
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseServerClientAsync } from '@/storage/database/supabase-client';
-import { LLMClient, Config, HeaderUtils } from 'coze-coding-dev-sdk';
 
 // 截图识别额度映射
 const SCREENSHOT_LIMITS: Record<string, number> = {
@@ -18,8 +17,8 @@ const SCREENSHOT_LIMITS: Record<string, number> = {
   brand: 50,
 };
 
-// 最大文件大小 5MB
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
+// 最大文件大小 10MB，与前端提示保持一致
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 // 支持的图片格式
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -104,10 +103,12 @@ export async function POST(request: NextRequest) {
     const used = userData?.screenshot_count_used || 0;
     const resetAt = userData?.screenshot_reset_at ? new Date(userData.screenshot_reset_at) : null;
     const now = new Date();
+    let effectiveUsed = used;
 
     // 每月1号自动重置
     if (!resetAt || resetAt <= now) {
       const nextReset = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      effectiveUsed = 0;
       await supabase
         .from('users')
         .update({
@@ -116,25 +117,16 @@ export async function POST(request: NextRequest) {
           screenshot_reset_at: nextReset.toISOString(),
         })
         .eq('id', user.id);
-    } else if (used >= limit) {
+    } else if (effectiveUsed >= limit) {
       // 额度用完
       return NextResponse.json(
         {
           error: "You've used all your campaign reviews this month. Upgrade your plan to continue.",
-          quota: { used, limit, remaining: 0 },
+          quota: { used: effectiveUsed, limit, remaining: 0 },
         },
         { status: 429 }
       );
     }
-
-    // 消耗1次额度（不论成功失败都计数）
-    await supabase
-      .from('users')
-      .update({
-        screenshot_count_used: used + 1,
-        screenshot_count_limit: limit,
-      })
-      .eq('id', user.id);
 
     // 解析 multipart/form-data
     const formData = await request.formData();
@@ -159,7 +151,7 @@ export async function POST(request: NextRequest) {
     // 验证文件大小
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { error: '图片过大，请重新截图（最大5MB）' },
+        { error: '图片过大，请重新截图（最大10MB）' },
         { status: 400 }
       );
     }
@@ -169,37 +161,54 @@ export async function POST(request: NextRequest) {
     const base64Image = fileBuffer.toString('base64');
     const dataUrl = `data:${file.type};base64,${base64Image}`;
 
-    // 使用沙箱内置 LLM 服务（coze-coding-dev-sdk）
-    // 不传递任何配置，让 SDK 自动连接到沙箱内置的 Coze API
-    const config = new Config();
-    const customHeaders = HeaderUtils.extractForwardHeaders(request.headers);
-    const client = new LLMClient(config, customHeaders);
+    const openaiApiKey = process.env.OPENAI_API_KEY;
+    if (!openaiApiKey) {
+      return NextResponse.json(
+        { error: 'AI service not configured' },
+        { status: 500 }
+      );
+    }
 
     // 创建带图片的多模态消息
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const messages: any[] = [
-      {
-        role: 'user',
-        content: [
-          { type: 'text', text: EXTRACT_PROMPT },
+    const llmResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        temperature: 0.1,
+        response_format: { type: 'json_object' },
+        messages: [
           {
-            type: 'image_url',
-            image_url: {
-              url: dataUrl,
-              detail: 'high',
-            },
+            role: 'user',
+            content: [
+              { type: 'text', text: EXTRACT_PROMPT },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: dataUrl,
+                  detail: 'high',
+                },
+              },
+            ],
           },
         ],
-      },
-    ];
-
-    // 调用 LLM（使用支持视觉的模型）
-    const response = await client.invoke(messages, {
-      model: 'doubao-seed-1-8-251228', // 支持视觉的模型
-      temperature: 0.3,
+      }),
     });
 
-    const content = response.content || '';
+    if (!llmResponse.ok) {
+      const errorText = await llmResponse.text();
+      console.error('[Screenshot Analysis] OpenAI API error:', errorText);
+      return NextResponse.json(
+        { error: 'Screenshot recognition failed, please retry' },
+        { status: 502 }
+      );
+    }
+
+    const completion = await llmResponse.json();
+    const content = completion.choices?.[0]?.message?.content || '';
     
     // 打印 LLM 完整返回内容用于调试
     console.log('[Screenshot Analysis] LLM Response:', content);
@@ -239,6 +248,15 @@ export async function POST(request: NextRequest) {
       };
     }
 
+    // 识别成功后再消耗1次额度
+    await supabase
+      .from('users')
+      .update({
+        screenshot_count_used: effectiveUsed + 1,
+        screenshot_count_limit: limit,
+      })
+      .eq('id', user.id);
+
     // 添加额度信息
     const { data: updatedUserData } = await supabase
       .from('users')
@@ -247,9 +265,9 @@ export async function POST(request: NextRequest) {
       .single();
 
     extractedData.quota = {
-      used: updatedUserData?.screenshot_count_used || used + 1,
+      used: updatedUserData?.screenshot_count_used || effectiveUsed + 1,
       limit: updatedUserData?.screenshot_count_limit || limit,
-      remaining: (updatedUserData?.screenshot_count_limit || limit) - (updatedUserData?.screenshot_count_used || used + 1),
+      remaining: (updatedUserData?.screenshot_count_limit || limit) - (updatedUserData?.screenshot_count_used || effectiveUsed + 1),
     };
 
     // 添加用户选择的平台信息
