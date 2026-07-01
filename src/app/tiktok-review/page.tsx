@@ -11,6 +11,7 @@ import { ReportExport } from '@/components/report-export';
 import { StepIndicator } from '@/components/step-indicator';
 import AnalysisProgress, { type AnalysisStage } from '@/components/analysis-progress';
 import { generateUnifiedReport, type UnifiedReport } from '@/lib/are/report-generator';
+import type { Diagnosis, Evidence, MetricAnalysis } from '@/lib/are';
 import { useScreenshotAnalysis } from '@/hooks/use-screenshot-analysis';
 
 type Step = 'upload' | 'preview' | 'result';
@@ -189,9 +190,9 @@ export default function TikTokReviewPage() {
       'tiktok',
       reportData.campaign_name,
       reportData.date_range,
-      reportData.evidence as any,
-      reportData.metric_analysis as any,
-      reportData.diagnosis as any,
+      reportData.evidence as Evidence[],
+      reportData.metric_analysis as MetricAnalysis[],
+      reportData.diagnosis as Diagnosis[],
       reportData.scores,
       {
         executive_summary: `TikTok campaign "${reportData.campaign_name}" analysis complete. Overall score: ${reportData.scores.overall}/100.`,
