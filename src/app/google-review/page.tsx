@@ -563,6 +563,7 @@ export default function GoogleReviewPage() {
                   Back
                 </Button>
                 <Button
+                  variant="ghost"
                   onClick={handleAnalyze}
                   disabled={isAnalyzing}
                   className="bg-blue-600 hover:bg-blue-700 text-white"

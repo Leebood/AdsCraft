@@ -446,6 +446,7 @@ export default function FacebookReviewPage() {
                     Re-upload
                   </Button>
                   <Button
+                    variant="ghost"
                     onClick={handleAnalyze}
                     disabled={analyzing}
                     className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white"

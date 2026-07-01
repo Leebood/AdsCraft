@@ -534,6 +534,7 @@ export default function TikTokReviewPage() {
                 )}
 
                 <Button
+                  variant="ghost"
                   onClick={handleAnalyze}
                   disabled={analyzing}
                   className="w-full bg-cyan-500 hover:bg-cyan-600 text-slate-900 font-semibold"
