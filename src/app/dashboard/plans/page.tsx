@@ -39,8 +39,8 @@ export default function PlansPage() {
           </h3>
           <p className="text-blue-200/70 mb-6 max-w-md mx-auto">
             {locale === 'zh' 
-              ? '上传 TikTok 广告截图，检查拒审风险并诊断优化空间。'
-              : 'Upload a TikTok Ads screenshot to review approval risk and diagnose optimization opportunities.'}
+              ? '上传 TikTok 广告后台截图，检查拒审风险并诊断优化空间。'
+              : 'Upload a TikTok Ads Manager screenshot to review approval risk and diagnose optimization opportunities.'}
           </p>
           <Button
             onClick={handleStartDiagnosis}
@@ -66,8 +66,8 @@ export default function PlansPage() {
           </h3>
           <p className="text-blue-200/70 mb-6 max-w-md mx-auto">
             {locale === 'zh'  
-              ? '上传 Facebook 广告截图，识别投放问题并给出持续优化方向。'
-              : 'Upload a Facebook Ads screenshot to identify strategy issues and optimization actions.'}
+              ? '上传 Facebook 广告后台截图，识别投放问题并给出持续优化方向。'
+              : 'Upload a Facebook Ads Manager screenshot to identify strategy issues and optimization actions.'}
           </p>
           <Button
             onClick={() => router.push('/facebook-review')}
@@ -168,7 +168,7 @@ export default function PlansPage() {
               {locale === 'zh' ? '我的方案' : 'My Plans'}
             </h1>
             <p className="text-blue-200/70">
-              {locale === 'zh' ? '选择平台上传广告截图，查看诊断结果与优化建议。' : 'Choose a platform, upload an ad screenshot, and review diagnosis results.'}
+              {locale === 'zh' ? '选择平台上传截图，查看诊断结果与优化路径。' : 'Choose a platform, upload screenshots, and review diagnosis results and optimization paths.'}
             </p>
           </div>
 
