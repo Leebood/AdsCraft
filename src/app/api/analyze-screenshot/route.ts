@@ -101,8 +101,12 @@ async function consumeScreenshotQuota(
         .maybeSingle();
 
     if (updateError) {
-      console.error('Failed to consume screenshot quota:', updateError);
-      return null;
+      console.error('Failed to consume screenshot quota, allowing request:', updateError);
+      return {
+        used: nextUsed,
+        limit,
+        remaining: Math.max(0, limit - nextUsed),
+      };
     }
 
     if (updatedData) {
@@ -116,7 +120,8 @@ async function consumeScreenshotQuota(
     }
   }
 
-  return null;
+  console.error('Failed to consume screenshot quota after retries, allowing request');
+  return { used: 0, limit, remaining: limit };
 }
 
 async function requestOpenAIExtraction(apiKey: string, dataUrl: string, detail: 'high' | 'low') {
