@@ -27,6 +27,7 @@ import AnalysisProgress, { type AnalysisStage } from '@/components/analysis-prog
 import { generateUnifiedReport, UnifiedReport } from '@/lib/are';
 import { useRouter } from 'next/navigation';
 import { useScreenshotAnalysis } from '@/hooks/use-screenshot-analysis';
+import { useI18n } from '@/lib/i18n-context';
 
 // ============================================================================
 // Types
@@ -53,6 +54,8 @@ interface GoogleCampaignData {
 
 export default function GoogleReviewPage() {
   const router = useRouter();
+  const { locale } = useI18n();
+  const isZh = locale === 'zh';
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [screenshotPreview, setShowPreview] = useState(false);
@@ -70,7 +73,47 @@ export default function GoogleReviewPage() {
     selectFile,
     clearFile,
     uploadAndAnalyze,
-  } = useScreenshotAnalysis('google');
+  } = useScreenshotAnalysis('google', locale);
+
+  const copy = {
+    title: isZh ? 'Google Ads 截图诊断' : 'Google Ads Review',
+    upload: isZh ? '上传' : 'Upload',
+    preview: isZh ? '预览' : 'Preview',
+    result: isZh ? '结果' : 'Result',
+    uploadTitle: isZh ? '上传 Google Ads 截图' : 'Upload Google Ads Screenshot',
+    uploadDesc: isZh ? '上传广告后台截图，识别关键指标并生成诊断结果。' : 'Upload a screenshot of your Google Ads Manager to get a professional diagnosis report.',
+    clickUpload: isZh ? '点击上传或拖拽文件' : 'Click to upload or drag and drop',
+    support: isZh ? '支持 PNG、JPG、WEBP，最大 10MB' : 'PNG, JPG, WEBP up to 10MB',
+    uploading: isZh ? '正在上传并识别...' : 'Uploading and recognizing...',
+    cancel: isZh ? '取消' : 'Cancel',
+    recognizing: isZh ? '识别中...' : 'Recognizing...',
+    uploadRecognize: isZh ? '上传并识别' : 'Upload & Recognize',
+    platformMismatch: isZh ? '平台不匹配' : 'Platform Mismatch',
+    previewEdit: isZh ? '预览并修正数据' : 'Preview & Edit Data',
+    show: isZh ? '显示' : 'Show',
+    hide: isZh ? '隐藏' : 'Hide',
+    screenshot: isZh ? '截图' : 'Screenshot',
+    back: isZh ? '返回' : 'Back',
+    analyze: isZh ? '开始诊断' : 'Analyze',
+    analyzing: isZh ? '诊断中...' : 'Analyzing...',
+    analysisResult: isZh ? '诊断结果' : 'Analysis Result',
+    newAnalysis: isZh ? '新建诊断' : 'New Analysis',
+    analysisFailed: isZh ? '诊断失败，请重试' : 'Analysis failed',
+    unknownCampaign: isZh ? 'Google 广告系列' : 'Google Ads Campaign',
+  };
+
+  const label = {
+    campaignName: isZh ? '广告系列名称' : 'Campaign Name',
+    campaignType: isZh ? '广告系列类型' : 'Campaign Type',
+    search: isZh ? '搜索' : 'Search',
+    display: isZh ? '展示广告' : 'Display',
+    shopping: isZh ? '购物广告' : 'Shopping',
+    spend: isZh ? '花费 ($)' : 'Spend ($)',
+    impressions: isZh ? '展示' : 'Impressions',
+    clicks: isZh ? '点击' : 'Clicks',
+    conversions: isZh ? '转化' : 'Conversions',
+    qualityScore: isZh ? '质量得分 (1-10)' : 'Quality Score (1-10)',
+  };
   
   // Analysis progress states
   const [analysisStage, setAnalysisStage] = useState<AnalysisStage | null>(null);
@@ -99,7 +142,7 @@ export default function GoogleReviewPage() {
     if (result) {
       // 将识别结果转换为 Google Campaign 数据
       const data: GoogleCampaignData = {
-        name: typeof result.campaign_name === 'string' ? result.campaign_name : 'Google Ads Campaign',
+        name: typeof result.campaign_name === 'string' ? result.campaign_name : copy.unknownCampaign,
         campaign_type: result.campaign_type === 'display' || result.campaign_type === 'shopping' ? result.campaign_type : 'search',
         spend: typeof result.spend === 'number' ? result.spend : 0,
         impressions: typeof result.impressions === 'number' ? result.impressions : undefined,
@@ -157,12 +200,12 @@ export default function GoogleReviewPage() {
         body: JSON.stringify({
           campaigns: [extractedData],
           date_range: 'Last 7 days',
-          locale: 'en',
+          locale,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Analysis failed');
+        throw new Error(copy.analysisFailed);
       }
 
       const result = await response.json();
@@ -207,10 +250,10 @@ export default function GoogleReviewPage() {
         
         setStep(3);
       } else {
-        throw new Error(result.error || 'Analysis failed');
+        throw new Error(result.error || copy.analysisFailed);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Analysis failed');
+      setError(err instanceof Error ? err.message : copy.analysisFailed);
     } finally {
       setIsAnalyzing(false);
       setAnalysisStage(null);
@@ -237,16 +280,16 @@ export default function GoogleReviewPage() {
 
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
-          <h1 className="text-2xl font-bold text-white">Google Ads Review</h1>
+          <h1 className="text-2xl font-bold text-white">{copy.title}</h1>
         </div>
 
         {/* Stepper */}
         <div className="flex items-center gap-2 mb-8">
-          <StepIndicator step={1} currentStep={step} label="Upload" icon={<Upload className="h-4 w-4" />} />
+          <StepIndicator step={1} currentStep={step} label={copy.upload} icon={<Upload className="h-4 w-4" />} />
           <div className="flex-1 h-px bg-slate-700" />
-          <StepIndicator step={2} currentStep={step} label="Preview" icon={<FileText className="h-4 w-4" />} />
+          <StepIndicator step={2} currentStep={step} label={copy.preview} icon={<FileText className="h-4 w-4" />} />
           <div className="flex-1 h-px bg-slate-700" />
-          <StepIndicator step={3} currentStep={step} label="Result" icon={<CheckCircle className="h-4 w-4" />} />
+          <StepIndicator step={3} currentStep={step} label={copy.result} icon={<CheckCircle className="h-4 w-4" />} />
         </div>
 
         {/* Error Message */}
@@ -270,10 +313,10 @@ export default function GoogleReviewPage() {
                   <Upload className="w-10 h-10 text-blue-400" />
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-2">
-                  Upload Google Ads Screenshot
+                  {copy.uploadTitle}
                 </h3>
                 <p className="text-slate-400 mb-8 max-w-md mx-auto">
-                  Upload a screenshot of your Google Ads Manager to get a professional diagnosis report.
+                  {copy.uploadDesc}
                 </p>
                 
                 {/* Upload area */}
@@ -286,27 +329,30 @@ export default function GoogleReviewPage() {
                   {isUploading ? (
                     <div className="space-y-4">
                       <Loader2 className="w-12 h-12 mx-auto text-blue-400 animate-spin" />
-                      <p className="text-slate-400">Uploading and recognizing...</p>
+                      <p className="text-slate-400">{copy.uploading}</p>
                     </div>
                   ) : preview ? (
                     <div className="space-y-4">
-                      <img src={preview} alt="Preview" className="max-h-64 mx-auto rounded-lg" />
+                      <img src={preview} alt={copy.preview} className="max-h-64 mx-auto rounded-lg" />
                       <p className="text-sm text-slate-400">{screenshotFile?.name}</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
                       <Upload className="w-12 h-12 mx-auto text-slate-500" />
                       <div>
-                        <p className="text-white font-medium">Click to upload or drag and drop</p>
-                        <p className="text-sm text-slate-500 mt-1">PNG, JPG, WEBP up to 10MB</p>
+                        <p className="text-white font-medium">{copy.clickUpload}</p>
+                        <p className="text-sm text-slate-500 mt-1">{copy.support}</p>
                       </div>
                     </div>
                   )}
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/png,image/jpeg,image/webp"
                     className="hidden"
+                    onClick={(e) => {
+                      e.currentTarget.value = '';
+                    }}
                     onChange={handleFileChange}
                   />
                 </div>
@@ -321,7 +367,7 @@ export default function GoogleReviewPage() {
                       }}
                       className="border border-white/20 text-white hover:bg-white/10 bg-transparent"
                     >
-                      Cancel
+                      {copy.cancel}
                     </Button>
                     <Button
                       onClick={handleUploadAndAnalyze}
@@ -331,12 +377,12 @@ export default function GoogleReviewPage() {
                       {isUploading ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Recognizing...
+                          {copy.recognizing}
                         </>
                       ) : (
                         <>
                           <CheckCircle className="w-4 h-4 mr-2" />
-                          Upload & Recognize
+                          {copy.uploadRecognize}
                         </>
                       )}
                     </Button>
@@ -355,7 +401,7 @@ export default function GoogleReviewPage() {
             <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex items-start gap-3 mb-6">
               <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-amber-200 font-medium">Platform Mismatch</p>
+                <p className="text-amber-200 font-medium">{copy.platformMismatch}</p>
                 <p className="text-amber-200/80 text-sm mt-1">{platformWarning}</p>
               </div>
             </div>
@@ -364,7 +410,7 @@ export default function GoogleReviewPage() {
             <CardHeader>
               <CardTitle className="text-xl text-white flex items-center gap-2">
                 <FileText className="h-5 w-5 text-blue-400" />
-                Preview & Edit Data
+                {copy.previewEdit}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -377,13 +423,13 @@ export default function GoogleReviewPage() {
                     onClick={() => setShowPreview(!screenshotPreview)}
                     className="text-slate-400 hover:text-white"
                   >
-                    {screenshotPreview ? 'Hide' : 'Show'} Screenshot
+                    {screenshotPreview ? copy.hide : copy.show} {copy.screenshot}
                   </Button>
                   {screenshotPreview && (
                     <div className="border border-slate-700 rounded-lg overflow-hidden">
                       <img
                         src={preview || ''}
-                        alt="Screenshot"
+                        alt={copy.screenshot}
                         className="max-h-96 w-auto mx-auto"
                       />
                     </div>
@@ -394,7 +440,7 @@ export default function GoogleReviewPage() {
               {/* Data Edit Form */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-slate-400">Campaign Name</Label>
+                  <Label className="text-slate-400">{label.campaignName}</Label>
                   <Input
                     value={extractedData.name}
                     onChange={(e) => setExtractedData({ ...extractedData, name: e.target.value })}
@@ -402,19 +448,19 @@ export default function GoogleReviewPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-slate-400">Campaign Type</Label>
+                  <Label className="text-slate-400">{label.campaignType}</Label>
                   <select
                     value={extractedData.campaign_type || 'search'}
                     onChange={(e) => setExtractedData({ ...extractedData, campaign_type: e.target.value as 'search' | 'display' | 'shopping' })}
                     className="w-full h-10 px-3 rounded-md bg-slate-800 border border-slate-700 text-white"
                   >
-                    <option value="search">Search</option>
-                    <option value="display">Display</option>
-                    <option value="shopping">Shopping</option>
+                    <option value="search">{label.search}</option>
+                    <option value="display">{label.display}</option>
+                    <option value="shopping">{label.shopping}</option>
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-slate-400">Spend ($)</Label>
+                  <Label className="text-slate-400">{label.spend}</Label>
                   <Input
                     type="number"
                     value={extractedData.spend || ''}
@@ -423,7 +469,7 @@ export default function GoogleReviewPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-slate-400">Impressions</Label>
+                  <Label className="text-slate-400">{label.impressions}</Label>
                   <Input
                     type="number"
                     value={extractedData.impressions || ''}
@@ -432,7 +478,7 @@ export default function GoogleReviewPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-slate-400">Clicks</Label>
+                  <Label className="text-slate-400">{label.clicks}</Label>
                   <Input
                     type="number"
                     value={extractedData.clicks || ''}
@@ -461,7 +507,7 @@ export default function GoogleReviewPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-slate-400">Conversions</Label>
+                  <Label className="text-slate-400">{label.conversions}</Label>
                   <Input
                     type="number"
                     value={extractedData.conversions || ''}
@@ -490,7 +536,7 @@ export default function GoogleReviewPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-slate-400">Quality Score (1-10)</Label>
+                  <Label className="text-slate-400">{label.qualityScore}</Label>
                   <Input
                     type="number"
                     min="1"
@@ -509,7 +555,7 @@ export default function GoogleReviewPage() {
                   onClick={() => setStep(1)}
                   className="border border-slate-700 text-slate-300 hover:bg-slate-800"
                 >
-                  Back
+                  {copy.back}
                 </Button>
                 <Button
                   variant="ghost"
@@ -520,10 +566,10 @@ export default function GoogleReviewPage() {
                   {isAnalyzing ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Analyzing...
+                      {copy.analyzing}
                     </>
                   ) : (
-                    'Analyze'
+                    copy.analyze
                   )}
                 </Button>
               </div>
@@ -536,20 +582,20 @@ export default function GoogleReviewPage() {
         {step === 3 && report && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white">Analysis Result</h2>
+              <h2 className="text-xl font-bold text-white">{copy.analysisResult}</h2>
               <Button
                 variant="outline"
                 onClick={() => setStep(1)}
                 className="border-slate-700 text-slate-300 hover:bg-slate-800"
               >
-                New Analysis
+                {copy.newAnalysis}
               </Button>
             </div>
-            <GoogleReport report={report} locale="en" />
+            <GoogleReport report={report} locale={locale} />
             
             {/* Export Report */}
             {unifiedReport && (
-              <ReportExport report={unifiedReport} />
+              <ReportExport report={unifiedReport} locale={locale} />
             )}
           </div>
         )}

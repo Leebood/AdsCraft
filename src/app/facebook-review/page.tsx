@@ -18,6 +18,7 @@ import AnalysisProgress, { type AnalysisStage } from '@/components/analysis-prog
 import { generateUnifiedReport } from '@/lib/are/report-generator';
 import type { AOSReport, UnifiedReport } from '@/lib/are';
 import { useScreenshotAnalysis } from '@/hooks/use-screenshot-analysis';
+import { useI18n } from '@/lib/i18n-context';
 
 type Step = 'upload' | 'preview' | 'result';
 
@@ -39,6 +40,8 @@ interface ExtractedData {
 }
 
 export default function FacebookReviewPage() {
+  const { locale } = useI18n();
+  const isZh = locale === 'zh';
   const [step, setStep] = useState<Step>('upload');
   const [analyzing, setAnalyzing] = useState(false);
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
@@ -58,7 +61,52 @@ export default function FacebookReviewPage() {
     selectFile,
     clearFile,
     uploadAndAnalyze,
-  } = useScreenshotAnalysis('facebook');
+  } = useScreenshotAnalysis('facebook', locale);
+
+  const copy = {
+    title: isZh ? 'Facebook 广告策略诊断' : 'Facebook Ads Review',
+    upload: isZh ? '上传' : 'Upload',
+    preview: isZh ? '预览' : 'Preview',
+    result: isZh ? '结果' : 'Result',
+    uploadTitle: isZh ? '上传 Facebook 广告截图' : 'Upload Facebook Ads Screenshot',
+    uploadDesc: isZh ? '上传广告后台截图，识别关键指标并生成策略诊断。' : 'Upload a screenshot of your Facebook Ads Manager to get a professional diagnosis report.',
+    clickUpload: isZh ? '点击上传或拖拽文件' : 'Click to upload or drag and drop',
+    support: isZh ? '支持 PNG、JPG、WEBP，最大 10MB' : 'PNG, JPG, WEBP up to 10MB',
+    cancel: isZh ? '取消' : 'Cancel',
+    recognizing: isZh ? '识别中...' : 'Recognizing...',
+    uploadRecognize: isZh ? '上传并识别' : 'Upload & Recognize',
+    platformMismatch: isZh ? '平台不匹配' : 'Platform Mismatch',
+    dataRecognized: isZh ? '识别结果' : 'Data Recognized',
+    reupload: isZh ? '重新上传' : 'Re-upload',
+    startDiagnosis: isZh ? '开始诊断' : 'Start Diagnosis',
+    analyzing: isZh ? '诊断中...' : 'Analyzing...',
+    recognizeLoading: isZh ? '正在识别截图...' : 'Recognizing screenshot...',
+    analyzeLoading: isZh ? '正在分析广告数据...' : 'Analyzing campaign data...',
+    recognizeDesc: isZh ? '正在提取截图中的关键指标' : 'Extracting metrics from your screenshot',
+    analyzeDesc: isZh ? '正在运行诊断规则' : 'Running diagnosis rules',
+    analysisFailed: isZh ? '诊断失败，请重试' : 'Analysis failed',
+    unknownCampaign: isZh ? '未命名广告系列' : 'Unknown Campaign',
+  };
+
+  const fieldLabels: Record<string, string> = isZh ? {
+    campaign_name: '广告系列名称',
+    snapshot_date: '截图日期',
+    spend: '花费',
+    impressions: '展示',
+    reach: '覆盖',
+    clicks: '点击',
+    ctr: '点击率',
+    cpc: '单次点击成本',
+    frequency: '频次',
+    cpm: '千次展示成本',
+    results: '结果',
+    cpr: '单次结果成本',
+    roas: '广告回报率',
+    conversions: '转化',
+    cpa: '单次转化成本',
+    platform_detected: '识别平台',
+    platform_selected: '当前平台',
+  } : {};
 
   // Handle file selection
   const handleFileSelect = useCallback((selectedFile: File) => {
@@ -121,7 +169,7 @@ export default function FacebookReviewPage() {
           date_range: 'Last 7 days',
           snapshot_date: extractedData.snapshot_date || new Date().toISOString().split('T')[0],
           campaigns: [{
-            name: extractedData.campaign_name || 'Unknown Campaign',
+            name: extractedData.campaign_name || copy.unknownCampaign,
             delivery: 'Active',
             budget: 100,
             spent: extractedData.spend || 0,
@@ -135,14 +183,14 @@ export default function FacebookReviewPage() {
             roas: extractedData.roas || 0,
             cpm: extractedData.cpm || 0,
           }],
-          locale: 'en',
+          locale,
         }),
       });
 
       const result = await response.json();
 
       if (!result.success) {
-        throw new Error(result.error || 'Analysis failed');
+        throw new Error(result.error || copy.analysisFailed);
       }
 
       const aosReport = result.data as AOSReport;
@@ -186,7 +234,7 @@ export default function FacebookReviewPage() {
       
       setStep('result');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Analysis failed');
+      setError(err instanceof Error ? err.message : copy.analysisFailed);
     } finally {
       setAnalyzing(false);
       setAnalysisStage(null);
@@ -229,16 +277,16 @@ export default function FacebookReviewPage() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
-          <h1 className="text-2xl font-bold text-white">Facebook Ads Review</h1>
+          <h1 className="text-2xl font-bold text-white">{copy.title}</h1>
         </div>
 
         {/* Stepper */}
         <div className="flex items-center gap-2 mb-8">
-          <StepIndicator step={1} currentStep={currentStepNum} label="Upload" icon={<Upload className="h-4 w-4" />} />
+          <StepIndicator step={1} currentStep={currentStepNum} label={copy.upload} icon={<Upload className="h-4 w-4" />} />
           <div className="flex-1 h-px bg-slate-700" />
-          <StepIndicator step={2} currentStep={currentStepNum} label="Preview" icon={<CheckCircle2 className="h-4 w-4" />} />
+          <StepIndicator step={2} currentStep={currentStepNum} label={copy.preview} icon={<CheckCircle2 className="h-4 w-4" />} />
           <div className="flex-1 h-px bg-slate-700" />
-          <StepIndicator step={3} currentStep={currentStepNum} label="Result" icon={<CheckCircle2 className="h-4 w-4" />} />
+          <StepIndicator step={3} currentStep={currentStepNum} label={copy.result} icon={<CheckCircle2 className="h-4 w-4" />} />
         </div>
       
       {/* Main Content */}
@@ -265,10 +313,10 @@ export default function FacebookReviewPage() {
                   <Upload className="w-10 h-10 text-blue-400" />
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-2">
-                  Upload Facebook Ads Screenshot
+                  {copy.uploadTitle}
                 </h3>
                 <p className="text-slate-400 mb-8 max-w-md mx-auto">
-                  Upload a screenshot of your Facebook Ads Manager to get a professional diagnosis report.
+                  {copy.uploadDesc}
                 </p>
                 
                 {/* Upload area */}
@@ -280,23 +328,26 @@ export default function FacebookReviewPage() {
                 >
                   {preview ? (
                     <div className="space-y-4">
-                      <img src={preview} alt="Preview" className="max-h-64 mx-auto rounded-lg" />
+                      <img src={preview} alt={copy.preview} className="max-h-64 mx-auto rounded-lg" />
                       <p className="text-sm text-slate-400">{file?.name}</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
                       <Upload className="w-12 h-12 mx-auto text-slate-500" />
                       <div>
-                        <p className="text-white font-medium">Click to upload or drag and drop</p>
-                        <p className="text-sm text-slate-500 mt-1">PNG, JPG, WEBP up to 10MB</p>
+                        <p className="text-white font-medium">{copy.clickUpload}</p>
+                        <p className="text-sm text-slate-500 mt-1">{copy.support}</p>
                       </div>
                     </div>
                   )}
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/png,image/jpeg,image/webp"
                     className="hidden"
+                    onClick={(e) => {
+                      e.currentTarget.value = '';
+                    }}
                     onChange={(e) => {
                       const f = e.target.files?.[0];
                       if (f) handleFileSelect(f);
@@ -314,7 +365,7 @@ export default function FacebookReviewPage() {
                       }}
                       className="border border-white/20 text-white hover:bg-white/10 bg-transparent"
                     >
-                      Cancel
+                      {copy.cancel}
                     </Button>
                     <Button
                       onClick={handleUploadAndAnalyze}
@@ -324,12 +375,12 @@ export default function FacebookReviewPage() {
                       {uploading ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Recognizing...
+                          {copy.recognizing}
                         </>
                       ) : (
                         <>
                           <CheckCircle2 className="w-4 h-4 mr-2" />
-                          Upload & Recognize
+                          {copy.uploadRecognize}
                         </>
                       )}
                     </Button>
@@ -348,7 +399,7 @@ export default function FacebookReviewPage() {
               <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex items-start gap-3">
                 <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-amber-200 font-medium">Platform Mismatch</p>
+                  <p className="text-amber-200 font-medium">{copy.platformMismatch}</p>
                   <p className="text-amber-200/80 text-sm mt-1">{platformWarning}</p>
                 </div>
               </div>
@@ -357,7 +408,7 @@ export default function FacebookReviewPage() {
               <CardHeader>
                 <CardTitle className="text-xl text-white flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-green-400" />
-                  Data Recognized
+                  {copy.dataRecognized}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -367,7 +418,7 @@ export default function FacebookReviewPage() {
                     if (typeof value === 'object') return null;
                     return (
                       <div key={key} className="bg-white/5 rounded-lg p-3">
-                        <p className="text-xs text-slate-400 capitalize">{key.replace(/_/g, ' ')}</p>
+                        <p className="text-xs text-slate-400">{fieldLabels[key] || key.replace(/_/g, ' ')}</p>
                         <p className="text-white font-medium mt-1">
                           {typeof value === 'number' 
                             ? key.includes('ctr') || key.includes('cvr') || key.includes('roas') 
@@ -387,7 +438,7 @@ export default function FacebookReviewPage() {
                     onClick={handleBack}
                     className="bg-slate-700 hover:bg-slate-600 text-white border border-white/20"
                   >
-                    Re-upload
+                    {copy.reupload}
                   </Button>
                   <Button
                     variant="ghost"
@@ -398,12 +449,12 @@ export default function FacebookReviewPage() {
                     {analyzing ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Analyzing...
+                        {copy.analyzing}
                       </>
                     ) : (
                       <>
                         <CheckCircle2 className="w-4 h-4 mr-2" />
-                        Start Diagnosis
+                        {copy.startDiagnosis}
                       </>
                     )}
                   </Button>
@@ -416,11 +467,11 @@ export default function FacebookReviewPage() {
         {/* Step 3: Result */}
         {step === 'result' && report && (
           <div className="space-y-6">
-            <FacebookReport report={report} locale="en" />
+            <FacebookReport report={report} locale={locale} />
             
             {/* Export Section */}
             {unifiedReport && (
-              <ReportExport report={unifiedReport} locale="en" />
+              <ReportExport report={unifiedReport} locale={locale} />
             )}
           </div>
         )}
@@ -431,10 +482,10 @@ export default function FacebookReviewPage() {
             <div className="bg-[#101827] border border-white/10 rounded-xl p-8 text-center">
               <Loader2 className="w-12 h-12 text-[#00D4FF] animate-spin mx-auto" />
               <p className="text-white mt-4 font-medium">
-                {uploading ? 'Recognizing screenshot...' : 'Analyzing campaign data...'}
+                {uploading ? copy.recognizeLoading : copy.analyzeLoading}
               </p>
               <p className="text-slate-400 text-sm mt-2">
-                {uploading ? 'Extracting metrics from your screenshot' : 'Running diagnosis rules'}
+                {uploading ? copy.recognizeDesc : copy.analyzeDesc}
               </p>
             </div>
           </div>

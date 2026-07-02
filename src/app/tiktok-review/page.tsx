@@ -13,6 +13,7 @@ import AnalysisProgress, { type AnalysisStage } from '@/components/analysis-prog
 import { generateUnifiedReport, type UnifiedReport } from '@/lib/are/report-generator';
 import type { Diagnosis, Evidence, MetricAnalysis } from '@/lib/are';
 import { useScreenshotAnalysis } from '@/hooks/use-screenshot-analysis';
+import { useI18n } from '@/lib/i18n-context';
 
 type Step = 'upload' | 'preview' | 'result';
 
@@ -35,6 +36,8 @@ interface ExtractedData {
 }
 
 export default function TikTokReviewPage() {
+  const { locale } = useI18n();
+  const isZh = locale === 'zh';
   const [step, setStep] = useState<Step>('upload');
   const [analyzing, setAnalyzing] = useState(false);
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
@@ -53,7 +56,47 @@ export default function TikTokReviewPage() {
     selectFile,
     clearFile,
     uploadAndAnalyze,
-  } = useScreenshotAnalysis('tiktok');
+  } = useScreenshotAnalysis('tiktok', locale);
+
+  const copy = {
+    title: isZh ? 'TikTok 广告审查与诊断' : 'TikTok Ads Review',
+    subtitle: isZh ? '上传 TikTok 广告后台截图，先检查拒审风险，再诊断优化空间。' : 'Upload a TikTok Ads Manager screenshot for review and diagnosis.',
+    upload: isZh ? '上传' : 'Upload',
+    preview: isZh ? '预览' : 'Preview',
+    result: isZh ? '结果' : 'Result',
+    uploadTitle: isZh ? '上传 TikTok 广告截图' : 'Upload TikTok Ads Screenshot',
+    uploadDesc: isZh ? '识别素材、投放与成效指标，生成审查和诊断结果。' : 'Upload a screenshot of your TikTok Ads Manager to get a professional diagnosis report.',
+    clickUpload: isZh ? '点击上传或拖拽文件' : 'Click to upload or drag and drop',
+    support: isZh ? '支持 PNG、JPG、WEBP，最大 10MB' : 'PNG, JPG, WEBP up to 10MB',
+    cancel: isZh ? '取消' : 'Cancel',
+    recognizing: isZh ? '识别中...' : 'Recognizing...',
+    uploadRecognize: isZh ? '上传并识别' : 'Upload & Recognize',
+    platformMismatch: isZh ? '平台不匹配' : 'Platform Mismatch',
+    confirmTitle: isZh ? '确认识别数据' : 'Confirm Extracted Data',
+    confirmDesc: isZh ? '请核对识别结果，必要时手动修正。' : 'Please verify the extracted data and make any necessary corrections',
+    screenshotPreview: isZh ? '截图预览' : 'Screenshot Preview',
+    extractedData: isZh ? '识别数据' : 'Extracted Data',
+    reupload: isZh ? '重新上传' : 'Re-upload',
+    analyzing: isZh ? '诊断中...' : 'Analyzing...',
+    confirmAnalyze: isZh ? '确认并诊断' : 'Confirm and Analyze',
+    newDiagnosis: isZh ? '新建诊断' : 'New Diagnosis',
+    analysisFailed: isZh ? '诊断失败，请重试' : 'Analysis failed',
+    unknownCampaign: isZh ? '未命名广告系列' : 'Unknown Campaign',
+    videoMetrics: isZh ? '视频指标（可选）' : 'Video Metrics (Optional)',
+  };
+
+  const label = {
+    campaignName: isZh ? '广告系列名称' : 'Campaign Name',
+    snapshotDate: isZh ? '截图日期' : 'Snapshot Date',
+    spend: isZh ? '花费 ($)' : 'Spend ($)',
+    impressions: isZh ? '展示' : 'Impressions',
+    clicks: isZh ? '点击' : 'Clicks',
+    conversions: isZh ? '转化' : 'Conversions',
+    videoViews: isZh ? '视频播放量' : 'Video Views',
+    sixViews: isZh ? '6秒播放量' : '6s Views',
+    sixRate: isZh ? '6秒播放率 (%)' : '6s View Rate (%)',
+    avgWatch: isZh ? '平均观看时长 (秒)' : 'Avg Watch Time (s)',
+  };
 
   const handleFileSelect = useCallback((selectedFile: File) => {
     void selectFile(selectedFile);
@@ -109,7 +152,7 @@ export default function TikTokReviewPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           campaigns: [{
-            name: extractedData.campaign_name || 'Unknown Campaign',
+            name: extractedData.campaign_name || copy.unknownCampaign,
             spend: extractedData.spend || 0,
             impressions: extractedData.impressions || 0,
             clicks: extractedData.clicks || 0,
@@ -125,14 +168,14 @@ export default function TikTokReviewPage() {
             avg_watch_time: extractedData.avg_watch_time || undefined,
           }],
           date_range: extractedData.snapshot_date || 'Last 7 days',
-          locale: 'en',
+          locale,
         }),
       });
 
       const result = await response.json();
 
       if (!result.success) {
-        throw new Error(result.error || 'Analysis failed');
+        throw new Error(result.error || copy.analysisFailed);
       }
 
       // Stage 4: Issues identified
@@ -154,7 +197,7 @@ export default function TikTokReviewPage() {
       
       setStep('result');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Analysis failed');
+      setError(err instanceof Error ? err.message : copy.analysisFailed);
     } finally {
       setAnalyzing(false);
       setAnalysisStage(null);
@@ -227,31 +270,31 @@ export default function TikTokReviewPage() {
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-white">TikTok Ads Review</h1>
+            <h1 className="text-2xl font-bold text-white">{copy.title}</h1>
           </div>
 
           {/* Stepper */}
           <div className="flex items-center gap-2 mb-8">
-            <StepIndicator step={1} currentStep={currentStepNum} label="Upload" icon={<Upload className="h-4 w-4" />} />
+            <StepIndicator step={1} currentStep={currentStepNum} label={copy.upload} icon={<Upload className="h-4 w-4" />} />
             <div className="flex-1 h-px bg-slate-700" />
-            <StepIndicator step={2} currentStep={currentStepNum} label="Preview" icon={<CheckCircle2 className="h-4 w-4" />} />
+            <StepIndicator step={2} currentStep={currentStepNum} label={copy.preview} icon={<CheckCircle2 className="h-4 w-4" />} />
             <div className="flex-1 h-px bg-slate-700" />
-            <StepIndicator step={3} currentStep={currentStepNum} label="Result" icon={<CheckCircle2 className="h-4 w-4" />} />
+            <StepIndicator step={3} currentStep={currentStepNum} label={copy.result} icon={<CheckCircle2 className="h-4 w-4" />} />
           </div>
 
-          <TikTokReport data={reportData} />
+          <TikTokReport data={reportData} locale={locale} />
           
           {/* Export Section */}
           {unifiedReport && (
             <div className="mt-8">
-              <ReportExport report={unifiedReport} locale="en" />
+              <ReportExport report={unifiedReport} locale={locale} />
             </div>
           )}
 
           {/* New Diagnosis button */}
           <div className="mt-8 flex justify-center">
             <Button onClick={handleReset} variant="outline" className="border-white/20 text-white hover:bg-white/5">
-              New Diagnosis
+              {copy.newDiagnosis}
             </Button>
           </div>
         </div>
@@ -266,16 +309,16 @@ export default function TikTokReviewPage() {
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-white">TikTok Ads Review</h1>
+            <h1 className="text-2xl font-bold text-white">{copy.title}</h1>
           </div>
 
           {/* Stepper */}
           <div className="flex items-center gap-2 mb-8">
-            <StepIndicator step={1} currentStep={currentStepNum} label="Upload" icon={<Upload className="h-4 w-4" />} />
+            <StepIndicator step={1} currentStep={currentStepNum} label={copy.upload} icon={<Upload className="h-4 w-4" />} />
             <div className="flex-1 h-px bg-slate-700" />
-            <StepIndicator step={2} currentStep={currentStepNum} label="Preview" icon={<CheckCircle2 className="h-4 w-4" />} />
+            <StepIndicator step={2} currentStep={currentStepNum} label={copy.preview} icon={<CheckCircle2 className="h-4 w-4" />} />
             <div className="flex-1 h-px bg-slate-700" />
-            <StepIndicator step={3} currentStep={currentStepNum} label="Result" icon={<CheckCircle2 className="h-4 w-4" />} />
+            <StepIndicator step={3} currentStep={currentStepNum} label={copy.result} icon={<CheckCircle2 className="h-4 w-4" />} />
           </div>
 
           {/* Platform mismatch warning */}
@@ -283,15 +326,15 @@ export default function TikTokReviewPage() {
             <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex items-start gap-3 mb-6">
               <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-amber-200 font-medium">Platform Mismatch</p>
+                <p className="text-amber-200 font-medium">{copy.platformMismatch}</p>
                 <p className="text-amber-200/80 text-sm mt-1">{platformWarning}</p>
               </div>
             </div>
           )}
 
           <div className="mb-8">
-            <h2 className="text-3xl font-bold text-white mb-2">Confirm Extracted Data</h2>
-            <p className="text-slate-400">Please verify the extracted data and make any necessary corrections</p>
+            <h2 className="text-3xl font-bold text-white mb-2">{copy.confirmTitle}</h2>
+            <p className="text-slate-400">{copy.confirmDesc}</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -300,12 +343,12 @@ export default function TikTokReviewPage() {
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
                   <ImageIcon className="h-5 w-5" />
-                  Screenshot Preview
+                  {copy.screenshotPreview}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {preview && (
-                  <img src={preview} alt="Screenshot" className="w-full rounded-lg" />
+                  <img src={preview} alt={copy.screenshotPreview} className="w-full rounded-lg" />
                 )}
               </CardContent>
             </Card>
@@ -315,21 +358,21 @@ export default function TikTokReviewPage() {
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
                   <CheckCircle2 className="h-5 w-5 text-green-500" />
-                  Extracted Data
+                  {copy.extractedData}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label className="text-slate-300">Campaign Name</Label>
+                  <Label className="text-slate-300">{label.campaignName}</Label>
                   <Input
                     value={extractedData.campaign_name || ''}
                     onChange={(e) => handleDataChange('campaign_name', e.target.value)}
-                    placeholder="Campaign name"
+                    placeholder={label.campaignName}
                     className="bg-slate-800 border-slate-700 text-white mt-1"
                   />
                 </div>
                 <div>
-                  <Label className="text-slate-300">Snapshot Date</Label>
+                  <Label className="text-slate-300">{label.snapshotDate}</Label>
                   <Input
                     value={extractedData.snapshot_date || ''}
                     onChange={(e) => handleDataChange('snapshot_date', e.target.value)}
@@ -340,7 +383,7 @@ export default function TikTokReviewPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-slate-300">Spend ($)</Label>
+                    <Label className="text-slate-300">{label.spend}</Label>
                     <Input
                       type="number"
                       step="0.01"
@@ -350,7 +393,7 @@ export default function TikTokReviewPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-300">Impressions</Label>
+                    <Label className="text-slate-300">{label.impressions}</Label>
                     <Input
                       type="number"
                       value={extractedData.impressions ?? ''}
@@ -359,7 +402,7 @@ export default function TikTokReviewPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-300">Clicks</Label>
+                    <Label className="text-slate-300">{label.clicks}</Label>
                     <Input
                       type="number"
                       value={extractedData.clicks ?? ''}
@@ -388,7 +431,7 @@ export default function TikTokReviewPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-300">Conversions</Label>
+                    <Label className="text-slate-300">{label.conversions}</Label>
                     <Input
                       type="number"
                       value={extractedData.conversions ?? ''}
@@ -430,10 +473,10 @@ export default function TikTokReviewPage() {
 
                 {/* Video Metrics */}
                 <div className="pt-4 border-t border-slate-700">
-                  <h3 className="text-sm font-medium text-slate-400 mb-3">Video Metrics (Optional)</h3>
+                  <h3 className="text-sm font-medium text-slate-400 mb-3">{copy.videoMetrics}</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-slate-300">Video Views</Label>
+                      <Label className="text-slate-300">{label.videoViews}</Label>
                       <Input
                         type="number"
                         value={extractedData.video_views ?? ''}
@@ -442,7 +485,7 @@ export default function TikTokReviewPage() {
                       />
                     </div>
                     <div>
-                      <Label className="text-slate-300">6s Views</Label>
+                      <Label className="text-slate-300">{label.sixViews}</Label>
                       <Input
                         type="number"
                         value={extractedData.six_second_views ?? ''}
@@ -451,7 +494,7 @@ export default function TikTokReviewPage() {
                       />
                     </div>
                     <div>
-                      <Label className="text-slate-300">6s View Rate (%)</Label>
+                      <Label className="text-slate-300">{label.sixRate}</Label>
                       <Input
                         type="number"
                         step="0.01"
@@ -461,7 +504,7 @@ export default function TikTokReviewPage() {
                       />
                     </div>
                     <div>
-                      <Label className="text-slate-300">Avg Watch Time (s)</Label>
+                      <Label className="text-slate-300">{label.avgWatch}</Label>
                       <Input
                         type="number"
                         step="0.1"
@@ -490,7 +533,7 @@ export default function TikTokReviewPage() {
                     }}
                     className="flex-1 bg-slate-800 hover:bg-slate-700 text-white border border-slate-600"
                   >
-                    Re-upload
+                    {copy.reupload}
                   </Button>
                   <Button
                     variant="ghost"
@@ -501,10 +544,10 @@ export default function TikTokReviewPage() {
                     {analyzing ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Analyzing...
+                        {copy.analyzing}
                       </>
                     ) : (
-                      'Confirm and Analyze'
+                      copy.confirmAnalyze
                     )}
                   </Button>
                 </div>
@@ -534,18 +577,18 @@ export default function TikTokReviewPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-white">TikTok Ads Review</h1>
-              <p className="text-slate-400 mt-1">Upload a screenshot of your TikTok Ads Manager to get a comprehensive analysis</p>
+              <h1 className="text-2xl font-bold text-white">{copy.title}</h1>
+              <p className="text-slate-400 mt-1">{copy.subtitle}</p>
             </div>
           </div>
 
           {/* Stepper */}
           <div className="flex items-center gap-2">
-            <StepIndicator step={1} currentStep={currentStepNum} label="Upload" icon={<Upload className="h-4 w-4" />} />
+            <StepIndicator step={1} currentStep={currentStepNum} label={copy.upload} icon={<Upload className="h-4 w-4" />} />
             <div className="flex-1 h-px bg-slate-700" />
-            <StepIndicator step={2} currentStep={currentStepNum} label="Preview" icon={<CheckCircle2 className="h-4 w-4" />} />
+            <StepIndicator step={2} currentStep={currentStepNum} label={copy.preview} icon={<CheckCircle2 className="h-4 w-4" />} />
             <div className="flex-1 h-px bg-slate-700" />
-            <StepIndicator step={3} currentStep={currentStepNum} label="Result" icon={<CheckCircle2 className="h-4 w-4" />} />
+            <StepIndicator step={3} currentStep={currentStepNum} label={copy.result} icon={<CheckCircle2 className="h-4 w-4" />} />
           </div>
         </div>
 
@@ -556,10 +599,10 @@ export default function TikTokReviewPage() {
                 <Upload className="w-10 h-10 text-cyan-400" />
               </div>
               <h3 className="text-2xl font-bold text-white mb-2">
-                Upload TikTok Ads Screenshot
+                {copy.uploadTitle}
               </h3>
               <p className="text-slate-400 mb-8 max-w-md mx-auto">
-                Upload a screenshot of your TikTok Ads Manager to get a professional diagnosis report.
+                {copy.uploadDesc}
               </p>
               
               {/* Upload area */}
@@ -571,23 +614,26 @@ export default function TikTokReviewPage() {
               >
                 {preview ? (
                   <div className="space-y-4">
-                    <img src={preview} alt="Preview" className="max-h-64 mx-auto rounded-lg" />
+                    <img src={preview} alt={copy.preview} className="max-h-64 mx-auto rounded-lg" />
                     <p className="text-sm text-slate-400">{file?.name}</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     <Upload className="w-12 h-12 mx-auto text-slate-500" />
                     <div>
-                      <p className="text-white font-medium">Click to upload or drag and drop</p>
-                      <p className="text-sm text-slate-500 mt-1">PNG, JPG, WEBP up to 10MB</p>
+                      <p className="text-white font-medium">{copy.clickUpload}</p>
+                      <p className="text-sm text-slate-500 mt-1">{copy.support}</p>
                     </div>
                   </div>
                 )}
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/png,image/jpeg,image/webp"
                   className="hidden"
+                  onClick={(e) => {
+                    e.currentTarget.value = '';
+                  }}
                   onChange={(e) => {
                     const f = e.target.files?.[0];
                     if (f) handleFileSelect(f);
@@ -605,7 +651,7 @@ export default function TikTokReviewPage() {
                     }}
                     className="border border-white/20 text-white hover:bg-white/10 bg-transparent"
                   >
-                    Cancel
+                    {copy.cancel}
                   </Button>
                   <Button
                     onClick={handleUploadAndAnalyze}
@@ -615,12 +661,12 @@ export default function TikTokReviewPage() {
                     {uploading ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Recognizing...
+                        {copy.recognizing}
                       </>
                     ) : (
                       <>
                         <CheckCircle2 className="w-4 h-4 mr-2" />
-                        Upload & Recognize
+                        {copy.uploadRecognize}
                       </>
                     )}
                   </Button>

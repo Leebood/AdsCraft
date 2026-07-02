@@ -4,9 +4,11 @@ import { useCallback, useState } from 'react';
 import { getSupabaseBrowserClientAsync } from '@/lib/supabase-browser';
 
 export type ScreenshotPlatform = 'facebook' | 'tiktok' | 'google';
+export type DetectedScreenshotPlatform = ScreenshotPlatform | 'unknown';
+export type ScreenshotLocale = 'en' | 'zh';
 
 export interface ScreenshotAnalysisResult {
-  platform_detected?: ScreenshotPlatform;
+  platform_detected?: DetectedScreenshotPlatform;
   platform_selected?: string;
   campaign_name?: string | null;
   snapshot_date?: string | null;
@@ -27,38 +29,76 @@ const MAX_IMAGE_EDGE = 1800;
 const JPEG_QUALITY = 0.82;
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
-const PLATFORM_NAMES: Record<ScreenshotPlatform, string> = {
-  facebook: 'Facebook',
-  tiktok: 'TikTok',
-  google: 'Google Ads',
+const PLATFORM_NAMES: Record<ScreenshotLocale, Record<DetectedScreenshotPlatform, string>> = {
+  en: {
+    facebook: 'Facebook Ads',
+    tiktok: 'TikTok Ads',
+    google: 'Google Ads',
+    unknown: 'an unsupported or unrecognized page',
+  },
+  zh: {
+    facebook: 'Facebook 广告',
+    tiktok: 'TikTok 广告',
+    google: 'Google Ads',
+    unknown: '非广告后台或未识别页面',
+  },
 };
 
-function readFileAsDataUrl(file: File): Promise<string> {
+const MESSAGES = {
+  en: {
+    invalidType: 'Please upload a JPG, PNG, or WEBP image',
+    tooLarge: 'Image size cannot exceed 10MB',
+    readFailed: 'Failed to read image file',
+    loadFailed: 'Failed to load image',
+    compressFailed: 'Failed to compress image',
+    prepareFailed: 'Image preparation failed',
+    loginRequired: 'Please login first',
+    screenshotFailed: 'Screenshot recognition failed',
+    recognitionFailed: 'Recognition failed, please try again',
+    platformMismatch: (detected: string, selected: string) =>
+      `Detected ${detected} screenshot, but you selected ${selected}. Please confirm the extracted data or upload the correct platform screenshot.`,
+  },
+  zh: {
+    invalidType: '请上传 JPG、PNG 或 WEBP 图片',
+    tooLarge: '图片不能超过 10MB',
+    readFailed: '读取图片失败，请重新选择',
+    loadFailed: '加载图片失败，请重新选择',
+    compressFailed: '压缩图片失败，请重新选择',
+    prepareFailed: '图片处理失败，请重新选择',
+    loginRequired: '请先登录后再上传截图',
+    screenshotFailed: '截图识别失败',
+    recognitionFailed: '识别失败，请重试',
+    platformMismatch: (detected: string, selected: string) =>
+      `系统识别为${detected}截图，但当前选择的是${selected}。你可以核对识别数据，或重新上传对应平台截图。`,
+  },
+};
+
+function readFileAsDataUrl(file: File, locale: ScreenshotLocale): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (event) => resolve(event.target?.result as string);
-    reader.onerror = () => reject(new Error('Failed to read image file'));
+    reader.onerror = () => reject(new Error(MESSAGES[locale].readFailed));
     reader.readAsDataURL(file);
   });
 }
 
-function loadImage(src: string): Promise<HTMLImageElement> {
+function loadImage(src: string, locale: ScreenshotLocale): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error('Failed to load image'));
+    img.onerror = () => reject(new Error(MESSAGES[locale].loadFailed));
     img.src = src;
   });
 }
 
-function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
+function canvasToBlob(canvas: HTMLCanvasElement, locale: ScreenshotLocale): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => {
         if (blob) {
           resolve(blob);
         } else {
-          reject(new Error('Failed to compress image'));
+          reject(new Error(MESSAGES[locale].compressFailed));
         }
       },
       'image/jpeg',
@@ -67,13 +107,13 @@ function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   });
 }
 
-async function compressScreenshot(file: File): Promise<File> {
+async function compressScreenshot(file: File, locale: ScreenshotLocale): Promise<File> {
   if (file.size <= COMPRESS_THRESHOLD) {
     return file;
   }
 
-  const dataUrl = await readFileAsDataUrl(file);
-  const image = await loadImage(dataUrl);
+  const dataUrl = await readFileAsDataUrl(file, locale);
+  const image = await loadImage(dataUrl, locale);
   const scale = Math.min(1, MAX_IMAGE_EDGE / Math.max(image.width, image.height));
   const width = Math.max(1, Math.round(image.width * scale));
   const height = Math.max(1, Math.round(image.height * scale));
@@ -91,7 +131,7 @@ async function compressScreenshot(file: File): Promise<File> {
   context.fillRect(0, 0, width, height);
   context.drawImage(image, 0, 0, width, height);
 
-  const blob = await canvasToBlob(canvas);
+  const blob = await canvasToBlob(canvas, locale);
   if (blob.size >= file.size) {
     return file;
   }
@@ -103,7 +143,7 @@ async function compressScreenshot(file: File): Promise<File> {
   });
 }
 
-export function useScreenshotAnalysis(platform: ScreenshotPlatform) {
+export function useScreenshotAnalysis(platform: ScreenshotPlatform, locale: ScreenshotLocale = 'en') {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -114,26 +154,27 @@ export function useScreenshotAnalysis(platform: ScreenshotPlatform) {
     if (!ALLOWED_TYPES.includes(selectedFile.type)) {
       setFile(null);
       setPreview(null);
-      setError('Please upload a JPG, PNG, or WEBP image');
+      setError(MESSAGES[locale].invalidType);
       return;
     }
 
     try {
-      const preparedFile = await compressScreenshot(selectedFile);
+      const preparedFile = await compressScreenshot(selectedFile, locale);
       if (preparedFile.size > MAX_UPLOAD_SIZE) {
         setFile(null);
         setPreview(null);
-        setError('Image size cannot exceed 10MB');
+        setError(MESSAGES[locale].tooLarge);
         return;
       }
 
       setError(null);
+      setPlatformWarning(null);
       setFile(preparedFile);
-      setPreview(await readFileAsDataUrl(preparedFile));
+      setPreview(await readFileAsDataUrl(preparedFile, locale));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Image preparation failed');
+      setError(err instanceof Error ? err.message : MESSAGES[locale].prepareFailed);
     }
-  }, []);
+  }, [locale]);
 
   const clearFile = useCallback(() => {
     setFile(null);
@@ -153,7 +194,7 @@ export function useScreenshotAnalysis(platform: ScreenshotPlatform) {
       const { data: { session } } = await client.auth.getSession();
 
       if (!session) {
-        setError('Please login first');
+        setError(MESSAGES[locale].loginRequired);
         return null;
       }
 
@@ -172,13 +213,16 @@ export function useScreenshotAnalysis(platform: ScreenshotPlatform) {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Screenshot recognition failed');
+        throw new Error(result.error || MESSAGES[locale].screenshotFailed);
       }
 
-      const platformDetected = result.platform_detected as ScreenshotPlatform | undefined;
+      const platformDetected = result.platform_detected as DetectedScreenshotPlatform | undefined;
       if (platformDetected && platformDetected !== platform) {
         setPlatformWarning(
-          `Detected ${PLATFORM_NAMES[platformDetected] || platformDetected} screenshot, but you selected ${PLATFORM_NAMES[platform]}. Please upload the correct platform screenshot.`
+          MESSAGES[locale].platformMismatch(
+            PLATFORM_NAMES[locale][platformDetected] || platformDetected,
+            PLATFORM_NAMES[locale][platform]
+          )
         );
       } else {
         setPlatformWarning(null);
@@ -186,12 +230,12 @@ export function useScreenshotAnalysis(platform: ScreenshotPlatform) {
 
       return result;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Recognition failed, please try again');
+      setError(err instanceof Error ? err.message : MESSAGES[locale].recognitionFailed);
       return null;
     } finally {
       setUploading(false);
     }
-  }, [file, platform]);
+  }, [file, locale, platform]);
 
   return {
     file,

@@ -35,12 +35,12 @@ export default function PlansPage() {
             <Upload className="w-8 h-8 text-purple-400" />
           </div>
           <h3 className="text-xl font-semibold text-white mb-2">
-            {locale === 'zh' ? 'TikTok 广告诊断' : 'TikTok Ad Diagnosis'}
+            {locale === 'zh' ? 'TikTok 广告审查与诊断' : 'TikTok Review & Diagnosis'}
           </h3>
           <p className="text-blue-200/70 mb-6 max-w-md mx-auto">
             {locale === 'zh' 
-              ? '上传 TikTok Ads Manager 截图，自动识别数据并进行诊断分析' 
-              : 'Upload TikTok Ads Manager screenshot for automatic data recognition and diagnosis'}
+              ? '上传 TikTok 广告截图，检查拒审风险并诊断优化空间。'
+              : 'Upload a TikTok Ads screenshot to review approval risk and diagnose optimization opportunities.'}
           </p>
           <Button
             onClick={handleStartDiagnosis}
@@ -62,12 +62,12 @@ export default function PlansPage() {
             <Upload className="w-8 h-8 text-blue-400" />
           </div>
           <h3 className="text-xl font-semibold text-white mb-2">
-            {locale === 'zh' ? 'Facebook 广告诊断' : 'Facebook Ad Diagnosis'}
+            {locale === 'zh' ? 'Facebook 广告策略诊断' : 'Facebook Strategy Diagnosis'}
           </h3>
           <p className="text-blue-200/70 mb-6 max-w-md mx-auto">
             {locale === 'zh'  
-              ? '上传 Facebook Ads Manager 截图，自动识别数据并进行诊断分析' 
-              : 'Upload Facebook Ads Manager screenshot for automatic data recognition and diagnosis'}
+              ? '上传 Facebook 广告截图，识别投放问题并给出持续优化方向。'
+              : 'Upload a Facebook Ads screenshot to identify strategy issues and optimization actions.'}
           </p>
           <Button
             onClick={() => router.push('/facebook-review')}
@@ -168,7 +168,7 @@ export default function PlansPage() {
               {locale === 'zh' ? '我的方案' : 'My Plans'}
             </h1>
             <p className="text-blue-200/70">
-              {locale === 'zh' ? '查看和管理您的诊断记录' : 'View and manage your diagnosis records'}
+              {locale === 'zh' ? '选择平台上传广告截图，查看诊断结果与优化建议。' : 'Choose a platform, upload an ad screenshot, and review diagnosis results.'}
             </p>
           </div>
 

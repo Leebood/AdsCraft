@@ -141,6 +141,11 @@ export default function DashboardPage() {
                   </span>
                 )}
               </p>
+              <p className="text-blue-200/60 text-sm mt-2 max-w-2xl">
+                {locale === 'zh'
+                  ? '选择平台上传广告截图，查看诊断结果、优化建议和历史记录。'
+                  : 'Upload ad screenshots, review diagnosis results, optimization actions, and history.'}
+              </p>
             </div>
           </div>
 
@@ -175,7 +180,7 @@ export default function DashboardPage() {
                     </div>
                     <h3 className="text-white font-semibold mb-2">Facebook Ads</h3>
                     <p className="text-blue-200/70 text-sm mb-4">
-                      {locale === 'zh' ? '截图分析' : 'Screenshot Analysis'}
+                      {locale === 'zh' ? '策略诊断 / 截图分析' : 'Strategy Diagnosis'}
                     </p>
                     <Link href="/facebook-review">
                       <Button className="w-full bg-blue-500/20 border-blue-400/30 text-blue-400 hover:bg-blue-500/30">
@@ -200,7 +205,7 @@ export default function DashboardPage() {
                     </div>
                     <h3 className="text-white font-semibold mb-2">TikTok Ads</h3>
                     <p className="text-blue-200/70 text-sm mb-4">
-                      {locale === 'zh' ? '截图分析' : 'Screenshot Analysis'}
+                      {locale === 'zh' ? '广告审查 / 截图诊断' : 'Review & Diagnosis'}
                     </p>
                     <Link href="/tiktok-review">
                       <Button className="w-full bg-pink-500/20 border-pink-400/30 text-pink-400 hover:bg-pink-500/30">
@@ -228,7 +233,7 @@ export default function DashboardPage() {
                     </div>
                     <h3 className="text-white font-semibold mb-2">Google Ads</h3>
                     <p className="text-blue-200/70 text-sm mb-4">
-                      {locale === 'zh' ? '截图分析' : 'Screenshot Analysis'}
+                      {locale === 'zh' ? '截图诊断' : 'Screenshot Diagnosis'}
                     </p>
                     <Link href="/google-review">
                       <Button className="w-full bg-green-500/20 border-green-400/30 text-green-400 hover:bg-green-500/30">

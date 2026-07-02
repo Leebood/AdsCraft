@@ -9,14 +9,14 @@ import { Footer } from '@/components/footer';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'AdsCraft | AI Ad Diagnosis for Facebook & TikTok',
-  description: 'AdsCraft helps small businesses diagnose and optimize Facebook and TikTok ad campaigns with AI-powered recommendations.',
+  title: 'AdsCraft | AI Ad Review & Optimization for Facebook, TikTok & Google',
+  description: 'AdsCraft helps small businesses review ad screenshots, diagnose performance issues, and optimize Facebook, TikTok, and Google Ads campaigns.',
   alternates: {
     canonical: 'https://www.adscraft.cn',
   },
   openGraph: {
-    title: 'AdsCraft | AI Ad Diagnosis for Facebook & TikTok',
-    description: 'AdsCraft helps small businesses diagnose and optimize Facebook and TikTok ad campaigns with AI-powered recommendations.',
+    title: 'AdsCraft | AI Ad Review & Optimization for Facebook, TikTok & Google',
+    description: 'AdsCraft helps small businesses review ad screenshots, diagnose performance issues, and optimize Facebook, TikTok, and Google Ads campaigns.',
     url: 'https://www.adscraft.cn',
     type: 'website',
     siteName: 'AdsCraft',
