@@ -414,6 +414,7 @@ export default function FacebookReviewPage() {
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {Object.entries(extractedData).map(([key, value]) => {
+                    if (key === 'recognition_warning') return null;
                     if (value === null || value === undefined || value === '') return null;
                     if (typeof value === 'object') return null;
                     return (

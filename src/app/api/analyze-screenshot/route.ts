@@ -24,6 +24,33 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024;
 // 支持的图片格式
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
+function getNextMonthlyReset(now = new Date()) {
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1, 0, 0, 0));
+}
+
+function normalizePlanName(route?: string | null) {
+  if (!route) return 'free';
+  return route.toLowerCase().replace(/[\s-]+/g, '_');
+}
+
+function buildEmptyExtraction(platformSelected?: string | null, recognitionWarning?: string) {
+  return {
+    platform_detected: 'unknown',
+    platform_selected: platformSelected || 'unknown',
+    campaign_name: null,
+    snapshot_date: null,
+    spend: null,
+    impressions: null,
+    clicks: null,
+    ctr: null,
+    cpc: null,
+    conversions: null,
+    cpa: null,
+    roas: null,
+    recognition_warning: recognitionWarning || 'Unable to recognize this screenshot. Please confirm the image or upload an ad manager screenshot.',
+  };
+}
+
 async function consumeScreenshotQuota(
   supabase: SupabaseClient,
   userId: string,
@@ -34,11 +61,15 @@ async function consumeScreenshotQuota(
       .from('users')
       .select('screenshot_count_used, screenshot_count_limit')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (currentError) {
-      console.error('Failed to fetch current screenshot quota:', currentError);
-      return null;
+      console.error('Failed to fetch current screenshot quota, allowing request:', currentError);
+      return { used: 0, limit, remaining: limit };
+    }
+
+    if (!currentData) {
+      return { used: 0, limit, remaining: limit };
     }
 
     const rawUsed = currentData?.screenshot_count_used;
@@ -86,6 +117,36 @@ async function consumeScreenshotQuota(
   }
 
   return null;
+}
+
+async function requestOpenAIExtraction(apiKey: string, dataUrl: string, detail: 'high' | 'low') {
+  return fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      temperature: 0.1,
+      response_format: { type: 'json_object' },
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: EXTRACT_PROMPT },
+            {
+              type: 'image_url',
+              image_url: {
+                url: dataUrl,
+                detail,
+              },
+            },
+          ],
+        },
+      ],
+    }),
+  });
 }
 
 // 截图识别 Prompt - 通用平台，同时检测平台归属
@@ -150,7 +211,7 @@ export async function POST(request: NextRequest) {
       .from('users')
       .select('screenshot_count_used, screenshot_count_limit, screenshot_reset_at')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
     if (userError) {
       console.error('Failed to fetch user screenshot quota:', userError);
@@ -159,12 +220,12 @@ export async function POST(request: NextRequest) {
     // 获取用户订阅等级
     const { data: subscriptionData } = await supabase
       .from('subscriptions')
-      .select('plan_name, status')
+      .select('route, status')
       .eq('user_id', user.id)
       .eq('status', 'active')
-      .single();
+      .maybeSingle();
 
-    const planName = subscriptionData?.plan_name?.toLowerCase() || 'free';
+    const planName = normalizePlanName(subscriptionData?.route);
     const limit = SCREENSHOT_LIMITS[planName] || SCREENSHOT_LIMITS.free;
     const used = userData?.screenshot_count_used || 0;
     const resetAt = userData?.screenshot_reset_at ? new Date(userData.screenshot_reset_at) : null;
@@ -173,16 +234,22 @@ export async function POST(request: NextRequest) {
 
     // 每月1号自动重置
     if (!resetAt || resetAt <= now) {
-      const nextReset = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      const nextReset = getNextMonthlyReset(now);
       effectiveUsed = 0;
-      await supabase
-        .from('users')
-        .update({
-          screenshot_count_used: 0,
-          screenshot_count_limit: limit,
-          screenshot_reset_at: nextReset.toISOString(),
-        })
-        .eq('id', user.id);
+      if (userData && !userError) {
+        const { error: resetError } = await supabase
+          .from('users')
+          .update({
+            screenshot_count_used: 0,
+            screenshot_count_limit: limit,
+            screenshot_reset_at: nextReset.toISOString(),
+          })
+          .eq('id', user.id);
+
+        if (resetError) {
+          console.error('Failed to reset screenshot quota:', resetError);
+        }
+      }
     } else if (effectiveUsed >= limit) {
       // 额度用完
       return NextResponse.json(
@@ -229,48 +296,47 @@ export async function POST(request: NextRequest) {
 
     const openaiApiKey = process.env.OPENAI_API_KEY;
     if (!openaiApiKey) {
-      return NextResponse.json(
-        { error: 'AI service not configured' },
-        { status: 500 }
-      );
+      console.error('[Screenshot Analysis] OPENAI_API_KEY is not configured');
+      return NextResponse.json(buildEmptyExtraction(
+        platformSelected,
+        'AI recognition is not configured. Please check the service settings.'
+      ));
     }
 
-    // 创建带图片的多模态消息
-    const llmResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openaiApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        temperature: 0.1,
-        response_format: { type: 'json_object' },
-        messages: [
-          {
-            role: 'user',
-            content: [
-              { type: 'text', text: EXTRACT_PROMPT },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: dataUrl,
-                  detail: 'high',
-                },
-              },
-            ],
-          },
-        ],
-      }),
-    });
+    let llmResponse: Response;
+    try {
+      llmResponse = await requestOpenAIExtraction(openaiApiKey, dataUrl, 'high');
+    } catch (openAIError) {
+      console.error('[Screenshot Analysis] OpenAI request failed:', openAIError);
+      return NextResponse.json(buildEmptyExtraction(
+        platformSelected,
+        'Screenshot recognition is temporarily unavailable. Please verify the image or try again later.'
+      ));
+    }
 
     if (!llmResponse.ok) {
-      const errorText = await llmResponse.text();
-      console.error('[Screenshot Analysis] OpenAI API error:', errorText);
-      return NextResponse.json(
-        { error: 'Screenshot recognition failed, please retry' },
-        { status: 502 }
-      );
+      const highDetailError = await llmResponse.text();
+      console.error('[Screenshot Analysis] OpenAI API high-detail error:', highDetailError);
+
+      try {
+        llmResponse = await requestOpenAIExtraction(openaiApiKey, dataUrl, 'low');
+      } catch (openAIError) {
+        console.error('[Screenshot Analysis] OpenAI low-detail request failed:', openAIError);
+        return NextResponse.json(buildEmptyExtraction(
+          platformSelected,
+          'Screenshot recognition is temporarily unavailable. Please verify the image or try again later.'
+        ));
+      }
+
+      if (!llmResponse.ok) {
+        const lowDetailError = await llmResponse.text();
+        console.error('[Screenshot Analysis] OpenAI API low-detail error:', lowDetailError);
+
+        return NextResponse.json(buildEmptyExtraction(
+          platformSelected,
+          'Screenshot recognition is temporarily unavailable. Please verify the image or try again later.'
+        ));
+      }
     }
 
     const completion = await llmResponse.json();
@@ -300,6 +366,7 @@ export async function POST(request: NextRequest) {
       
       // 如果解析失败，返回原始内容让用户手动填写
       extractedData = {
+        platform_detected: 'unknown',
         campaign_name: null,
         snapshot_date: null,
         spend: null,

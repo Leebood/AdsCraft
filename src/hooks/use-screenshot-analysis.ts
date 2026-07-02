@@ -55,6 +55,7 @@ const MESSAGES = {
     loginRequired: 'Please login first',
     screenshotFailed: 'Screenshot recognition failed',
     recognitionFailed: 'Recognition failed, please try again',
+    recognitionUnavailable: 'Screenshot recognition is temporarily unavailable. Please verify the image or try again later.',
     platformMismatch: (detected: string, selected: string) =>
       `Detected ${detected} screenshot, but you selected ${selected}. Please confirm the extracted data or upload the correct platform screenshot.`,
   },
@@ -68,6 +69,7 @@ const MESSAGES = {
     loginRequired: '请先登录后再上传截图',
     screenshotFailed: '截图识别失败',
     recognitionFailed: '识别失败，请重试',
+    recognitionUnavailable: '截图暂时未能可靠识别。请确认上传的是广告后台截图，或稍后重试。',
     platformMismatch: (detected: string, selected: string) =>
       `系统识别为${detected}截图，但当前选择的是${selected}。你可以核对识别数据，或重新上传对应平台截图。`,
   },
@@ -217,7 +219,11 @@ export function useScreenshotAnalysis(platform: ScreenshotPlatform, locale: Scre
       }
 
       const platformDetected = result.platform_detected as DetectedScreenshotPlatform | undefined;
-      if (platformDetected && platformDetected !== platform) {
+      const hasRecognitionWarning = typeof result.recognition_warning === 'string';
+
+      if (hasRecognitionWarning) {
+        setPlatformWarning(MESSAGES[locale].recognitionUnavailable);
+      } else if (platformDetected && platformDetected !== platform) {
         setPlatformWarning(
           MESSAGES[locale].platformMismatch(
             PLATFORM_NAMES[locale][platformDetected] || platformDetected,
